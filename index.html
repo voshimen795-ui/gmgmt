@@ -67,6 +67,15 @@
   <!-- ============================================================ HERO -->
   <section class="hero" id="top">
 
+    <!-- Background layer. Point data-video at a file (mp4 first, webm second)
+         and it plays behind the hero, muted and looping; until then the light
+         field below carries the motion. -->
+    <div class="hero__media" data-hero-media data-video="/assets/hero.mp4" aria-hidden="true">
+      <span class="hero__field"></span>
+      <span class="hero__grain"></span>
+      <span class="hero__scrim"></span>
+    </div>
+
     <div class="hero__rules" aria-hidden="true">
       <span style="--i:0"></span><span style="--i:1"></span><span style="--i:2"></span>
       <span style="--i:3"></span><span style="--i:4"></span>
@@ -88,8 +97,8 @@
 
       <div class="hero__intro">
         <p class="hero__sub" data-seq="6">
-          G Management is Manny Garcia, out of Miami. Small team, hands on the accounts daily.
-          Everything below is a real client, over a real date range, with the name attached.
+          Manny Garcia, out of Miami. Every number below is a real client account,
+          with the dates attached.
         </p>
 
         <div class="hero__actions" data-seq="7">
@@ -158,9 +167,9 @@
         <article class="path path--brands">
           <h3 class="path__title" data-reveal="title">You have a brand.</h3>
           <p class="path__pitch">
-            You want sales, not a posting schedule to babysit. We take the account over —
-            strategy, content, publishing, growth — and when a launch needs reach beyond
-            your own audience, we source and negotiate the influencers to carry it.
+            You want sales, not a posting schedule to babysit. We take the account
+            over, and bring in the influencers when a launch needs reach beyond your
+            own audience.
           </p>
           <ul class="path__list">
             <li>Full account operation, posted daily</li>
@@ -173,8 +182,8 @@
         <article class="path path--creators">
           <h3 class="path__title" data-reveal="title">You are the brand.</h3>
           <p class="path__pitch">
-            You want to create. Somebody else should be answering the brand emails,
-            holding the rate, and chasing the invoice. That is the job.
+            Somebody else should be answering the brand emails, holding the rate and
+            chasing the invoice. That is the job.
           </p>
           <ul class="path__list">
             <li>Brand deals negotiated on your behalf</li>
@@ -199,10 +208,9 @@
           <p class="service__for">For brands</p>
           <h3 class="service__name" data-reveal="title">Social media management</h3>
           <p class="service__body">
-            The whole account, operated. Strategy first, then content creation and curation,
-            then a posting rhythm that holds. Most of the growth in the numbers further down
-            came from short-form video published relentlessly against a plan — on BKH's
-            account, Reels carried 4 million of the reach against 196,000 from static posts.
+            The whole account, operated: strategy, content, curation, and a posting
+            rhythm that holds. Short-form video does the heavy lifting — on BKH's account,
+            Reels carried 4 million of the reach against 196,000 from static posts.
           </p>
         </article>
 
@@ -210,8 +218,8 @@
           <p class="service__for">For brands</p>
           <h3 class="service__name" data-reveal="title">Influencer marketing</h3>
           <p class="service__body">
-            Finding the creators who already have your buyers, reaching out, negotiating the
-            deal, and running the campaign to delivery.
+            Finding the creators who already have your buyers, negotiating the deal, and
+            running the campaign to delivery.
           </p>
         </article>
 
@@ -219,8 +227,8 @@
           <p class="service__for">For creators</p>
           <h3 class="service__name" data-reveal="title">Influencer management</h3>
           <p class="service__body">
-            Your brand negotiations and communications, handled end to end, so creating is
-            the only part left to you.
+            Brand negotiations and communications handled end to end, so creating is the
+            only part left to you.
           </p>
         </article>
 
@@ -234,15 +242,45 @@
       <header class="proof__intro">
         <h2 class="section-title" data-reveal="title" id="proof-title">The receipts.</h2>
         <p class="proof__note" data-reveal="rise">
-          Five accounts. Every figure is taken from the client's own Instagram Insights or
-          Shopify dashboard over the date range shown, and every quote is from a named person
-          at a named company.
+          Pick a client. Every figure comes from their own dashboard, over the dates
+          shown, and every quote is from a named person.
         </p>
       </header>
     </div>
 
+
+    <div class="shell">
+      <nav class="case-rail" aria-label="Case studies" data-case-rail>
+        <a class="case-rail__item" href="#panel-bkh" data-case-tab="bkh">
+          <span class="case-rail__name">BKH Enterprises</span>
+          <span class="case-rail__figure">5,487,050</span>
+          <span class="case-rail__note">accounts reached, 30 days</span>
+        </a>
+        <a class="case-rail__item" href="#panel-pivot" data-case-tab="pivot">
+          <span class="case-rail__name">Pivot Point</span>
+          <span class="case-rail__figure">1,224,413</span>
+          <span class="case-rail__note">views, month one</span>
+        </a>
+        <a class="case-rail__item" href="#panel-houdini" data-case-tab="houdini">
+          <span class="case-rail__name">Houdini Holsters</span>
+          <span class="case-rail__figure">+54%</span>
+          <span class="case-rail__note">orders, two months</span>
+        </a>
+        <a class="case-rail__item" href="#panel-link" data-case-tab="link">
+          <span class="case-rail__name">Link in bio</span>
+          <span class="case-rail__figure">$19,265</span>
+          <span class="case-rail__note">sales, one month</span>
+        </a>
+        <a class="case-rail__item" href="#panel-pac" data-case-tab="pac">
+          <span class="case-rail__name">PAC-Hub</span>
+          <span class="case-rail__figure">323,861</span>
+          <span class="case-rail__note">accounts reached</span>
+        </a>
+      </nav>
+    </div>
+
     <!-- ---------------------------------------------- Case 1 — BKH -->
-    <article class="case case--bkh" aria-labelledby="case-bkh">
+    <article class="case case--bkh" id="panel-bkh" data-case="bkh" aria-labelledby="case-bkh">
       <div class="shell case__grid">
         <div class="case__quote">
           <h3 class="case__client" data-reveal="title" id="case-bkh">BKH Enterprises</h3>
@@ -286,7 +324,7 @@
     </article>
 
     <!-- --------------------------------------- Case 2 — Pivot Point -->
-    <article class="case case--pivot" aria-labelledby="case-pivot">
+    <article class="case case--pivot" id="panel-pivot" data-case="pivot" aria-labelledby="case-pivot">
       <div class="shell">
         <div class="case__head">
           <h3 class="case__client" data-reveal="title" id="case-pivot">Pivot Point</h3>
@@ -355,7 +393,7 @@
     </article>
 
     <!-- ------------------------------------------ Case 3 — Houdini -->
-    <article class="case case--houdini" aria-labelledby="case-houdini">
+    <article class="case case--houdini" id="panel-houdini" data-case="houdini" aria-labelledby="case-houdini">
       <div class="shell">
         <div class="case__head">
           <h3 class="case__client" data-reveal="title" id="case-houdini">Houdini Holsters</h3>
@@ -363,8 +401,7 @@
         </div>
 
         <p class="case__kicker" data-reveal="rise">
-          The store was already selling. Two months later it was selling more, to more people,
-          at a better rate.
+          Already selling. Two months later, selling more, to more people, at a better rate.
         </p>
 
         <div class="scrub" data-scrub style="--t:1">
@@ -419,7 +456,7 @@
     </article>
 
     <!-- ------------------------------------------- Case 4 — the link -->
-    <article class="case case--link" aria-labelledby="case-link">
+    <article class="case case--link" id="panel-link" data-case="link" aria-labelledby="case-link">
       <div class="shell case__grid case__grid--link">
         <div class="case__side">
           <h3 class="case__client" data-reveal="title" id="case-link">One link in a bio</h3>
@@ -441,7 +478,7 @@
     </article>
 
     <!-- ------------------------------------------ Case 5 — PAC-Hub -->
-    <article class="case case--pac" aria-labelledby="case-pac">
+    <article class="case case--pac" id="panel-pac" data-case="pac" aria-labelledby="case-pac">
       <div class="shell case__grid case__grid--flip">
         <div class="case__data">
           <p class="case__window">Instagram Insights, Dec 20 – Jan 18</p>
@@ -535,9 +572,8 @@
 
         <aside class="work__aside">
           <p class="work__note">
-            Numbers are the outcome. Vertical video is the input. It is where nearly all of
-            the reach above came from — on BKH's account, Reels carried 4,000,000 of the
-            5,487,050 people the page reached, against 196,000 from static posts.
+            Numbers are the outcome. Vertical video is the input — on BKH's account, Reels
+            carried 4,000,000 of the 5,487,050 people the page reached.
           </p>
         </aside>
 
@@ -552,14 +588,25 @@
       <div class="book__lede">
         <h2 class="section-title" data-reveal="title" id="book-title">Book a call with Manny.</h2>
         <p class="book__body">
-          Fifteen minutes, no deck. Tell him the account and what it needs to do, and he will
-          tell you whether he can move it. Manny answers every inquiry himself, usually within
-          one business day.
+          Fifteen minutes, no deck. Tell him the account and what it needs to do. Manny
+          answers every inquiry himself, usually within one business day.
         </p>
         <ul class="contact">
-          <li><span class="contact__label">Email</span><a class="contact__value" href="mailto:manny@gmgmt.co">manny@gmgmt.co</a></li>
-          <li><span class="contact__label">Phone</span><a class="contact__value" href="tel:+17869295735">(786) 929-5735</a></li>
-          <li><span class="contact__label">Based in</span><span class="contact__value">Miami, Florida</span></li>
+          <li>
+            <span class="contact__label">Email</span>
+            <a class="contact__value" href="mailto:manny@gmgmt.co">manny@gmgmt.co</a>
+            <button class="contact__act" type="button" data-copy="manny@gmgmt.co">Copy</button>
+          </li>
+          <li>
+            <span class="contact__label">Phone</span>
+            <a class="contact__value" href="tel:+17869295735">(786) 929-5735</a>
+            <a class="contact__act" href="https://wa.me/17869295735" target="_blank" rel="noopener">WhatsApp</a>
+          </li>
+          <li>
+            <span class="contact__label">Based in</span>
+            <span class="contact__value">Miami, Florida</span>
+            <button class="contact__act" type="button" data-vcard>Save contact</button>
+          </li>
         </ul>
       </div>
 
@@ -580,14 +627,24 @@
             <input id="f-email" name="email" type="email" autocomplete="email" required>
           </div>
 
-          <div class="field">
-            <label for="f-who">You are</label>
-            <select id="f-who" name="who">
-              <option value="A brand">A brand</option>
-              <option value="A creator">A creator</option>
-              <option value="Something else">Something else</option>
-            </select>
-          </div>
+          <fieldset class="chips">
+            <legend>You are</legend>
+            <div class="chips__row">
+              <label class="chip"><input type="radio" name="who" value="A brand" checked><span>A brand</span></label>
+              <label class="chip"><input type="radio" name="who" value="A creator"><span>A creator</span></label>
+              <label class="chip"><input type="radio" name="who" value="Something else"><span>Something else</span></label>
+            </div>
+          </fieldset>
+
+          <fieldset class="chips">
+            <legend>What you need</legend>
+            <div class="chips__row">
+              <label class="chip"><input type="radio" name="goal" value="Run my social accounts" checked><span>Run my accounts</span></label>
+              <label class="chip"><input type="radio" name="goal" value="Drive sales"><span>Drive sales</span></label>
+              <label class="chip"><input type="radio" name="goal" value="Influencer campaign"><span>Influencer campaign</span></label>
+              <label class="chip"><input type="radio" name="goal" value="Manage my brand deals"><span>Manage my deals</span></label>
+            </div>
+          </fieldset>
 
           <div class="field">
             <label for="f-handle">Account or website</label>
@@ -595,8 +652,8 @@
           </div>
 
           <div class="field">
-            <label for="f-msg">What does it need to do?</label>
-            <textarea id="f-msg" name="message" rows="4"></textarea>
+            <label for="f-msg">Anything else <span class="field__opt">optional</span></label>
+            <textarea id="f-msg" name="message" rows="3"></textarea>
           </div>
 
           <button class="btn btn--primary btn--full" type="submit">Send it to Manny</button>
@@ -622,6 +679,12 @@
     <p class="site-footer__legal">© <span data-year>2025</span> G Management</p>
   </div>
 </footer>
+
+<div class="action-bar" data-action-bar hidden>
+  <a class="btn btn--primary btn--sm" href="#book">Book a call</a>
+  <a class="btn btn--ghost btn--sm" href="https://wa.me/17869295735" target="_blank" rel="noopener">WhatsApp</a>
+  <a class="btn btn--ghost btn--sm" href="tel:+17869295735" aria-label="Call (786) 929-5735">Call</a>
+</div>
 
 <script src="/assets/js/main.js" defer></script>
 </body>

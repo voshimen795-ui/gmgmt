@@ -329,9 +329,56 @@ a { color: inherit; }
   overflow: hidden;
 }
 
+/* background layer: the client's own footage when a file is present, and a
+   slow light field underneath it either way */
+.hero__media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.hero__media > * { position: absolute; }
+
+.hero__video {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  filter: saturate(0.45) contrast(1.08) brightness(0.75);
+  transition: opacity 1200ms var(--ease-out);
+}
+.hero__media.has-video .hero__video { opacity: 0.38; }
+.hero__media.has-video .hero__field { opacity: 0.5; }
+
+.hero__field {
+  inset: -25%;
+  background:
+    radial-gradient(36% 42% at 20% 28%, color-mix(in srgb, var(--gold) 22%, transparent), transparent 68%),
+    radial-gradient(40% 46% at 76% 66%, color-mix(in srgb, var(--paper) 8%, transparent), transparent 70%);
+  filter: blur(40px);
+}
+
+.hero__grain {
+  inset: 0;
+  opacity: 0.055;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* keeps every bit of type over the media at full contrast */
+.hero__scrim {
+  inset: 0;
+  background:
+    radial-gradient(120% 90% at 26% 24%, transparent 10%, var(--ink) 78%),
+    linear-gradient(to bottom, color-mix(in srgb, var(--ink) 55%, transparent), var(--ink) 88%);
+}
+
 /* column rules: the page grid made visible, drawn once on load */
 .hero__rules {
   position: absolute;
+  z-index: 1;
   inset: 0 0 var(--sp-64);
   display: none;
   pointer-events: none;
@@ -354,6 +401,7 @@ a { color: inherit; }
 
 .hero__grid {
   position: relative;
+  z-index: 2;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: var(--sp-24) var(--gutter);
@@ -486,6 +534,7 @@ a { color: inherit; }
 /* broadcast rail across the bottom edge of the hero */
 .ticker {
   position: relative;
+  z-index: 2;
   margin-top: auto;          /* pinned to the hero's bottom edge */
   border-top: var(--hairline);
   padding-block: var(--sp-16);
@@ -1121,19 +1170,27 @@ a { color: inherit; }
 .contact { margin-top: var(--sp-32); display: grid; gap: 0; }
 .contact li {
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--sp-16);
-  padding-block: var(--sp-16);
+  align-items: center;
+  gap: var(--sp-8);
+  padding-block: var(--sp-8);
   border-top: var(--hairline);
 }
-.contact__label { font-size: var(--t-label); color: var(--grey); min-width: 72px; }
+.contact__label {
+  font-size: var(--t-label);
+  color: var(--grey);
+  flex: none;
+  min-width: 64px;
+}
 .contact__value {
   font-family: var(--font-display);
   font-size: 1.125rem;
   font-weight: 600;
   letter-spacing: -0.01em;
   text-decoration: none;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 a.contact__value { border-bottom: 1px solid var(--line); }
 a.contact__value:hover { color: var(--gold-lift); border-bottom-color: var(--gold); }
@@ -1213,6 +1270,147 @@ a.contact__value:hover { color: var(--gold-lift); border-bottom-color: var(--gol
 
 .site-footer__legal { font-size: var(--t-label); color: var(--grey); }
 
+/* 16b. Case rail, chips, contact actions, action bar ------------------------ */
+
+.case-rail {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(190px, 1fr);
+  margin-top: var(--sp-48);
+  border-top: var(--hairline);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+}
+
+.case-rail__item {
+  position: relative;
+  display: grid;
+  align-content: start;
+  gap: var(--sp-4);
+  padding: var(--sp-24) var(--sp-16);
+  border-left: var(--hairline);
+  text-decoration: none;
+  scroll-snap-align: start;
+  transition: background-color 240ms var(--ease);
+}
+.case-rail__item:first-child { border-left: 0; }
+.case-rail__item:hover { background: var(--surface); }
+.case-rail__item::after {
+  content: "";
+  position: absolute;
+  top: -1px; left: 0; right: 0;
+  height: 2px;
+  background: var(--gold);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 380ms var(--ease-out);
+}
+.case-rail__item.is-current::after { transform: none; }
+.case-rail__item.is-current { background: var(--surface); }
+
+.case-rail__name { font-size: var(--t-label); color: var(--grey); }
+.case-rail__item.is-current .case-rail__name { color: var(--paper); }
+.case-rail__figure {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 800;
+  font-stretch: 112%;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.case-rail__item.is-current .case-rail__figure { color: var(--gold); }
+.case-rail__note { font-size: var(--t-label); color: var(--grey); }
+
+/* one panel at a time once the rail is live; without JS they stay stacked */
+.proof.is-tabbed .case { display: none; margin-top: 0; border-top: 0; }
+.proof.is-tabbed .case.is-current { display: block; }
+.js .proof.is-tabbed .case.is-current { animation: rise 600ms var(--ease-out) both; }
+
+/* chips replace two dropdowns and most of the typing */
+.chips { border: 0; padding: 0; margin: 0 0 var(--sp-24); }
+.chips legend { font-size: var(--t-label); font-weight: 500; color: var(--grey); padding: 0; }
+.chips__row { display: flex; flex-wrap: wrap; gap: var(--sp-8); margin-top: var(--sp-8); }
+
+.chip { position: relative; display: inline-flex; }
+.chip input {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.chip span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: var(--sp-8) var(--sp-16);
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  font-size: var(--t-small);
+  font-weight: 500;
+  color: var(--grey);
+  transition: border-color 200ms var(--ease), color 200ms var(--ease),
+              background-color 200ms var(--ease);
+}
+.chip input:checked + span {
+  border-color: var(--gold);
+  color: var(--paper);
+  background: color-mix(in srgb, var(--gold) 12%, transparent);
+}
+.chip input:focus-visible + span { outline: 2px solid var(--gold-lift); outline-offset: 2px; }
+
+.field__opt { color: var(--grey); font-weight: 400; }
+
+.contact__act {
+  margin-left: auto;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: var(--sp-8) var(--sp-16);
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  font-family: var(--font-body);
+  font-size: var(--t-label);
+  font-weight: 500;
+  color: var(--grey);
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 200ms var(--ease), border-color 200ms var(--ease);
+}
+.contact__act:hover { color: var(--paper); border-color: var(--gold); }
+.contact__act.is-done { color: var(--gold); border-color: var(--gold); }
+
+/* phone-only action bar, in after the hero has scrolled past */
+.action-bar {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 12;
+  display: flex;
+  gap: var(--sp-8);
+  padding: var(--sp-8) var(--sp-16);
+  padding-bottom: calc(var(--sp-8) + env(safe-area-inset-bottom, 0px));
+  background: color-mix(in srgb, var(--ink) 92%, transparent);
+  backdrop-filter: blur(12px);
+  border-top: var(--hairline);
+  transform: translateY(110%);
+  transition: transform 420ms var(--ease-out);
+}
+.action-bar.is-in { transform: none; }
+.action-bar[hidden] { display: none; }
+.action-bar .btn { flex: 1; }
+
+@media (min-width: 768px) {
+  .action-bar { display: none; }
+}
+@media (max-width: 767px) {
+  body.has-action-bar { padding-bottom: 76px; }
+}
+
 /* 17. Motion — page load ---------------------------------------------------
    One orchestrated sequence, roughly 1.6s end to end, then the page settles.
    Everything here is CSS-driven so it still plays with JavaScript disabled. */
@@ -1223,6 +1421,11 @@ a.contact__value:hover { color: var(--gold-lift); border-bottom-color: var(--gol
 @keyframes draw-y    { from { transform: scaleY(0); } to { transform: scaleY(1); } }
 @keyframes fade      { from { opacity: 0; } to { opacity: 1; } }
 @keyframes ticker    { from { transform: none; } to { transform: translateX(-50%); } }
+@keyframes drift {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  50%  { transform: translate3d(4%, -3%, 0) scale(1.12); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
+}
 @keyframes pulse {
   0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--gold) 55%, transparent); }
   70%  { box-shadow: 0 0 0 8px color-mix(in srgb, var(--gold) 0%, transparent); }
@@ -1245,6 +1448,7 @@ a.contact__value:hover { color: var(--gold-lift); border-bottom-color: var(--gol
 .js .ticker__track{ animation: ticker 48s linear 1400ms infinite; }
 .ticker:hover .ticker__track,
 .ticker:focus-within .ticker__track { animation-play-state: paused; }
+.js .hero__field  { animation: drift 32s var(--ease) infinite; }
 .js .hero__dot    { animation: pulse 2600ms var(--ease) 1600ms infinite; }
 
 /* 18. Motion — reveal on view ----------------------------------------------
@@ -1323,7 +1527,7 @@ html:not(.js) .audience__bar::after { width: calc(var(--pct) * 1%); }
   .js .hero__rules span, .js .hero__where, .js .hero__title .line > span,
   .js .hero__rule, .js .hero__sub, .js .hero__actions, .js .board,
   .js .board::before, .js .score, .js .ticker, .js .ticker__track,
-  .js .hero__dot {
+  .js .hero__dot, .js .hero__field {
     animation: none !important;
     opacity: 1;
     transform: none;

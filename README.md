@@ -43,6 +43,19 @@ path. The form has no backend — it composes an email to `manny@gmgmt.co` and o
 visitor's mail app. If a real form endpoint is added later, swap the `submit` handler in
 `assets/js/main.js`.
 
+**Hero background video.** The hero has a media layer wired for the client's own footage:
+
+```html
+<div class="hero__media" data-hero-media data-video="/assets/hero.mp4">
+```
+
+Drop a file at that path (or list several, comma separated — `.mp4` and `.webm` are both
+recognised) and it plays behind the hero, muted, looping, cropped to cover, under a scrim
+that keeps the type at full contrast. Nothing is requested under `prefers-reduced-motion`
+or on a connection flagged `saveData`, and if no source plays the element is removed and
+the drifting light field carries the hero on its own. Keep the file short and small — it
+is background, not content; ten seconds at a few hundred KB is plenty.
+
 **The two videos.** Each player stores its own embed URL:
 
 ```html
@@ -58,6 +71,19 @@ share URL; if Facebook ever stops resolving that form, replace the `href=` insid
 **Numbers.** Every figure lives in the markup as text. The hero counters read their target
 from `data-to`, and the Houdini scrub reads `data-from` / `data-to` on each figure — change
 those attributes and the interaction follows.
+
+## What the page does
+
+- **Case rail.** The five case studies collapse to one panel at a time behind a rail of
+  client names and headline figures. Selecting one replays its figures and its chart.
+  Built as a real tablist (arrow keys, Home/End, roving tabindex); without JavaScript the
+  rail is a set of jump links and all five cases stay stacked on the page.
+- **Contact actions.** Copy the email to the clipboard, open WhatsApp, or download a
+  vCard — the card is built in the browser, there is no file to keep in sync.
+- **Chips instead of dropdowns.** Two radio groups cover who is writing and what they
+  need, so the form is two typed fields and a few taps.
+- **Phone action bar.** Below 768px a bar with Book a call, WhatsApp and Call slides in
+  once the hero has scrolled past, and gets out of the way over the booking section.
 
 ## Design notes
 
