@@ -16,7 +16,9 @@
    14. Work — video players
    15. Book — form
    16. Footer
-   17. Motion preferences
+   17. Motion — page load
+   18. Motion — reveal on view
+   19. Motion preferences
    ========================================================================== */
 
 /* 1. Fonts ---------------------------------------------------------------- */
@@ -57,7 +59,7 @@
   --font-body: 'Instrument Sans', 'Helvetica Neue', Arial, sans-serif;
 
   /* type scale */
-  --t-display: clamp(2.25rem, 4.6vw, 3.75rem);
+  --t-display: clamp(2.25rem, 5.4vw, 4.375rem);
   --t-h2: clamp(2rem, 4vw, 3.25rem);
   --t-h3: clamp(1.25rem, 2.4vw, 1.5rem);
   --t-metric: clamp(2.25rem, 5vw, 4.5rem);
@@ -86,6 +88,7 @@
 
   /* motion */
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);   /* long tail, for reveals */
 }
 
 /* 3. Reset + base --------------------------------------------------------- */
@@ -199,11 +202,29 @@ a { color: inherit; }
               border-color 160ms var(--ease);
 }
 
+.btn {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+/* fill wipes in from the left rather than cross-fading */
+.btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 420ms var(--ease-out);
+}
+.btn:hover::before, .btn:focus-visible::before { transform: scaleX(1); }
+
 .btn--primary { background: var(--gold); color: var(--ink); }
-.btn--primary:hover { background: var(--gold-lift); }
+.btn--primary::before { background: var(--gold-lift); }
 
 .btn--ghost { border-color: var(--line); color: var(--paper); background: transparent; }
-.btn--ghost:hover { border-color: var(--gold); color: var(--gold-lift); }
+.btn--ghost::before { background: var(--surface); }
+.btn--ghost:hover, .btn--ghost:focus-visible { border-color: var(--gold); }
 
 .btn--sm { min-height: 44px; padding: var(--sp-8) var(--sp-16); }
 .btn--full { width: 100%; }
@@ -214,9 +235,29 @@ a { color: inherit; }
   position: sticky;
   top: 0;
   z-index: 10;
-  background: color-mix(in srgb, var(--ink) 92%, transparent);
-  backdrop-filter: blur(8px);
-  border-bottom: var(--hairline);
+  background: color-mix(in srgb, var(--ink) 82%, transparent);
+  backdrop-filter: blur(12px) saturate(140%);
+  border-bottom: 1px solid transparent;
+  transition: background-color 300ms var(--ease), border-color 300ms var(--ease);
+}
+.site-header.is-stuck {
+  background: color-mix(in srgb, var(--ink) 94%, transparent);
+  border-bottom-color: var(--line);
+}
+
+/* reading progress, hairline thin, sits on the header's bottom edge */
+.site-header__progress {
+  position: absolute;
+  left: 0; right: 0; bottom: -1px;
+  height: 2px;
+  overflow: hidden;
+}
+.site-header__progress span {
+  display: block;
+  height: 100%;
+  background: var(--gold);
+  transform: scaleX(var(--p, 0));
+  transform-origin: left;
 }
 
 .site-header__inner {
@@ -236,9 +277,15 @@ a { color: inherit; }
   letter-spacing: -0.02em;
 }
 .wordmark__g { font-size: 1.25rem; font-weight: 800; font-stretch: 125%; }
-.wordmark__rest { font-size: 0.9375rem; font-weight: 500; color: var(--grey); }
+.wordmark__rest {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--grey);
+  transition: color 200ms var(--ease);
+}
+.wordmark:hover .wordmark__rest { color: var(--paper); }
 
-.site-nav { display: none; gap: var(--sp-24); }
+.site-nav { display: none; gap: var(--sp-24); position: relative; }
 .site-nav a {
   display: inline-flex;
   align-items: center;
@@ -247,10 +294,24 @@ a { color: inherit; }
   font-weight: 500;
   color: var(--grey);
   text-decoration: none;
-  transition: color 160ms var(--ease);
+  transition: color 200ms var(--ease);
 }
-.site-nav a:hover { color: var(--paper); }
+.site-nav a:hover, .site-nav a.is-active { color: var(--paper); }
 .site-nav a.is-active { color: var(--gold); }
+
+/* single hairline that slides between items rather than three static rules */
+.site-nav__marker {
+  position: absolute;
+  bottom: 12px;
+  left: 0;
+  height: 1px;
+  width: var(--w, 0px);
+  background: var(--gold);
+  transform: translateX(var(--x, 0px));
+  opacity: var(--o, 0);
+  transition: transform 380ms var(--ease-out), width 380ms var(--ease-out),
+              opacity 200ms var(--ease);
+}
 
 @media (min-width: 768px) {
   .site-nav { display: flex; }
@@ -259,25 +320,83 @@ a { color: inherit; }
 /* 7. Hero + scoreboard ---------------------------------------------------- */
 
 .hero {
-  padding-block: clamp(64px, 9vw, 128px) var(--section-y);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-block: clamp(48px, 8vw, 96px) 0;
   border-bottom: var(--hairline);
+  overflow: hidden;
 }
+
+/* column rules: the page grid made visible, drawn once on load */
+.hero__rules {
+  position: absolute;
+  inset: 0 0 var(--sp-64);
+  display: none;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 18%, #000 62%, transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 18%, #000 62%, transparent);
+}
+.hero__rules span {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 1px;
+  background: color-mix(in srgb, var(--line) 70%, transparent);
+  transform: scaleY(0);
+  transform-origin: top;
+}
+.hero__rules span:nth-child(1) { left: 16.666%; }
+.hero__rules span:nth-child(2) { left: 33.333%; }
+.hero__rules span:nth-child(3) { left: 50%; }
+.hero__rules span:nth-child(4) { left: 66.666%; }
+.hero__rules span:nth-child(5) { left: 83.333%; }
 
 .hero__grid {
+  position: relative;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: var(--sp-48) var(--gutter);
+  gap: var(--sp-24) var(--gutter);
+  padding-bottom: var(--sp-48);
 }
 
-.hero__lede { grid-column: 1 / -1; }
+.hero__where, .hero__title, .hero__rule, .hero__intro { grid-column: 1 / -1; }
+
+.hero__where {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-8);
+  font-size: var(--t-label);
+  font-weight: 500;
+  color: var(--grey);
+  margin-bottom: var(--sp-24);
+}
+.hero__dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--gold) 60%, transparent);
+}
 
 .hero__title {
   font-size: var(--t-display);
   font-weight: 800;
   font-stretch: 125%;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.035em;
   line-height: 0.94;
-  max-width: 19ch;
+  text-wrap: pretty;
+}
+.hero__title .line { display: block; overflow: hidden; padding-bottom: 0.06em; }
+.hero__title .line > span { display: block; }
+
+.hero__rule {
+  width: 100%;
+  max-width: 480px;
+  height: 1px;
+  margin-block: var(--sp-8);
+  background: linear-gradient(to right, var(--gold), var(--line));
+  transform: scaleX(0);
+  transform-origin: left;
 }
 
 .hero__sub {
@@ -293,46 +412,152 @@ a { color: inherit; }
   margin-top: var(--sp-32);
 }
 
-.scoreboard {
-  grid-column: 1 / -1;
-  border-top: 2px solid var(--gold);
-  background: var(--surface);
-  padding: var(--sp-24);
+/* under the wide breakpoint the headline flows as ordinary text, so the
+   authored line breaks never force a bad wrap on a narrow screen */
+@media (max-width: 1023px) {
+  .hero__title .line,
+  .hero__title .line > span { display: inline; }
+  .js .hero__title .line > span { animation: none; }
+  .js .hero__title { animation: rise 800ms var(--ease-out) 300ms both; }
 }
 
-.scoreboard__head {
-  font-size: var(--t-label);
-  font-weight: 500;
-  color: var(--grey);
-  margin-bottom: var(--sp-16);
+/* the board */
+.board {
+  grid-column: 1 / -1;
+  position: relative;
+  background: var(--surface);
+  border: var(--hairline);
+}
+.board::before {
+  content: "";
+  position: absolute;
+  top: -1px; left: 0; right: 0;
+  height: 2px;
+  background: var(--gold);
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+.board__bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-8);
+  padding: var(--sp-16) var(--sp-24);
+  border-bottom: var(--hairline);
+}
+.board__title { font-size: var(--t-small); font-weight: 600; }
+.board__meta { font-size: var(--t-label); color: var(--grey); }
+
+.board__list { display: grid; }
+
+/* subgrid keeps figure, label and source on shared baselines across all four
+   cells even when a label wraps */
+@supports (grid-template-rows: subgrid) {
+  .board__list { grid-template-rows: auto auto auto; }
+  .score { grid-row: span 3; grid-template-rows: subgrid; }
 }
 
 .score {
   display: grid;
+  align-content: start;
   gap: var(--sp-4);
-  padding-block: var(--sp-16);
+  padding: var(--sp-16) var(--sp-24);
   border-top: var(--hairline);
+  transition: background-color 240ms var(--ease), opacity 300ms var(--ease);
 }
-.score:first-child { border-top: 0; padding-top: 0; }
+.score:first-child { border-top: 0; }
+.board:hover .score { opacity: 0.55; transition: opacity 300ms var(--ease); }
+.board .score:hover { opacity: 1; background: color-mix(in srgb, var(--gold) 5%, transparent); }
 
 .score__figure {
   font-family: var(--font-display);
-  font-size: clamp(2rem, 6.5vw, 2.75rem);
+  font-size: clamp(1.875rem, 4.6vw, 2.375rem);
   font-weight: 800;
-  font-stretch: 112%;
-  letter-spacing: -0.03em;
+  font-stretch: 118%;
+  letter-spacing: -0.035em;
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
-
 .score__label { font-size: var(--t-small); font-weight: 500; }
 .score__source { font-size: var(--t-label); color: var(--grey); }
 
+/* broadcast rail across the bottom edge of the hero */
+.ticker {
+  position: relative;
+  margin-top: auto;          /* pinned to the hero's bottom edge */
+  border-top: var(--hairline);
+  padding-block: var(--sp-16);
+  overflow: hidden;
+  contain: paint;            /* the long track never widens the document */
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
+}
+.ticker__track { display: flex; width: max-content; }
+.ticker__set { display: flex; }
+.ticker__item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--sp-8);
+  padding-inline: var(--sp-32);
+  font-size: var(--t-label);
+  color: var(--grey);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.ticker__item b {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-stretch: 100%;
+  color: var(--paper);
+  letter-spacing: -0.01em;
+}
+.ticker__item::before {
+  content: "";
+  align-self: center;
+  width: 4px; height: 4px;
+  margin-right: var(--sp-8);
+  background: var(--gold);
+}
+
+@media (min-width: 768px) {
+  .hero__grid { padding-bottom: var(--sp-64); }
+  .board__bar { padding: var(--sp-16) var(--sp-32); }
+  .board__list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .score { padding: var(--sp-24) var(--sp-32); }
+  .score:nth-child(2) { border-top: 0; }
+  .score:nth-child(even) { border-left: var(--hairline); }
+}
+
 @media (min-width: 1024px) {
-  .hero__grid { grid-template-columns: repeat(12, 1fr); align-items: start; }
-  .hero__lede { grid-column: 1 / 7; }
-  .scoreboard { grid-column: 8 / 13; padding: var(--sp-32); }
-  .score { padding-block: var(--sp-24); }
+  .hero { min-height: calc(100svh - 64px); padding-top: clamp(48px, 5vw, 80px); }
+  .hero__rules { display: block; }
+
+  .hero__grid {
+    grid-template-columns: repeat(12, 1fr);
+    align-content: center;
+    gap: var(--sp-32) var(--gutter);
+  }
+
+  /* headline runs the full width; the board is a stats band beneath it */
+  .hero__title { text-wrap: nowrap; }
+  .hero__rule { max-width: none; }
+
+  .hero__intro {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--sp-48);
+    margin-top: var(--sp-8);
+  }
+  .hero__sub { margin-top: 0; }
+  .hero__actions { margin-top: 0; flex: none; }
+
+  .board { margin-top: var(--sp-24); }
+  .board__list { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .score { border-top: 0; border-left: var(--hairline); }
+  .score:first-child { border-left: 0; }
 }
 
 /* 8. Paths ---------------------------------------------------------------- */
@@ -813,6 +1038,33 @@ a { color: inherit; }
 .player__facade:hover .player__play { color: var(--gold-lift); }
 
 .player__platform { font-size: var(--t-label); font-weight: 500; color: var(--grey); }
+
+/* outlined display type stands in for a thumbnail we do not have, and keeps
+   the frame at the player's real 9:16 so nothing shifts when it loads */
+.player__ghost {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-size: clamp(3.5rem, 9vw, 5rem);
+  font-weight: 800;
+  font-stretch: 125%;
+  letter-spacing: -0.04em;
+  color: transparent;
+  -webkit-text-stroke: 1px color-mix(in srgb, var(--grey) 42%, transparent);
+  transition: -webkit-text-stroke-color 300ms var(--ease);
+  pointer-events: none;
+}
+.player__facade:hover .player__ghost,
+.player__facade:focus-visible .player__ghost {
+  -webkit-text-stroke-color: color-mix(in srgb, var(--gold) 45%, transparent);
+}
+.player__facade:hover .player__play circle,
+.player__facade:focus-visible .player__play circle { fill: var(--gold); }
+.player__facade:hover .player__play path,
+.player__facade:focus-visible .player__play path { fill: var(--ink); }
+.player__play circle, .player__play path { transition: fill 240ms var(--ease); }
 .player__cue { display: flex; align-items: center; gap: var(--sp-16); }
 .player__play { color: var(--gold); transition: color 160ms var(--ease); flex: none; }
 .player__label {
@@ -961,19 +1213,100 @@ a.contact__value:hover { color: var(--gold-lift); border-bottom-color: var(--gol
 
 .site-footer__legal { font-size: var(--t-label); color: var(--grey); }
 
-/* 17. Motion preferences -------------------------------------------------- */
+/* 17. Motion — page load ---------------------------------------------------
+   One orchestrated sequence, roughly 1.6s end to end, then the page settles.
+   Everything here is CSS-driven so it still plays with JavaScript disabled. */
 
-/* one orchestrated page-load sequence, ~1.2s, then it stops */
-[data-load-seq] { animation: rise 700ms var(--ease) both; }
-[data-load-seq="1"] { animation-delay: 60ms; }
-[data-load-seq="2"] { animation-delay: 220ms; }
-[data-load-seq="3"] { animation-delay: 340ms; }
-[data-load-seq="4"] { animation-delay: 420ms; }
-
-@keyframes rise {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: none; }
+@keyframes line-up   { from { transform: translateY(105%); } to { transform: none; } }
+@keyframes rise      { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+@keyframes draw-x    { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes draw-y    { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes fade      { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ticker    { from { transform: none; } to { transform: translateX(-50%); } }
+@keyframes pulse {
+  0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--gold) 55%, transparent); }
+  70%  { box-shadow: 0 0 0 8px color-mix(in srgb, var(--gold) 0%, transparent); }
+  100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--gold) 0%, transparent); }
 }
+
+.js .hero__rules span { animation: draw-y 700ms var(--ease-out) both; animation-delay: calc(100ms + var(--i) * 70ms); }
+.js .hero__where  { animation: rise 600ms var(--ease-out) 200ms both; }
+.js .hero__title .line > span { animation: line-up 900ms var(--ease-out) both; }
+.js .hero__title .line[data-seq="2"] > span { animation-delay: 300ms; }
+.js .hero__title .line[data-seq="3"] > span { animation-delay: 390ms; }
+.js .hero__title .line[data-seq="4"] > span { animation-delay: 480ms; }
+.js .hero__rule   { animation: draw-x 800ms var(--ease-out) 700ms both; }
+.js .hero__sub    { animation: rise 700ms var(--ease-out) 800ms both; }
+.js .hero__actions{ animation: rise 700ms var(--ease-out) 900ms both; }
+.js .board        { animation: fade 600ms var(--ease) 560ms both; }
+.js .board::before{ animation: draw-x 700ms var(--ease-out) 620ms both; }
+.js .score        { animation: rise 700ms var(--ease-out) both; animation-delay: calc(760ms + var(--row) * 90ms); }
+.js .ticker       { animation: fade 800ms var(--ease) 1100ms both; }
+.js .ticker__track{ animation: ticker 48s linear 1400ms infinite; }
+.ticker:hover .ticker__track,
+.ticker:focus-within .ticker__track { animation-play-state: paused; }
+.js .hero__dot    { animation: pulse 2600ms var(--ease) 1600ms infinite; }
+
+/* 18. Motion — reveal on view ----------------------------------------------
+   Scroll-triggered motion is limited to things where the movement carries
+   meaning: a heading arriving, a rule drawing, a figure counting, a bar
+   growing to its real value. Body copy never moves.                        */
+
+.js [data-reveal] { will-change: transform, opacity, clip-path; }
+
+.js [data-reveal="title"] {
+  clip-path: inset(0 0 110% 0);
+  transform: translateY(0.24em);
+  transition: clip-path 1000ms var(--ease-out), transform 1000ms var(--ease-out);
+}
+.js [data-reveal="title"].is-in { clip-path: inset(-0.2em 0 -0.2em 0); transform: none; }
+
+.js [data-reveal="rise"] {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 700ms var(--ease-out), transform 700ms var(--ease-out);
+  transition-delay: var(--delay, 0ms);
+}
+.js [data-reveal="rise"].is-in { opacity: 1; transform: none; }
+
+.js [data-reveal="rule"] {
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 900ms var(--ease-out);
+  transition-delay: var(--delay, 0ms);
+}
+.js [data-reveal="rule"].is-in { transform: none; }
+
+/* the gold rule beside a testimonial draws down as the quote arrives */
+.quote { position: relative; }
+.quote::before {
+  content: "";
+  position: absolute;
+  left: calc(var(--sp-24) * -1);
+  top: 0; bottom: 0;
+  width: 1px;
+  background: var(--gold);
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 900ms var(--ease-out) 120ms;
+}
+.js .quote.is-in::before { transform: none; }
+.js .quote:not(.is-in)::before { transform: scaleY(0); }
+
+@media (max-width: 767px) {
+  .quote::before { left: calc(var(--sp-16) * -1); }
+}
+
+/* audience bars grow to their real share */
+.audience__bar::after {
+  width: 0;
+  transition: width 1100ms var(--ease-out);
+  transition-delay: calc(var(--row, 0) * 120ms);
+}
+.js .audience.is-in .audience__bar::after { width: calc(var(--pct) * 1%); }
+html:not(.js) .audience__bar::after { width: calc(var(--pct) * 1%); }
+
+/* 19. Motion preferences ---------------------------------------------------- */
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
@@ -983,9 +1316,22 @@ a.contact__value:hover { color: var(--gold-lift); border-bottom-color: var(--gol
     animation-delay: 0ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 1ms !important;
+    transition-delay: 0ms !important;
   }
 
-  [data-load-seq] { animation: none; opacity: 1; transform: none; }
+  /* the load sequence is switched off outright rather than run at 1ms */
+  .js .hero__rules span, .js .hero__where, .js .hero__title .line > span,
+  .js .hero__rule, .js .hero__sub, .js .hero__actions, .js .board,
+  .js .board::before, .js .score, .js .ticker, .js .ticker__track,
+  .js .hero__dot {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+  }
+
+  .js [data-reveal] { opacity: 1; transform: none; clip-path: none; }
+  .js .quote::before { transform: none; }
   [data-chart] .chart__line { stroke-dashoffset: 0; }
   [data-chart] .chart__dots { opacity: 1; }
+  .audience__bar::after { width: calc(var(--pct) * 1%); }
 }

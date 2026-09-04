@@ -63,19 +63,48 @@ those attributes and the interaction follows.
 
 - Colour, spacing and type are CSS custom properties in `:root`. Spacing only uses the
   8px ladder (`--sp-4` … `--sp-160`); there are no arbitrary pixel values in the sheet.
-- Gold (`--gold`) is the only accent, and appears at most once per section: the primary
-  CTA, the single most important figure in a case study, active nav state.
-- Type is Archivo (variable width axis, used at 112–125% for display) and Instrument Sans.
+- Gold (`--gold`) is the only accent, and appears sparingly: the primary CTA, the single
+  most important figure in a case study, the hero rules, active nav state.
+- Type is Archivo (variable width axis, used at 100–125% for display) and Instrument Sans.
   Both are self-hosted with `font-display: swap` and preloaded.
-- Motion budget is one orchestrated load sequence (~1.2s). The only scroll-triggered
-  animation is the Pivot Point chart drawing itself, because the line carries the
-  information. Everything else moves in response to a user action. `prefers-reduced-motion:
-  reduce` snaps counters to final values and renders the chart complete.
-- Every case study has a layout matched to its data: testimonial-led for BKH and PAC-Hub,
+- Each case study has a layout matched to its data: testimonial-led for BKH and PAC-Hub,
   a chart for the three-stage Pivot Point progression, a September-to-November scrub for
   Houdini, and one large figure for the link-in-bio revenue.
-- Each interactive data view is mirrored by a real `<table>`, so the figures are readable
+- Every interactive data view is mirrored by a real `<table>`, so the figures are readable
   with JavaScript off and to a screen reader.
+
+## The hero
+
+Broadcast scoreboard, built in four bands: location line, a full-width three-line
+headline, a gold rule, sub copy paired with the two calls to action, then a stats band
+carrying four client figures with the client and date window under each. A ticker rail
+sits on the hero's bottom edge with the headline number from all five case studies.
+
+At 1024px and up the headline keeps its authored line breaks (`text-wrap: nowrap`);
+below that the three lines flow as ordinary text so a narrow screen never gets a bad
+wrap, and the per-line reveal is swapped for a single one on the whole headline.
+
+## Motion
+
+**On load** — one orchestrated sequence of about 1.6s, then the page settles: the column
+rules draw down, the headline rises line by line out of a mask, the rule sweeps right,
+sub copy and buttons arrive, the board's gold rule wipes across and its four figures
+count up, and the ticker fades in and starts moving.
+
+**On scroll** — deliberately limited to motion that carries meaning: headings arriving,
+the gold rule beside a testimonial drawing down, the Pivot Point chart drawing itself,
+figures counting to their real value, audience bars growing to their real share. Body
+copy never moves — a page where every paragraph slides up reads as a template.
+
+**On interaction** — button fills wipe in from the left, the nav marker slides between
+items and returns to the active one, the reading-progress hairline tracks the scroll,
+the board dims its other rows when you hover one, the video tiles light their play
+control, and the Houdini scrub follows the pointer or the arrow keys.
+
+Everything is gated on `html.js`, so with JavaScript off the page renders complete and
+static rather than waiting for an animation that will never run. Under
+`prefers-reduced-motion: reduce` the load sequence is switched off outright, the ticker
+and the pulse stop, counters stay at their final values, and the chart renders complete.
 
 ## Regenerating the link-preview image
 
@@ -86,5 +115,8 @@ chromium --headless --window-size=1200,630 \
   --screenshot=assets/og.png http://127.0.0.1:8099/tools/og-source.html
 ```
 
-`tools/slice.html?w=<width>&id=<element id>` renders the page at a given width scrolled to
-an element — used for taking review screenshots at 375px and 1440px.
+`tools/slice.html?w=<width>&id=<element id>` renders the page at a given width, scrolled
+to an element, inside an iframe — headless Chromium clamps its own window to 500px wide,
+so mobile screenshots have to go through this. `tools/check.html?w=<width>` reports the
+document's scroll width and lists any element extending past the viewport; it is what the
+320–1440px overflow checks were run with.

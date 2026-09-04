@@ -1,0 +1,18 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>check</title></head>
+<body><pre id="out">running</pre>
+<iframe id="f" src="/" style="height:900px;border:0"></iframe>
+<script>
+var W=parseInt(new URLSearchParams(location.search).get('w')||'320',10);
+var f=document.getElementById('f');
+f.style.width=W+'px';
+f.addEventListener('load',function(){ setTimeout(function(){
+  var d=f.contentDocument, w=f.contentWindow, wide=[];
+  var cw=d.documentElement.clientWidth;
+  [].slice.call(d.querySelectorAll('body *')).forEach(function(el){
+    if (el.closest('.ticker')) return;
+    var r=el.getBoundingClientRect();
+    if (r.right > cw + 0.5 || r.left < -0.5) wide.push(el.tagName+'.'+(el.getAttribute('class')||'')+' '+Math.round(r.left)+'..'+Math.round(r.right));
+  });
+  document.getElementById('out').textContent='RESULT sw='+d.documentElement.scrollWidth+' cw='+cw+' w='+W+' n='+wide.length+' :: '+wide.slice(0,10).join(' | ');
+},900);});
+</script></body></html>

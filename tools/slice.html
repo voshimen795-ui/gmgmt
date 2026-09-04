@@ -5,31 +5,39 @@
 <title>slice</title>
 <style>
   html, body { margin: 0; background: #070A12; overflow: hidden; }
-  #wrap { position: fixed; inset: 0; overflow: hidden; }
-  iframe { position: absolute; left: 0; border: 0; }
+  iframe { border: 0; display: block; }
 </style>
 </head>
 <body>
-<div id="wrap"><iframe id="f" src="/" title="slice"></iframe></div>
+<iframe id="f" src="/" title="slice"></iframe>
 <script>
+  /* Renders the site at a chosen width, scrolled to an offset or an element.
+     The iframe is kept at the window's own height so viewport units (svh)
+     resolve the way they would on a real screen. */
   var q = new URLSearchParams(location.search);
   var w = parseInt(q.get('w') || '1440', 10);
   var y = parseInt(q.get('y') || '0', 10);
+  var id = q.get('id');
+  var pad = parseInt(q.get('pad') || '40', 10);
+
   var f = document.getElementById('f');
   f.style.width = w + 'px';
-  f.style.height = '20000px';
-  f.style.top = (-y) + 'px';
+  f.style.height = window.innerHeight + 'px';
 
-  // ?id=case-pivot scrolls the slice to that element instead of a raw offset
-  var id = q.get('id');
-  if (id) {
-    f.addEventListener('load', function () {
-      var el = f.contentDocument.getElementById(id);
-      if (!el) return;
-      var offset = el.getBoundingClientRect().top + f.contentWindow.scrollY;
-      f.style.top = -(offset - parseInt(q.get('pad') || '40', 10)) + 'px';
-    });
-  }
+  f.addEventListener('load', function () {
+    var win = f.contentWindow;
+    var doc = f.contentDocument;
+    doc.documentElement.style.scrollBehavior = 'auto';
+
+    setTimeout(function () {
+      var top = y;
+      if (id) {
+        var el = doc.getElementById(id);
+        if (el) top = el.getBoundingClientRect().top + win.scrollY - pad;
+      }
+      win.scrollTo(0, top);
+    }, 400);
+  });
 </script>
 </body>
 </html>
