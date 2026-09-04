@@ -92,7 +92,8 @@
      aria-label. Nothing is split under reduced motion.                    */
 
   var headline = document.querySelector('[data-scramble]');
-  if (headline && canAnimate) {
+
+  function splitHeadline() {
     var chars = [];
     var sentence = headline.textContent.replace(/\s+/g, ' ').trim();
 
@@ -148,6 +149,17 @@
     }, LAST + 600);
   }
 
+  /* Each glyph is pinned to the width it measures at, so the scramble cannot
+     shift the line. Measuring before the display font arrives pins fallback
+     widths and the real letters then overlap, so wait for the font first. */
+  if (headline && canAnimate) {
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(splitHeadline).catch(splitHeadline);
+    } else {
+      splitHeadline();
+    }
+  }
+
   /* 3. Reveal on view ------------------------------------------------------ */
 
   var revealables = document.querySelectorAll('[data-reveal], [data-meter], [data-chart]');
@@ -160,15 +172,44 @@
   if (!hasIO || reduceMotion) {
     Array.prototype.forEach.call(revealables, revealNow);
   } else {
+    var pending = Array.prototype.slice.call(revealables);
+
     var revealObserver = new IntersectionObserver(function (entries, obs) {
       entries.forEach(function (entry) {
         if (!entry.isIntersecting) return;
         revealNow(entry.target);
         obs.unobserve(entry.target);
+        var at = pending.indexOf(entry.target);
+        if (at > -1) pending.splice(at, 1);
       });
     }, { threshold: 0.2, rootMargin: '0px 0px -8% 0px' });
 
-    Array.prototype.forEach.call(revealables, function (el) { revealObserver.observe(el); });
+    pending.forEach(function (el) { revealObserver.observe(el); });
+
+    /* A hard flick can carry a section past the viewport between two frames,
+       and the observer never reports it. Sweep on scroll so nothing is left
+       sitting at zero opacity, then stop once everything has arrived.     */
+    var sweeping = false;
+
+    function sweep() {
+      sweeping = false;
+      for (var i = pending.length - 1; i >= 0; i -= 1) {
+        var box = pending[i].getBoundingClientRect();
+        if (box.top > window.innerHeight * 0.9) continue;
+        revealNow(pending[i]);
+        revealObserver.unobserve(pending[i]);
+        pending.splice(i, 1);
+      }
+      if (!pending.length) window.removeEventListener('scroll', onScroll);
+    }
+
+    function onScroll() {
+      if (sweeping) return;
+      sweeping = true;
+      requestAnimationFrame(sweep);
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
   }
 
   /* 4. Header -------------------------------------------------------------- */
@@ -313,8 +354,14 @@
     player.setAttribute('frameborder', '0');
     player.loading = 'lazy';
 
+    /* the poster frame stays up until the player has actually loaded, so a
+       slow platform never leaves a blank rectangle on the page */
+    player.addEventListener('load', function () {
+      frame.hidden = true;
+      reel.classList.add('is-loaded');
+    });
+
     reel.insertBefore(player, frame);
-    frame.hidden = true;
     reel.classList.add('is-playing');
   }
 
@@ -361,12 +408,16 @@
     frame.addEventListener('blur', deactivate);
     frame.addEventListener('click', function () { loadEmbed(reel, frame); });
 
-    if (reel.hasAttribute('data-autoload') && hasIO) {
+    /* Autoloading tiles wait for the page to finish loading, so the embed
+       never competes with the hero's own paint, and they stay click-to-play
+       on a connection the browser has flagged as metered.                 */
+    if (reel.hasAttribute('data-autoload') && hasIO && !(navigator.connection || {}).saveData) {
       var autoObserver = new IntersectionObserver(function (entries, obs) {
         entries.forEach(function (entry) {
           if (!entry.isIntersecting) return;
-          loadEmbed(reel, frame);
           obs.disconnect();
+          if (document.readyState === 'complete') loadEmbed(reel, frame);
+          else window.addEventListener('load', function () { loadEmbed(reel, frame); });
         });
       }, { threshold: 0.4 });
       autoObserver.observe(reel);
