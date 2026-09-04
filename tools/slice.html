@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>slice</title>
+<style>
+  html, body { margin: 0; background: #070A12; overflow: hidden; }
+  #wrap { position: fixed; inset: 0; overflow: hidden; }
+  iframe { position: absolute; left: 0; border: 0; }
+</style>
+</head>
+<body>
+<div id="wrap"><iframe id="f" src="/" title="slice"></iframe></div>
+<script>
+  var q = new URLSearchParams(location.search);
+  var w = parseInt(q.get('w') || '1440', 10);
+  var y = parseInt(q.get('y') || '0', 10);
+  var f = document.getElementById('f');
+  f.style.width = w + 'px';
+  f.style.height = '20000px';
+  f.style.top = (-y) + 'px';
+
+  // ?id=case-pivot scrolls the slice to that element instead of a raw offset
+  var id = q.get('id');
+  if (id) {
+    f.addEventListener('load', function () {
+      var el = f.contentDocument.getElementById(id);
+      if (!el) return;
+      var offset = el.getBoundingClientRect().top + f.contentWindow.scrollY;
+      f.style.top = -(offset - parseInt(q.get('pad') || '40', 10)) + 'px';
+    });
+  }
+</script>
+</body>
+</html>
