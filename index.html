@@ -35,7 +35,6 @@
   "name": "G Management",
   "url": "https://gmgmt.co/",
   "email": "manny@gmgmt.co",
-  "telephone": "+1-786-929-5735",
   "areaServed": "United States",
   "address": { "@type": "PostalAddress", "addressLocality": "Miami", "addressRegion": "FL", "addressCountry": "US" },
   "founder": { "@type": "Person", "name": "Manny Garcia" },
@@ -87,7 +86,7 @@
     <div class="shell hero__inner">
       <div class="hero__copy">
         <p class="hero__where" data-seq="1">
-          <span class="hero__dot" aria-hidden="true"></span>Miami, Florida &mdash; taking clients
+          <span class="hero__dot" aria-hidden="true"></span>Miami, Florida &mdash; taking on new accounts
         </p>
 
         <h1 class="hero__title" data-scramble>
@@ -97,8 +96,8 @@
         </h1>
 
         <p class="hero__sub" data-seq="5">
-          Organic short-form video, run end to end. The numbers on this page are
-          client dashboards, with the dates attached.
+          We post short-form video daily on accounts we run end to end. Every figure
+          below came off a client's own dashboard, over the dates written beside it.
         </p>
 
         <div class="hero__actions" data-seq="6">
@@ -132,49 +131,49 @@
   <div class="marquee" aria-hidden="true">
     <div class="marquee__track" data-marquee>
       <div class="marquee__set">
-        <span>Viral content</span><i></i><span>Brand deals</span><i></i>
-        <span>Short-form video</span><i></i><span>Growth</span><i></i>
+        <span>Short-form video</span><i></i><span>Brand deals</span><i></i>
+        <span>Daily posting</span><i></i><span>Creator management</span><i></i>
       </div>
       <div class="marquee__set">
-        <span>Viral content</span><i></i><span>Brand deals</span><i></i>
-        <span>Short-form video</span><i></i><span>Growth</span><i></i>
+        <span>Short-form video</span><i></i><span>Brand deals</span><i></i>
+        <span>Daily posting</span><i></i><span>Creator management</span><i></i>
       </div>
       <div class="marquee__set">
-        <span>Viral content</span><i></i><span>Brand deals</span><i></i>
-        <span>Short-form video</span><i></i><span>Growth</span><i></i>
+        <span>Short-form video</span><i></i><span>Brand deals</span><i></i>
+        <span>Daily posting</span><i></i><span>Creator management</span><i></i>
       </div>
     </div>
   </div>
-  <p class="visually-hidden">Services: viral content, brand deals, short-form video, growth.</p>
+  <p class="visually-hidden">Services: short-form video, brand deals, daily posting, creator management.</p>
 
   <!-- ================================================================ WORK -->
   <section class="work" id="work" aria-labelledby="work-title">
     <div class="shell">
       <header class="section-head" data-reveal="rise">
         <h2 class="section-title" id="work-title">The work.</h2>
-        <p class="section-lead">Vertical video is the engine. Press play.</p>
+        <p class="section-lead">Short-form is the whole engine. Two client cuts, playing here.</p>
       </header>
 
-      <div class="reels" data-reels>
+      <!-- the recording is 1588 × 870, so its card carries that exact ratio
+           and nothing is cropped; it plays itself, muted and looping -->
+      <figure class="reel screen" data-reel data-cursor-view
+              data-video="/assets/clips/screen-recording.mp4"
+              data-embed="https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2Fshare%2Fr%2F1EtnnM8QSx%2F&show_text=false&autoplay=1&width=540"
+              data-embed-title="Facebook video from a G Management client account">
+        <button class="reel__frame" type="button" data-reel-btn>
+          <span class="reel__ghost" aria-hidden="true">Reel</span>
+          <span class="reel__platform">Facebook</span>
+          <span class="reel__badge" aria-hidden="true">
+            <svg viewBox="0 0 12 14" width="10" height="12" focusable="false"><path d="M0 0 L12 7 L0 14 Z" fill="currentColor"/></svg>Watch
+          </span>
+          <span class="visually-hidden">Play the client reel from Facebook</span>
+        </button>
+        <figcaption class="reel__caption">
+          <a href="https://www.facebook.com/share/r/1EtnnM8QSx/" target="_blank" rel="noopener">Open on Facebook</a>
+        </figcaption>
+      </figure>
 
-        <!-- data-video plays a self-hosted file inline, muted and looping.
-             Facebook's plugin is the fallback for when no file is present. -->
-        <figure class="reel" data-reel data-cursor-view
-                data-video="/assets/clips/facebook-reel.mp4"
-                data-embed="https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2Fshare%2Fr%2F1EtnnM8QSx%2F&show_text=false&autoplay=1&width=540"
-                data-embed-title="Facebook video from a G Management client account">
-          <button class="reel__frame" type="button" data-reel-btn>
-            <span class="reel__ghost" aria-hidden="true">Reel</span>
-            <span class="reel__platform">Facebook</span>
-            <span class="reel__badge" aria-hidden="true">
-              <svg viewBox="0 0 12 14" width="10" height="12" focusable="false"><path d="M0 0 L12 7 L0 14 Z" fill="currentColor"/></svg>Watch
-            </span>
-            <span class="visually-hidden">Play the client reel from Facebook</span>
-          </button>
-          <figcaption class="reel__caption">
-            <a href="https://www.facebook.com/share/r/1EtnnM8QSx/" target="_blank" rel="noopener">Open on Facebook</a>
-          </figcaption>
-        </figure>
+      <div class="reels" data-reels>
 
         <!-- data-autoload brings the embed in as soon as the tile is in view -->
         <figure class="reel" data-reel data-cursor-view data-autoload
@@ -200,18 +199,19 @@
           <ol class="playbook__steps">
             <li>
               <span class="playbook__n">01</span>
-              <p class="playbook__step"><b>We take the account.</b> Hooks, angles, posting
-                cadence and the edit style, set in the first week.</p>
+              <p class="playbook__step"><b>Week one is setup.</b> We go through what has
+                already worked on the account, write the hooks, and set a posting rhythm
+                the page can actually hold.</p>
             </li>
             <li>
               <span class="playbook__n">02</span>
-              <p class="playbook__step"><b>Short-form goes out daily.</b> Reels, Shorts and
-                TikToks cut for reach, not for a portfolio.</p>
+              <p class="playbook__step"><b>Then it posts, every day.</b> Reels, Shorts and
+                TikToks, cut for the way people watch now &mdash; not for a showreel.</p>
             </li>
             <li>
               <span class="playbook__n">03</span>
-              <p class="playbook__step"><b>You get the dashboard.</b> Reach, orders and
-                revenue, reported the same way the receipts below are.</p>
+              <p class="playbook__step"><b>You see what we see.</b> Reach, orders and
+                revenue, in the same plain format as the receipts below.</p>
             </li>
           </ol>
 
@@ -225,7 +225,7 @@
           </ul>
 
           <a class="btn btn--primary btn--full btn--glow" href="#book">Book a 15-minute call</a>
-          <p class="playbook__note">Fifteen minutes with Manny, no deck.</p>
+          <p class="playbook__note">Fifteen minutes with Manny. No deck, no pitch.</p>
         </div>
 
       </div>
@@ -237,7 +237,8 @@
     <div class="shell">
       <header class="section-head" data-reveal="rise">
         <h2 class="section-title" id="results-title">The receipts.</h2>
-        <p class="section-lead">Real accounts. Client dashboards. Dates attached.</p>
+        <p class="section-lead">Five accounts, straight off their own dashboards, with the
+          dates each figure covers.</p>
       </header>
 
       <div class="bento">
@@ -385,6 +386,7 @@
     <div class="shell">
       <header class="section-head" data-reveal="rise">
         <h2 class="section-title" id="voices-title">The clients.</h2>
+        <p class="section-lead">In their words, not ours.</p>
       </header>
 
       <div class="voices__grid">
@@ -408,7 +410,8 @@
     <div class="shell">
       <header class="section-head" data-reveal="rise">
         <h2 class="section-title" id="book-title">Book a call.</h2>
-        <p class="section-lead">Fifteen minutes with Manny. Pick a slot.</p>
+        <p class="section-lead">Fifteen minutes with Manny. Pick a slot that suits you and
+          he will confirm it by email.</p>
       </header>
 
       <div class="booker" data-reveal="rise">
@@ -453,9 +456,9 @@
             <button class="contact__act" type="button" data-copy="manny@gmgmt.co">Copy</button>
           </li>
           <li>
-            <span class="contact__label">Phone</span>
-            <a class="contact__value" href="tel:+17869295735">(786) 929-5735</a>
-            <a class="contact__act" href="https://wa.me/17869295735" target="_blank" rel="noopener">WhatsApp</a>
+            <span class="contact__label">Message</span>
+            <span class="contact__value">WhatsApp</span>
+            <a class="contact__act" href="https://wa.me/17869295735" target="_blank" rel="noopener">Open chat</a>
           </li>
           <li>
             <span class="contact__label">Based in</span>
@@ -474,7 +477,8 @@
     <div class="site-footer__top">
       <div class="site-footer__brand">
         <p class="site-footer__mark">G Management</p>
-        <p class="site-footer__line">Social media management and influencer marketing, out of Miami.</p>
+        <p class="site-footer__line">Social media management and brand deals, run out of Miami
+          for brands and creators in the United States.</p>
       </div>
 
       <nav class="site-footer__nav" aria-label="Footer">
@@ -488,7 +492,6 @@
       <div class="site-footer__contact">
         <p class="site-footer__heading">Contact</p>
         <a href="mailto:manny@gmgmt.co">manny@gmgmt.co</a>
-        <a href="tel:+17869295735">(786) 929-5735</a>
         <a href="https://wa.me/17869295735" target="_blank" rel="noopener">WhatsApp</a>
       </div>
     </div>
@@ -503,7 +506,7 @@
 <div class="action-bar" data-action-bar hidden>
   <a class="btn btn--primary btn--sm btn--glow" href="#book">Book a call</a>
   <a class="btn btn--ghost btn--sm" href="https://wa.me/17869295735" target="_blank" rel="noopener">WhatsApp</a>
-  <a class="btn btn--ghost btn--sm" href="tel:+17869295735" aria-label="Call (786) 929-5735">Call</a>
+  <a class="btn btn--ghost btn--sm" href="mailto:manny@gmgmt.co">Email</a>
 </div>
 
 <script src="/assets/js/main.js" defer></script>
