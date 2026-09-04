@@ -92,7 +92,8 @@
      aria-label. Nothing is split under reduced motion.                    */
 
   var headline = document.querySelector('[data-scramble]');
-  if (headline && canAnimate) {
+
+  function splitHeadline() {
     var chars = [];
     var sentence = headline.textContent.replace(/\s+/g, ' ').trim();
 
@@ -148,6 +149,17 @@
     }, LAST + 600);
   }
 
+  /* Each glyph is pinned to the width it measures at, so the scramble cannot
+     shift the line. Measuring before the display font arrives pins fallback
+     widths and the real letters then overlap, so wait for the font first. */
+  if (headline && canAnimate) {
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(splitHeadline).catch(splitHeadline);
+    } else {
+      splitHeadline();
+    }
+  }
+
   /* 3. Reveal on view ------------------------------------------------------ */
 
   var revealables = document.querySelectorAll('[data-reveal], [data-meter], [data-chart]');
@@ -160,15 +172,44 @@
   if (!hasIO || reduceMotion) {
     Array.prototype.forEach.call(revealables, revealNow);
   } else {
+    var pending = Array.prototype.slice.call(revealables);
+
     var revealObserver = new IntersectionObserver(function (entries, obs) {
       entries.forEach(function (entry) {
         if (!entry.isIntersecting) return;
         revealNow(entry.target);
         obs.unobserve(entry.target);
+        var at = pending.indexOf(entry.target);
+        if (at > -1) pending.splice(at, 1);
       });
     }, { threshold: 0.2, rootMargin: '0px 0px -8% 0px' });
 
-    Array.prototype.forEach.call(revealables, function (el) { revealObserver.observe(el); });
+    pending.forEach(function (el) { revealObserver.observe(el); });
+
+    /* A hard flick can carry a section past the viewport between two frames,
+       and the observer never reports it. Sweep on scroll so nothing is left
+       sitting at zero opacity, then stop once everything has arrived.     */
+    var sweeping = false;
+
+    function sweep() {
+      sweeping = false;
+      for (var i = pending.length - 1; i >= 0; i -= 1) {
+        var box = pending[i].getBoundingClientRect();
+        if (box.top > window.innerHeight * 0.9) continue;
+        revealNow(pending[i]);
+        revealObserver.unobserve(pending[i]);
+        pending.splice(i, 1);
+      }
+      if (!pending.length) window.removeEventListener('scroll', onScroll);
+    }
+
+    function onScroll() {
+      if (sweeping) return;
+      sweeping = true;
+      requestAnimationFrame(sweep);
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
   }
 
   /* 4. Header -------------------------------------------------------------- */
@@ -272,22 +313,33 @@
 
   var media = document.querySelector('[data-hero-media]');
   if (media && !reduceMotion) {
-    var file = (media.getAttribute('data-video') || '').split(',')[0].trim();
-    var connection = navigator.connection || {};
+    var sources = (media.getAttribute('data-video') || '')
+      .split(',')
+      .map(function (s) { return s.trim(); })
+      .filter(Boolean);
 
-    if (file && !connection.saveData) {
-      var heroVideo = makeVideo('hero__video', file);
+    /* Each source gets one try. A file that 404s or will not decode hands
+       over to the next one, and when the list runs out the drifting light
+       field carries the hero on its own.                                 */
+    (function playFirstThatWorks() {
+      if (!sources.length || (navigator.connection || {}).saveData) return;
+
+      var heroVideo = makeVideo('hero__video', sources.shift());
+
       heroVideo.addEventListener('loadeddata', function () {
         media.classList.add('has-video');
         var playing = heroVideo.play();
         if (playing && playing.catch) playing.catch(function () {});
       });
+
       heroVideo.addEventListener('error', function () {
         media.classList.remove('has-video');
         if (heroVideo.parentNode) heroVideo.parentNode.removeChild(heroVideo);
+        playFirstThatWorks();
       }, true);
+
       media.insertBefore(heroVideo, media.firstChild);
-    }
+    }());
   }
 
   /* 6. Vertical video grid -------------------------------------------------
@@ -313,8 +365,14 @@
     player.setAttribute('frameborder', '0');
     player.loading = 'lazy';
 
+    /* the poster frame stays up until the player has actually loaded, so a
+       slow platform never leaves a blank rectangle on the page */
+    player.addEventListener('load', function () {
+      frame.hidden = true;
+      reel.classList.add('is-loaded');
+    });
+
     reel.insertBefore(player, frame);
-    frame.hidden = true;
     reel.classList.add('is-playing');
   }
 
@@ -361,12 +419,16 @@
     frame.addEventListener('blur', deactivate);
     frame.addEventListener('click', function () { loadEmbed(reel, frame); });
 
-    if (reel.hasAttribute('data-autoload') && hasIO) {
+    /* Autoloading tiles wait for the page to finish loading, so the embed
+       never competes with the hero's own paint, and they stay click-to-play
+       on a connection the browser has flagged as metered.                 */
+    if (reel.hasAttribute('data-autoload') && hasIO && !(navigator.connection || {}).saveData) {
       var autoObserver = new IntersectionObserver(function (entries, obs) {
         entries.forEach(function (entry) {
           if (!entry.isIntersecting) return;
-          loadEmbed(reel, frame);
           obs.disconnect();
+          if (document.readyState === 'complete') loadEmbed(reel, frame);
+          else window.addEventListener('load', function () { loadEmbed(reel, frame); });
         });
       }, { threshold: 0.4 });
       autoObserver.observe(reel);

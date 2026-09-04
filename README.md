@@ -84,13 +84,16 @@ those attributes and the interaction follows.
 
 1. **Header** — wordmark, centred nav, and a booking CTA. A gold reading-progress
    hairline sits on its bottom edge and a marker slides between nav items.
-2. **Hero** — centred. One headline that arrives character by character behind a short
-   glyph scramble, one sentence of value, two calls to action, and four headline figures
-   that count up. A muted video plays behind it when a file is present.
+2. **Hero** — two columns on desktop, stacked on phones. Left: a headline that arrives
+   character by character behind a short glyph scramble, one sentence of value, two calls
+   to action, and three figures that count up. Right: a 9:16 stage where a client short
+   plays itself, muted and looping, so the fold is never an empty frame. The stage takes
+   its width from the viewport height, so the whole hero fits a short laptop screen. A
+   muted video plays behind the section when a file is present at `/assets/hero.mp4`.
 3. **Marquee** — an infinite services loop, paused on hover.
-4. **Work** — three 9:16 frames. The YouTube tile loads and plays itself as soon as it
-   scrolls into view; the Facebook tile loads on press; the third closes on the CTA.
-   Hover or focus scales a tile, lights a gold glow, and blurs the other two.
+4. **Work** — a 9:16 Facebook tile that loads on press, beside a panel carrying the offer:
+   how a month runs, what is included, and the CTA. The panel stretches to the tile's
+   height so neither column leaves a hole.
 5. **Results** — a bento grid: BKH and the Pivot Point chart across the top, then Houdini,
    the link-in-bio revenue and PAC-Hub. Every figure counts up on arrival, and the shares
    (99.7% non-follower reach, 92% US audience) grow as bars.
