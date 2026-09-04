@@ -82,46 +82,63 @@
     </div>
 
     <div class="shell hero__inner">
-      <p class="hero__where" data-seq="1">
-        <span class="hero__dot" aria-hidden="true"></span>Miami, Florida
-      </p>
+      <div class="hero__copy">
+        <p class="hero__where" data-seq="1">
+          <span class="hero__dot" aria-hidden="true"></span>Miami, Florida — taking clients
+        </p>
 
-      <h1 class="hero__title" data-scramble>
-        <span class="line" data-seq="2"><span>We run social media</span></span>
-        <span class="line" data-seq="3"><span>for brands, and manage</span></span>
-        <span class="line" data-seq="4"><span>brand deals for creators.</span></span>
-      </h1>
+        <h1 class="hero__title" data-scramble>
+          <span class="line" data-seq="2"><span>We run social media</span></span>
+          <span class="line" data-seq="3"><span>for brands, and manage</span></span>
+          <span class="line" data-seq="4"><span>brand deals for creators.</span></span>
+        </h1>
 
-      <p class="hero__sub" data-seq="5">Organic growth, with the receipts below.</p>
+        <p class="hero__sub" data-seq="5">
+          Organic short-form video, run end to end. The numbers on this page are
+          client dashboards, with the dates attached.
+        </p>
 
-      <div class="hero__actions" data-seq="6">
-        <a class="btn btn--primary btn--lg btn--glow" href="#book">Book a 15-minute call</a>
-        <a class="btn btn--ghost btn--lg" href="#results">See the numbers</a>
+        <div class="hero__actions" data-seq="6">
+          <a class="btn btn--primary btn--lg btn--glow" href="#book">Book a 15-minute call</a>
+          <a class="btn btn--ghost btn--lg" href="#results">See the numbers</a>
+        </div>
+
+        <ul class="hero__proof" data-seq="7">
+          <li>
+            <span class="hero__proof-figure" data-count data-to="5.4" data-decimals="1" data-suffix="M">5.4M</span>
+            <span class="hero__proof-label">reached, 30 days</span>
+          </li>
+          <li>
+            <span class="hero__proof-figure" data-count data-to="54" data-prefix="+" data-suffix="%">+54%</span>
+            <span class="hero__proof-label">orders, two months</span>
+          </li>
+          <li>
+            <span class="hero__proof-figure" data-count data-to="19.2" data-decimals="1" data-prefix="$" data-suffix="K">$19.2K</span>
+            <span class="hero__proof-label">one link, one month</span>
+          </li>
+        </ul>
       </div>
 
-      <ul class="hero__stats" data-seq="7">
-        <li>
-          <span class="hero__stat-figure" data-count data-to="5.4" data-decimals="1" data-suffix="M">5.4M</span>
-          <span class="hero__stat-label">Accounts reached, 30 days</span>
-        </li>
-        <li>
-          <span class="hero__stat-figure" data-count data-to="15" data-prefix="" data-suffix="M+">15M+</span>
-          <span class="hero__stat-label">Views for one client</span>
-        </li>
-        <li>
-          <span class="hero__stat-figure" data-count data-to="54" data-prefix="+" data-suffix="%">+54%</span>
-          <span class="hero__stat-label">Orders in two months</span>
-        </li>
-        <li>
-          <span class="hero__stat-figure" data-count data-to="19.2" data-decimals="1" data-prefix="$" data-suffix="K">$19.2K</span>
-          <span class="hero__stat-label">One link, one month</span>
-        </li>
-      </ul>
+      <!-- the hero carries a live client short rather than a placeholder frame -->
+      <div class="hero__stage" data-seq="8">
+        <figure class="showcase" data-reel data-cursor-view data-autoload
+                data-embed="https://www.youtube-nocookie.com/embed/WZF_Tt_xNAQ?autoplay=1&mute=1&loop=1&playlist=WZF_Tt_xNAQ&controls=1&rel=0&playsinline=1&modestbranding=1"
+                data-embed-title="YouTube Short from a G Management client account">
+          <button class="showcase__frame reel__frame" type="button" data-reel-btn>
+            <span class="reel__ghost" aria-hidden="true">Short</span>
+            <span class="reel__platform">Client short, live</span>
+            <span class="reel__badge" aria-hidden="true">
+              <svg viewBox="0 0 12 14" width="10" height="12" focusable="false"><path d="M0 0 L12 7 L0 14 Z" fill="currentColor"/></svg>Watch
+            </span>
+            <span class="visually-hidden">Play the client short from YouTube</span>
+          </button>
+          <figcaption class="showcase__note">
+            <span>15M+ views in two months &mdash; BKH Enterprises</span>
+            <a href="https://www.youtube.com/shorts/WZF_Tt_xNAQ" target="_blank" rel="noopener">Open on YouTube</a>
+          </figcaption>
+        </figure>
+      </div>
     </div>
-
-    <a class="hero__scroll" href="#work" aria-label="Skip to the work">
-      <span class="hero__scroll-line" aria-hidden="true"></span>
-    </a>
   </section>
 
   <!-- ============================================================= MARQUEE -->
@@ -169,31 +186,40 @@
           </figcaption>
         </figure>
 
-        <!-- data-autoload plays this one inline as soon as it scrolls into view -->
-        <figure class="reel" data-reel data-cursor-view data-autoload
-                data-embed="https://www.youtube-nocookie.com/embed/WZF_Tt_xNAQ?autoplay=1&mute=1&loop=1&playlist=WZF_Tt_xNAQ&controls=1&rel=0&playsinline=1&modestbranding=1"
-                data-embed-title="YouTube Short from a G Management client account">
-          <button class="reel__frame" type="button" data-reel-btn>
-            <span class="reel__ghost" aria-hidden="true">Short</span>
-            <span class="reel__platform">YouTube</span>
-            <span class="reel__badge" aria-hidden="true">
-              <svg viewBox="0 0 12 14" width="10" height="12" focusable="false"><path d="M0 0 L12 7 L0 14 Z" fill="currentColor"/></svg>Watch
-            </span>
-            <span class="visually-hidden">Play the client short from YouTube</span>
-          </button>
-          <figcaption class="reel__caption">
-            <a href="https://www.youtube.com/shorts/WZF_Tt_xNAQ" target="_blank" rel="noopener">Open on YouTube</a>
-          </figcaption>
-        </figure>
+        <!-- the second column carries the offer, so no tile sits on the page empty -->
+        <div class="playbook">
+          <h3 class="playbook__title">How a month runs.</h3>
 
-        <figure class="reel reel--cta">
-          <a class="reel__frame reel__frame--cta" href="#book">
-            <span class="reel__platform">Your account</span>
-            <span class="reel__cta-copy">This, on your account.</span>
-            <span class="reel__badge reel__badge--cta" aria-hidden="true">Book a call</span>
-          </a>
-          <figcaption class="reel__caption">Fifteen minutes with Manny, no deck.</figcaption>
-        </figure>
+          <ol class="playbook__steps">
+            <li>
+              <span class="playbook__n">01</span>
+              <p class="playbook__step"><b>We take the account.</b> Hooks, angles, posting
+                cadence and the edit style, set in the first week.</p>
+            </li>
+            <li>
+              <span class="playbook__n">02</span>
+              <p class="playbook__step"><b>Short-form goes out daily.</b> Reels, Shorts and
+                TikToks cut for reach, not for a portfolio.</p>
+            </li>
+            <li>
+              <span class="playbook__n">03</span>
+              <p class="playbook__step"><b>You get the dashboard.</b> Reach, orders and
+                revenue, reported the same way the receipts below are.</p>
+            </li>
+          </ol>
+
+          <ul class="playbook__tags">
+            <li>Strategy</li>
+            <li>Hooks and scripting</li>
+            <li>Editing</li>
+            <li>Daily posting</li>
+            <li>Brand deals</li>
+            <li>Monthly reporting</li>
+          </ul>
+
+          <a class="btn btn--primary btn--full btn--glow" href="#book">Book a 15-minute call</a>
+          <p class="playbook__note">Fifteen minutes with Manny, no deck.</p>
+        </div>
 
       </div>
     </div>
