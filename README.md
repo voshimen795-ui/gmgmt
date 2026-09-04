@@ -158,6 +158,21 @@ static rather than waiting for an animation that will never run. Under
 `prefers-reduced-motion: reduce` the load sequence is switched off outright, the ticker
 and the pulse stop, counters stay at their final values, and the chart renders complete.
 
+## Where the video files go
+
+Everything the page can play is self-hosted under `assets/`, and every slot is optional —
+the layout holds its shape whether or not a file is there.
+
+| Path | What it is |
+|---|---|
+| `assets/hero.mp4` | Full-bleed background behind the hero, heavily scrimmed |
+| `assets/showreel.mp4` | The 16:9 frame beside the headline |
+| `assets/clips/*.mp4` | Hover previews for the vertical grid — wire one with `data-clip` |
+
+Keep them short, muted at the source, and compressed hard: these are ambient, not
+content. H.264 in an `.mp4` is the safest single format; add a `.webm` beside it if you
+want smaller files on Chrome and Firefox.
+
 ## Regenerating the link-preview image
 
 `tools/og-source.html` is the source for `assets/og.png`. With the local server running:
