@@ -700,7 +700,7 @@
         'DTSTART;TZID=America/New_York:' + stamp(picked, pickedSlot.h, pickedSlot.m),
         'DTEND;TZID=America/New_York:' + stamp(picked, endHour, endMin),
         'SUMMARY:Intro call — G Management',
-        'DESCRIPTION:Fifteen minutes with Manny Garcia. manny@gmgmt.co, (786) 929-5735.',
+        'DESCRIPTION:Fifteen minutes with Manny Garcia. manny@gmgmt.co.',
         'LOCATION:Phone call',
         'END:VEVENT',
         'END:VCALENDAR'
@@ -768,7 +768,6 @@
         'ORG:G Management',
         'TITLE:Social media management and influencer marketing',
         'EMAIL;TYPE=INTERNET,WORK:manny@gmgmt.co',
-        'TEL;TYPE=CELL,VOICE:+17869295735',
         'ADR;TYPE=WORK:;;;Miami;FL;;United States',
         'URL:https://gmgmt.co/',
         'END:VCARD'
