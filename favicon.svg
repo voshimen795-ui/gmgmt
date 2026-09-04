@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="G Management">
+  <rect width="64" height="64" fill="#070A12"/>
+  <rect x="0" y="0" width="64" height="3" fill="#C9A227"/>
+  <text x="32" y="46" text-anchor="middle" font-family="Archivo, Helvetica Neue, Arial, sans-serif"
+        font-size="40" font-weight="800" font-stretch="expanded" letter-spacing="-1" fill="#F2F1EC">G</text>
+</svg>

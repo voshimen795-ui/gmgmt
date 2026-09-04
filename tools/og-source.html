@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>og source</title>
+<link rel="stylesheet" href="/assets/css/styles.css">
+<style>
+  html, body { margin: 0; }
+  body { width: 1200px; height: 630px; overflow: hidden; }
+  .og {
+    width: 1200px; height: 630px;
+    padding: 64px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    background: var(--ink);
+    border-top: 8px solid var(--gold);
+  }
+  .og__mark { font-family: var(--font-display); font-weight: 800; font-stretch: 125%;
+              letter-spacing: -0.02em; font-size: 28px; }
+  .og__mark span { color: var(--grey); font-weight: 500; font-stretch: 100%; }
+  .og__line { font-family: var(--font-display); font-weight: 800; font-stretch: 125%;
+              font-size: 56px; line-height: 0.98; letter-spacing: -0.03em; max-width: 22ch; }
+  .og__row { display: flex; gap: 64px; align-items: baseline; }
+  .og__fig { font-family: var(--font-display); font-weight: 800; font-stretch: 112%;
+             font-size: 44px; letter-spacing: -0.03em; font-variant-numeric: tabular-nums;
+             color: var(--gold); line-height: 1; }
+  .og__cap { font-size: 15px; color: var(--grey); margin-top: 8px; }
+  .og__foot { font-size: 18px; color: var(--grey); }
+</style>
+</head>
+<body>
+<div class="og">
+  <p class="og__mark">G <span>Management</span></p>
+  <h1 class="og__line">We run social media for brands, and manage brand deals for creators.</h1>
+  <div class="og__row">
+    <div><p class="og__fig">5,487,050</p><p class="og__cap">Accounts reached in 30 days</p></div>
+    <div><p class="og__fig">+54%</p><p class="og__cap">Orders in two months</p></div>
+    <div><p class="og__fig">$19,265</p><p class="og__cap">One link, one month</p></div>
+  </div>
+  <p class="og__foot" style="display:flex; gap:32px;"><span>Miami, Florida</span><span>manny@gmgmt.co</span></p>
+</div>
+</body>
+</html>
