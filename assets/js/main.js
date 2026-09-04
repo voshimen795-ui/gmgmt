@@ -313,22 +313,33 @@
 
   var media = document.querySelector('[data-hero-media]');
   if (media && !reduceMotion) {
-    var file = (media.getAttribute('data-video') || '').split(',')[0].trim();
-    var connection = navigator.connection || {};
+    var sources = (media.getAttribute('data-video') || '')
+      .split(',')
+      .map(function (s) { return s.trim(); })
+      .filter(Boolean);
 
-    if (file && !connection.saveData) {
-      var heroVideo = makeVideo('hero__video', file);
+    /* Each source gets one try. A file that 404s or will not decode hands
+       over to the next one, and when the list runs out the drifting light
+       field carries the hero on its own.                                 */
+    (function playFirstThatWorks() {
+      if (!sources.length || (navigator.connection || {}).saveData) return;
+
+      var heroVideo = makeVideo('hero__video', sources.shift());
+
       heroVideo.addEventListener('loadeddata', function () {
         media.classList.add('has-video');
         var playing = heroVideo.play();
         if (playing && playing.catch) playing.catch(function () {});
       });
+
       heroVideo.addEventListener('error', function () {
         media.classList.remove('has-video');
         if (heroVideo.parentNode) heroVideo.parentNode.removeChild(heroVideo);
+        playFirstThatWorks();
       }, true);
+
       media.insertBefore(heroVideo, media.firstChild);
-    }
+    }());
   }
 
   /* 6. Vertical video grid -------------------------------------------------

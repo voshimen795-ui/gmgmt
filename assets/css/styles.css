@@ -337,11 +337,11 @@ section { padding-block: var(--section-y); }
   width: 100%; height: 100%;
   object-fit: cover;
   opacity: 0;
-  filter: saturate(0.5) contrast(1.05) brightness(0.75);
+  filter: saturate(0.8) contrast(1.05) brightness(0.9);
   transition: opacity 1200ms var(--ease-out);
 }
-.hero__media.has-video .hero__video { opacity: 0.4; }
-.hero__media.has-video .hero__field { opacity: 0.5; }
+.hero__media.has-video .hero__video { opacity: 0.85; }
+.hero__media.has-video .hero__field { opacity: 0.35; }
 
 .hero__field {
   inset: -25%;
@@ -358,11 +358,39 @@ section { padding-block: var(--section-y); }
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
+/* With no video the scrim only has to soften the light field. With one it
+   turns directional: solid behind the headline, thin over the footage. */
 .hero__scrim {
   inset: 0;
   background:
     radial-gradient(120% 90% at 50% 30%, transparent 8%, var(--ink) 80%),
     linear-gradient(to bottom, color-mix(in srgb, var(--ink) 45%, transparent), var(--ink) 92%);
+}
+
+.hero__media.has-video .hero__scrim {
+  background:
+    linear-gradient(to bottom,
+      color-mix(in srgb, var(--ink) 88%, transparent) 0%,
+      color-mix(in srgb, var(--ink) 62%, transparent) 22%,
+      color-mix(in srgb, var(--ink) 72%, transparent) 62%,
+      var(--ink) 100%);
+}
+
+@media (min-width: 980px) {
+  .hero__media.has-video .hero__scrim {
+    background:
+      linear-gradient(96deg,
+        var(--ink) 0%,
+        var(--ink) 30%,
+        color-mix(in srgb, var(--ink) 72%, transparent) 48%,
+        color-mix(in srgb, var(--ink) 24%, transparent) 72%,
+        transparent 100%),
+      linear-gradient(to bottom,
+        color-mix(in srgb, var(--ink) 45%, transparent) 0%,
+        transparent 22%,
+        transparent 62%,
+        var(--ink) 100%);
+  }
 }
 
 .hero__inner {

@@ -75,7 +75,10 @@
 
   <!-- ================================================================ HERO -->
   <section class="hero" id="top">
-    <div class="hero__media" data-hero-media data-video="/assets/hero.mp4" aria-hidden="true">
+    <!-- sources are tried in order, so dropping a file at /assets/hero.mp4
+         overrides the hosted cut without touching this attribute again -->
+    <div class="hero__media" data-hero-media aria-hidden="true"
+         data-video="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260808_112712_da9d53df-6d27-4b12-bdf6-aa9dc2622bdf.mp4">
       <span class="hero__field"></span>
       <span class="hero__grain"></span>
       <span class="hero__scrim"></span>
