@@ -119,6 +119,7 @@ h1, h2, h3 { font-family: var(--font-display); margin: 0; line-height: 1; }
 p, dl, ul, ol, figure, blockquote { margin: 0; }
 ul, ol { list-style: none; padding: 0; }
 img, svg, iframe, video { display: block; max-width: 100%; }
+img { height: auto; }
 a { color: inherit; }
 
 /* a hidden element stays hidden, whatever display its own class asks for */
@@ -917,6 +918,7 @@ html:not(.js) .meter__track span { width: calc(var(--pct) * 1%); }
 
 .ba__grid {
   display: grid;
+  align-items: start;
   gap: var(--sp-24);
 }
 
@@ -936,13 +938,80 @@ html:not(.js) .meter__track span { width: calc(var(--pct) * 1%); }
 }
 
 .ba__note {
-  margin-top: auto;
-  padding-top: var(--sp-24);
+  margin-top: var(--sp-24);
   font-size: var(--t-label);
   color: var(--grey);
   text-align: left;
   text-wrap: pretty;
 }
+
+
+/* the two windows a card compares, stated before the numbers */
+.ba__span {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-8);
+  margin-top: var(--sp-16);
+}
+.ba__chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 6px var(--sp-16);
+  border: var(--hairline);
+  border-radius: 999px;
+  font-size: var(--t-label);
+  color: var(--grey);
+}
+.ba__chip b {
+  color: var(--paper);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.ba__chip--after { border-color: color-mix(in srgb, var(--gold) 45%, var(--line)); }
+.ba__chip--after b { color: var(--gold-lift); }
+.ba__arrow { color: var(--grey); }
+
+/* the screenshot the figures were read off */
+.ba__shot { margin-top: var(--sp-24); }
+.ba__shot img {
+  width: 100%;
+  border: var(--hairline);
+  border-radius: var(--radius-sm);
+  background: var(--surface-lift);
+}
+.ba__shot figcaption,
+.ba__pair figcaption {
+  margin-top: var(--sp-8);
+  font-size: var(--t-label);
+  color: var(--grey);
+  text-align: left;
+  text-wrap: pretty;
+}
+
+.ba__pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-16);
+  margin-top: var(--sp-24);
+}
+/* both panels sit on one baseline: the row takes the taller image and the
+   shorter one is centred on the same white it already has */
+.ba__pair figure { display: grid; grid-template-rows: 1fr auto; min-width: 0; }
+/* both panels are cropped to the same square around the date and the figure,
+   so the two sides read at one glance */
+.ba__pair img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border: var(--hairline);
+  border-radius: var(--radius-sm);
+  background: #fff;
+}
+.ba__pair figcaption { text-align: center; font-variant-numeric: tabular-nums; }
+.ba__pair .is-after { color: var(--gold-lift); }
 
 /* one metric, two bars: the state before the work and the state after */
 .swing {
