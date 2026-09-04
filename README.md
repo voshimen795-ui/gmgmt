@@ -56,122 +56,71 @@ or on a connection flagged `saveData`, and if no source plays the element is rem
 the drifting light field carries the hero on its own. Keep the file short and small — it
 is background, not content; ten seconds at a few hundred KB is plenty.
 
-**Hero showreel.** The frame beside the headline takes a file the same way:
-
-```html
-<figure class="hero__frame" data-hero-frame data-clip="/assets/showreel.mp4">
-```
-
-It plays `autoplay loop muted playsinline`, cropped to a 16:9 rounded frame with an
-ambient bloom behind it. With no file the frame keeps its shape and shows the outlined
-title instead, so the layout never shifts.
-
 **Reel clips.** Each tile in the vertical grid can preview a self-hosted clip on hover or
 keyboard focus — add `data-clip="/assets/clips/whatever.mp4"` to the `<figure class="reel">`.
 The clip is only created on first hover, plays muted and looping, and is dropped if the
 file is missing. Tiles keep working without a clip: they stay poster frames that load the
 real post when pressed.
 
-**The two videos.** Each player stores its own embed URL:
+**The client videos.** Each tile stores its own embed URL:
 
 ```html
-<figure class="player" data-player data-embed="…" data-embed-title="…">
+<figure class="reel" data-reel data-autoload data-embed="…" data-embed-title="…">
 ```
 
-The tile is a facade — nothing loads from Facebook or YouTube until someone presses play,
-and the caption under each tile links out to the original post, so the proof is reachable
-even if a platform declines to embed. The Facebook embed uses the video plugin against the
-share URL; if Facebook ever stops resolving that form, replace the `href=` inside
-`data-embed` with the canonical `/reel/<id>` URL (URL-encoded).
+`data-autoload` brings the embed in as soon as the tile scrolls into view — that is how
+the YouTube short simply plays on the page, muted and looping. Without it the tile stays a
+poster frame and loads on press, which is what the Facebook tile does, since Facebook does
+not autoplay in an embed. Every caption links out to the original post, so the proof is
+reachable even if a platform declines to embed. The Facebook embed uses the video plugin
+against the share URL; if that stops resolving, replace the `href=` inside `data-embed`
+with the canonical `/reel/<id>` URL, URL-encoded.
 
 **Numbers.** Every figure lives in the markup as text. The hero counters read their target
 from `data-to`, and the Houdini scrub reads `data-from` / `data-to` on each figure — change
 those attributes and the interaction follows.
 
+## The page, section by section
+
+1. **Header** — wordmark, centred nav, and a booking CTA. A gold reading-progress
+   hairline sits on its bottom edge and a marker slides between nav items.
+2. **Hero** — centred. One headline that arrives character by character behind a short
+   glyph scramble, one sentence of value, two calls to action, and four headline figures
+   that count up. A muted video plays behind it when a file is present.
+3. **Marquee** — an infinite services loop, paused on hover.
+4. **Work** — three 9:16 frames. The YouTube tile loads and plays itself as soon as it
+   scrolls into view; the Facebook tile loads on press; the third closes on the CTA.
+   Hover or focus scales a tile, lights a gold glow, and blurs the other two.
+5. **Results** — a bento grid: BKH and the Pivot Point chart across the top, then Houdini,
+   the link-in-bio revenue and PAC-Hub. Every figure counts up on arrival, and the shares
+   (99.7% non-follower reach, 92% US audience) grow as bars.
+6. **Clients** — two short testimonials, named.
+7. **Book** — a glowing dark card holding the scheduler.
+8. **Footer** — brand, page links, contact, location.
+
+## Booking
+
+The card runs the site's own picker: pick a weekday, pick one of sixteen 15-minute slots,
+then either send the request (a pre-written email) or download an `.ics` that drops the
+call straight into a calendar with the right time zone. Weekends and past days are closed,
+and the picker walks up to two months ahead.
+
+To hand booking to Cal.com or Calendly instead, put the embed URL on the slot:
+
+```html
+<div class="booker__embed" data-booking data-booking-url="https://cal.com/…"></div>
+```
+
+The real scheduler then takes over the card and the built-in picker is hidden.
+
 ## What the page does
 
-- **Case rail.** The five case studies collapse to one panel at a time behind a rail of
-  client names and headline figures. Selecting one replays its figures and its chart.
-  Built as a real tablist (arrow keys, Home/End, roving tabindex); without JavaScript the
-  rail is a set of jump links and all five cases stay stacked on the page.
-- **Contact actions.** Copy the email to the clipboard, open WhatsApp, or download a
-  vCard — the card is built in the browser, there is no file to keep in sync.
-- **Chips instead of dropdowns.** Two radio groups cover who is writing and what they
-  need, so the form is two typed fields and a few taps.
-- **Vertical video grid.** Three 9:16 frames. Hovering or focusing one plays its clip,
-  scales it up, lights a gold glow, and pulls the other two back with a blur so the eye
-  lands in one place. Every tile carries a Play badge; pressing one loads the real post.
-- **Pointer follower.** A small ring trails the pointer and expands into a "View" badge
-  over anything playable. Fine pointers only — never on touch, never under reduced motion.
-- **Phone action bar.** Below 768px a bar with Book a call, WhatsApp and Call slides in
-  once the hero has scrolled past, and gets out of the way over the booking section.
-
-## Design notes
-
-- Colour, spacing and type are CSS custom properties in `:root`. Spacing only uses the
-  8px ladder (`--sp-4` … `--sp-160`); there are no arbitrary pixel values in the sheet.
-- Gold (`--gold`) is the only accent, and appears sparingly: the primary CTA, the single
-  most important figure in a case study, the hero rules, active nav state.
-- Type is Archivo (variable width axis, used at 100–125% for display) and Instrument Sans.
-  Both are self-hosted with `font-display: swap` and preloaded.
-- Each case study has a layout matched to its data: testimonial-led for BKH and PAC-Hub,
-  a chart for the three-stage Pivot Point progression, a September-to-November scrub for
-  Houdini, and one large figure for the link-in-bio revenue.
-- Every interactive data view is mirrored by a real `<table>`, so the figures are readable
-  with JavaScript off and to a screen reader.
-
-## The hero
-
-Broadcast scoreboard, built in four bands: location line, a full-width three-line
-headline, a gold rule, sub copy paired with the two calls to action, then a stats band
-carrying four client figures with the client and date window under each. A ticker rail
-sits on the hero's bottom edge with the headline number from all five case studies.
-
-At 1024px and up the headline keeps its authored line breaks (`text-wrap: nowrap`);
-below that the three lines flow as ordinary text so a narrow screen never gets a bad
-wrap, and the per-line reveal is swapped for a single one on the whole headline.
-
-## Motion
-
-**On load** — one orchestrated sequence of about 1.6s, then the page settles: the column
-rules draw down, the headline arrives character by character behind a short glyph
-scramble, the rule sweeps right, sub copy and buttons arrive, the board's gold rule wipes
-across and its four figures count up, and the ticker fades in and starts moving.
-
-The headline splits into words and characters at runtime. Each character's width is
-measured and locked before the scramble starts, so swapping glyphs cannot shift the line,
-and the full sentence stays on the `<h1>` as an `aria-label`. Under reduced motion it is
-never split at all.
-
-**On scroll** — deliberately limited to motion that carries meaning: headings arriving,
-the gold rule beside a testimonial drawing down, the Pivot Point chart drawing itself,
-figures counting to their real value, audience bars growing to their real share. Body
-copy never moves — a page where every paragraph slides up reads as a template.
-
-**On interaction** — button fills wipe in from the left, the nav marker slides between
-items and returns to the active one, the reading-progress hairline tracks the scroll,
-the board dims its other rows when you hover one, the video tiles light their play
-control, and the Houdini scrub follows the pointer or the arrow keys.
-
-Everything is gated on `html.js`, so with JavaScript off the page renders complete and
-static rather than waiting for an animation that will never run. Under
-`prefers-reduced-motion: reduce` the load sequence is switched off outright, the ticker
-and the pulse stop, counters stay at their final values, and the chart renders complete.
-
-## Where the video files go
-
-Everything the page can play is self-hosted under `assets/`, and every slot is optional —
-the layout holds its shape whether or not a file is there.
-
-| Path | What it is |
-|---|---|
-| `assets/hero.mp4` | Full-bleed background behind the hero, heavily scrimmed |
-| `assets/showreel.mp4` | The 16:9 frame beside the headline |
-| `assets/clips/*.mp4` | Hover previews for the vertical grid — wire one with `data-clip` |
-
-Keep them short, muted at the source, and compressed hard: these are ambient, not
-content. H.264 in an `.mp4` is the safest single format; add a `.webm` beside it if you
-want smaller files on Chrome and Firefox.
+- **Pointer follower.** A ring trails the pointer and expands into a "Watch" badge over
+  the video tiles. Fine pointers only — never on touch, never under reduced motion.
+- **Contact actions.** Copy the email, open WhatsApp, or download a vCard built in the
+  browser.
+- **Phone action bar.** Below 768px a Book / WhatsApp / Call bar slides in once the hero
+  has scrolled past, and gets out of the way over the booking section.
 
 ## Regenerating the link-preview image
 
