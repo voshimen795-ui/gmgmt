@@ -2,30 +2,31 @@
    G Management — behaviour
    No framework, no build step. Everything here degrades to a working page.
 
-   1. Counting figures (hero sequence + on view)
-   2. Reveal on view
-   3. Header — progress, stuck state, sliding nav marker
-   4. Hero background video
-   5. Case rail — one case study at a time
-   6. Pivot Point chart
-   7. Houdini scrub
-   8. Video players
-   9. Booking widget
-   10. Contact form, copy, vCard, action bar
+   1. Counters
+   2. Headline cascade
+   3. Reveal on view (rows, meters, chart)
+   4. Header — progress, stuck state, sliding nav marker
+   5. Hero background video
+   6. Vertical video grid
+   7. Pointer follower
+   8. Booking — inline scheduler or built-in calendar
+   9. Contact actions and phone bar
    ========================================================================== */
 
 (function () {
   'use strict';
 
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var canAnimate = !reduceMotion && !document.hidden;
+  var hasIO = 'IntersectionObserver' in window;
 
   var yearEl = document.querySelector('[data-year]');
   if (yearEl) yearEl.textContent = String(new Date().getFullYear());
 
-  /* 1. Counting figures ---------------------------------------------------
-     Every figure is already in the markup as text. Counting is decoration on
-     top of it, so it is skipped entirely under reduced motion or on a hidden
-     tab, and a safety timer guarantees the final value either way.         */
+  /* 1. Counters -----------------------------------------------------------
+     Figures are written into the markup, so they are correct with scripting
+     off. Counting is decoration on top, and a safety timer settles the
+     final value if frames ever stall.                                     */
 
   function formatNumber(value, decimals) {
     return value.toLocaleString('en-US', {
@@ -46,10 +47,7 @@
     var start = null;
     var settled = false;
 
-    function settle() {
-      settled = true;
-      el.textContent = final;
-    }
+    function settle() { settled = true; el.textContent = final; }
 
     function frame() {
       if (settled) return;
@@ -63,40 +61,35 @@
     window.setTimeout(function () {
       el.textContent = prefix + formatNumber(0, decimals) + suffix;
       requestAnimationFrame(frame);
-      // if frames stall the figure still lands, and the loop stops writing
       window.setTimeout(settle, duration + 600);
     }, delay);
   }
 
-  var canAnimate = !reduceMotion && !document.hidden;
-
-  // hero board — part of the load sequence, rows land as they slide in
   if (canAnimate) {
     Array.prototype.forEach.call(document.querySelectorAll('[data-count]'), function (el, i) {
-      countUp(el, 900 + i * 80, 850);
+      countUp(el, 1000 + i * 70, 800);
     });
   }
 
-  // everywhere else — figures count as their case study comes into view
-  if (canAnimate && 'IntersectionObserver' in window) {
+  if (canAnimate && hasIO) {
     var figureObserver = new IntersectionObserver(function (entries, obs) {
       entries.forEach(function (entry) {
         if (!entry.isIntersecting) return;
         countUp(entry.target, 0, 750);
         obs.unobserve(entry.target);
       });
-    }, { threshold: 0.6, rootMargin: '0px 0px -8% 0px' });
+    }, { threshold: 0.5, rootMargin: '0px 0px -6% 0px' });
 
     Array.prototype.forEach.call(document.querySelectorAll('[data-count-view]'), function (el) {
       figureObserver.observe(el);
     });
   }
 
-  /* 1b. Headline cascade ---------------------------------------------------
+  /* 2. Headline cascade ---------------------------------------------------
      The headline splits into words and characters, each glyph arriving on
-     its own beat behind a short scramble. Every character's width is locked
-     first so the scramble cannot shift the line. The full sentence stays on
-     the h1 as an aria-label, and nothing is split under reduced motion.  */
+     its own beat behind a short scramble. Widths are locked first so the
+     scramble cannot shift the line, and the sentence stays on the h1 as an
+     aria-label. Nothing is split under reduced motion.                    */
 
   var headline = document.querySelector('[data-scramble]');
   if (headline && canAnimate) {
@@ -139,7 +132,6 @@
 
     (function scramble(now) {
       var t = (now || performance.now()) - scrambleStart;
-
       chars.forEach(function (c, i) {
         var from = 250 + i * 16;
         if (t < from) return;
@@ -147,46 +139,47 @@
           ? GLYPHS.charAt((Math.random() * GLYPHS.length) | 0)
           : c.glyph;
       });
-
       if (t < LAST) requestAnimationFrame(scramble);
       else chars.forEach(function (c) { c.el.textContent = c.glyph; });
     }());
 
-    // if frames stall, the headline still ends up as written
     window.setTimeout(function () {
       chars.forEach(function (c) { c.el.textContent = c.glyph; });
     }, LAST + 600);
   }
 
-  /* 2. Reveal on view -----------------------------------------------------
-     Headings, rules, testimonial rules and audience bars only. Body copy is
-     deliberately left alone — a page where every paragraph slides up reads
-     as a template.                                                         */
+  /* 3. Reveal on view ------------------------------------------------------ */
 
-  var revealables = document.querySelectorAll('[data-reveal], .quote, .audience');
+  var revealables = document.querySelectorAll('[data-reveal], [data-meter], [data-chart]');
 
-  if (!('IntersectionObserver' in window) || reduceMotion) {
-    Array.prototype.forEach.call(revealables, function (el) { el.classList.add('is-in'); });
+  function revealNow(el) {
+    el.classList.add('is-in');
+    if (el.hasAttribute('data-chart')) el.classList.add('is-drawn');
+  }
+
+  if (!hasIO || reduceMotion) {
+    Array.prototype.forEach.call(revealables, revealNow);
   } else {
     var revealObserver = new IntersectionObserver(function (entries, obs) {
       entries.forEach(function (entry) {
         if (!entry.isIntersecting) return;
-        entry.target.classList.add('is-in');
+        revealNow(entry.target);
         obs.unobserve(entry.target);
       });
-    }, { threshold: 0.2, rootMargin: '0px 0px -10% 0px' });
+    }, { threshold: 0.2, rootMargin: '0px 0px -8% 0px' });
 
     Array.prototype.forEach.call(revealables, function (el) { revealObserver.observe(el); });
   }
 
-  /* 3. Header -------------------------------------------------------------- */
+  /* 4. Header -------------------------------------------------------------- */
 
   var header = document.querySelector('[data-header]');
   var progress = document.querySelector('[data-progress]');
   var nav = document.querySelector('[data-nav]');
   var marker = document.querySelector('[data-nav-marker]');
   var navLinks = document.querySelectorAll('[data-nav-link]');
-
+  var actionBar = document.querySelector('[data-action-bar]');
+  var barVisible = false;
   var ticking = false;
 
   function onScroll() {
@@ -194,8 +187,11 @@
 
     if (progress) {
       var max = document.documentElement.scrollHeight - window.innerHeight;
-      var ratio = max > 0 ? Math.min(window.scrollY / max, 1) : 0;
-      progress.style.setProperty('--p', ratio.toFixed(4));
+      progress.style.setProperty('--p', (max > 0 ? Math.min(window.scrollY / max, 1) : 0).toFixed(4));
+    }
+
+    if (actionBar && barVisible) {
+      actionBar.classList.toggle('is-in', window.scrollY > window.innerHeight * 0.7);
     }
 
     ticking = false;
@@ -206,26 +202,21 @@
     ticking = true;
     requestAnimationFrame(onScroll);
   }, { passive: true });
-  onScroll();
 
-  // the marker follows the hovered link, and returns to the active one
   function moveMarker(link) {
-    if (!marker || !nav || !link) return;
-    marker.style.setProperty('--x', (link.offsetLeft) + 'px');
+    if (!marker || !link) return;
+    marker.style.setProperty('--x', link.offsetLeft + 'px');
     marker.style.setProperty('--w', link.offsetWidth + 'px');
     marker.style.setProperty('--o', '1');
   }
 
-  function activeLink() {
-    return document.querySelector('[data-nav-link].is-active');
-  }
+  function activeLink() { return document.querySelector('[data-nav-link].is-active'); }
 
   if (nav && marker) {
     Array.prototype.forEach.call(navLinks, function (link) {
       link.addEventListener('mouseenter', function () { moveMarker(link); });
       link.addEventListener('focus', function () { moveMarker(link); });
     });
-
     nav.addEventListener('mouseleave', function () {
       var current = activeLink();
       if (current) moveMarker(current);
@@ -233,7 +224,7 @@
     });
   }
 
-  if (navLinks.length && 'IntersectionObserver' in window) {
+  if (navLinks.length && hasIO) {
     var sections = [];
     Array.prototype.forEach.call(navLinks, function (link) {
       var target = document.querySelector(link.getAttribute('href'));
@@ -246,7 +237,7 @@
         if (!match || !entry.isIntersecting) return;
         sections.forEach(function (s) { s.link.classList.remove('is-active'); });
         match.link.classList.add('is-active');
-        if (!nav.matches(':hover')) moveMarker(match.link);
+        if (nav && !nav.matches(':hover')) moveMarker(match.link);
       });
     }, { rootMargin: '-45% 0px -50% 0px' });
 
@@ -258,217 +249,74 @@
     if (current) moveMarker(current);
   });
 
-  /* 4. Hero background video ----------------------------------------------
-     data-video takes one or more file paths. Nothing is requested under
-     reduced motion or on a metered connection, and if no source plays the
-     element is dropped and the light field carries the hero on its own.  */
+  /* 5. Hero background video ----------------------------------------------- */
+
+  function makeVideo(className, src) {
+    var video = document.createElement('video');
+    video.className = className;
+    video.muted = true;
+    video.defaultMuted = true;
+    video.loop = true;
+    video.autoplay = true;
+    video.playsInline = true;
+    video.preload = 'metadata';
+    video.tabIndex = -1;
+    video.setAttribute('playsinline', '');
+    video.setAttribute('muted', '');
+    video.setAttribute('loop', '');
+    video.setAttribute('autoplay', '');
+    video.setAttribute('aria-hidden', 'true');
+    video.src = src;
+    return video;
+  }
 
   var media = document.querySelector('[data-hero-media]');
-  if (media) {
-    var files = (media.getAttribute('data-video') || '')
-      .split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+  if (media && !reduceMotion) {
+    var file = (media.getAttribute('data-video') || '').split(',')[0].trim();
     var connection = navigator.connection || {};
 
-    if (files.length && !reduceMotion && !connection.saveData) {
-      var video = document.createElement('video');
-      video.className = 'hero__video';
-      video.muted = true;
-      video.defaultMuted = true;
-      video.loop = true;
-      video.autoplay = true;
-      video.playsInline = true;
-      video.preload = 'auto';
-      video.tabIndex = -1;
-      video.setAttribute('playsinline', '');
-      video.setAttribute('aria-hidden', 'true');
-
-      files.forEach(function (file) {
-        var source = document.createElement('source');
-        source.src = file;
-        source.type = /\.webm$/i.test(file) ? 'video/webm' : 'video/mp4';
-        video.appendChild(source);
-      });
-
-      video.addEventListener('loadeddata', function () {
+    if (file && !connection.saveData) {
+      var heroVideo = makeVideo('hero__video', file);
+      heroVideo.addEventListener('loadeddata', function () {
         media.classList.add('has-video');
-        var playing = video.play();
+        var playing = heroVideo.play();
         if (playing && playing.catch) playing.catch(function () {});
       });
-
-      // a source that 404s does not bubble, so listen in the capture phase
-      video.addEventListener('error', function () {
+      heroVideo.addEventListener('error', function () {
         media.classList.remove('has-video');
-        if (video.parentNode) video.parentNode.removeChild(video);
+        if (heroVideo.parentNode) heroVideo.parentNode.removeChild(heroVideo);
       }, true);
-
-      media.insertBefore(video, media.firstChild);
+      media.insertBefore(heroVideo, media.firstChild);
     }
   }
 
-  /* 5. Case rail ----------------------------------------------------------
-     Five case studies collapse to one panel at a time. Without JavaScript
-     the rail is a set of jump links and every case stays on the page.    */
-
-  var proof = document.querySelector('.proof');
-  var rail = document.querySelector('[data-case-rail]');
-
-  if (proof && rail) {
-    var tabs = Array.prototype.slice.call(rail.querySelectorAll('[data-case-tab]'));
-    var panels = tabs.map(function (tab) {
-      return proof.querySelector('[data-case="' + tab.getAttribute('data-case-tab') + '"]');
-    });
-
-    if (panels.every(Boolean)) {
-      proof.classList.add('is-tabbed');
-      rail.setAttribute('role', 'tablist');
-
-      var current = 0;
-
-      var refresh = function (panel) {
-        var revealed = panel.querySelectorAll('[data-reveal], .quote, .audience');
-        Array.prototype.forEach.call(revealed, function (el) { el.classList.remove('is-in'); });
-
-        var chart = panel.querySelector('[data-chart]');
-        if (chart) chart.classList.remove('is-drawn');
-
-        requestAnimationFrame(function () {
-          Array.prototype.forEach.call(revealed, function (el) { el.classList.add('is-in'); });
-          if (chart) chart.classList.add('is-drawn');
-        });
-
-        if (!canAnimate) return;
-        Array.prototype.forEach.call(panel.querySelectorAll('[data-count-view]'), function (el, i) {
-          el.dataset.counted = '';
-          countUp(el, 100 + i * 45, 750);
-        });
-      };
-
-      var select = function (index, moveFocus) {
-        current = index;
-
-        tabs.forEach(function (tab, i) {
-          var on = i === index;
-          tab.classList.toggle('is-current', on);
-          tab.setAttribute('aria-selected', on ? 'true' : 'false');
-          tab.tabIndex = on ? 0 : -1;
-          panels[i].classList.toggle('is-current', on);
-          panels[i].hidden = false;
-        });
-
-        refresh(panels[index]);
-        if (moveFocus) tabs[index].focus();
-      };
-
-      tabs.forEach(function (tab, i) {
-        var panel = panels[i];
-        tab.setAttribute('role', 'tab');
-        tab.id = 'tab-' + tab.getAttribute('data-case-tab');
-        tab.setAttribute('aria-controls', panel.id);
-        panel.setAttribute('role', 'tabpanel');
-        panel.setAttribute('aria-labelledby', tab.id);
-        panel.tabIndex = 0;
-
-        tab.addEventListener('click', function (event) {
-          event.preventDefault();
-          select(i, false);
-        });
-
-        tab.addEventListener('keydown', function (event) {
-          var next = null;
-          if (event.key === 'ArrowRight') next = (current + 1) % tabs.length;
-          if (event.key === 'ArrowLeft') next = (current - 1 + tabs.length) % tabs.length;
-          if (event.key === 'Home') next = 0;
-          if (event.key === 'End') next = tabs.length - 1;
-          if (next === null) return;
-          event.preventDefault();
-          select(next, true);
-        });
-      });
-
-      select(0, false);
-    }
-  }
-
-  /* 4. Pivot Point chart --------------------------------------------------
-     The line drawing itself carries the information, so it earns its motion. */
-
-  var chart = document.querySelector('[data-chart]');
-  if (chart) {
-    if (reduceMotion || !('IntersectionObserver' in window)) {
-      chart.classList.add('is-drawn');
-    } else {
-      var chartObserver = new IntersectionObserver(function (entries, obs) {
-        entries.forEach(function (entry) {
-          if (!entry.isIntersecting) return;
-          entry.target.classList.add('is-drawn');
-          obs.unobserve(entry.target);
-        });
-      }, { threshold: 0.35 });
-      chartObserver.observe(chart);
-    }
-  }
-
-  /* 7. Houdini September / November scrub ---------------------------------
-     Dragging interpolates each figure between the two months. Without JS the
-     markup already shows the November figures, and the table below carries
-     both columns either way.                                               */
-
-  var scrub = document.querySelector('[data-scrub]');
-  if (scrub) {
-    var range = scrub.querySelector('.scrub__range');
-    var values = scrub.querySelectorAll('.scrub__value');
-    var endBefore = scrub.querySelector('.scrub__end');
-    var endAfter = scrub.querySelector('.scrub__end--after');
-
-    var paint = function (t) {
-      scrub.style.setProperty('--t', String(t));
-
-      Array.prototype.forEach.call(values, function (el) {
-        var from = parseFloat(el.getAttribute('data-from'));
-        var to = parseFloat(el.getAttribute('data-to'));
-        var decimals = parseInt(el.getAttribute('data-decimals') || '0', 10);
-        var suffix = el.getAttribute('data-suffix') || '';
-        el.textContent = formatNumber(from + (to - from) * t, decimals) + suffix;
-      });
-
-      var month = t > 0.5 ? 'November 2024' : 'September 2024';
-      range.setAttribute('aria-valuetext', month + ', ' + Math.round(t * 100) + ' percent to November');
-      endBefore.style.color = t < 0.5 ? 'var(--paper)' : '';
-      endAfter.style.color = t > 0.5 ? 'var(--gold)' : '';
-    };
-
-    range.addEventListener('input', function () {
-      paint(parseFloat(range.value) / 100);
-    });
-
-    paint(parseFloat(range.value) / 100);
-  }
-
-  /* 8. Vertical video grid -----------------------------------------------
-     Each frame previews its own clip on hover or focus and pulls the rest
-     of the row back. Pressing one loads the real post from the platform;
-     nothing third-party is requested until then.                        */
-
-  function makeClip(className, src) {
-    var clip = document.createElement('video');
-    clip.className = className;
-    clip.muted = true;
-    clip.defaultMuted = true;
-    clip.loop = true;
-    clip.autoplay = true;
-    clip.playsInline = true;
-    clip.preload = 'metadata';
-    clip.tabIndex = -1;
-    clip.setAttribute('playsinline', '');
-    clip.setAttribute('muted', '');
-    clip.setAttribute('loop', '');
-    clip.setAttribute('autoplay', '');
-    clip.setAttribute('aria-hidden', 'true');
-    clip.src = src;
-    return clip;
-  }
+  /* 6. Vertical video grid -------------------------------------------------
+     A tile previews its own clip on hover, and loads the real post from the
+     platform when pressed. Tiles marked data-autoload bring the embed in as
+     soon as they scroll into view, so the client's video is simply playing
+     on the page.                                                          */
 
   var reelGrid = document.querySelector('[data-reels]');
+
+  function loadEmbed(reel, frame) {
+    if (reel.classList.contains('is-playing')) return;
+    var embed = reel.getAttribute('data-embed');
+    if (!embed) return;
+
+    var player = document.createElement('iframe');
+    player.className = 'reel__player';
+    player.src = embed;
+    player.title = reel.getAttribute('data-embed-title') || 'Video player';
+    player.setAttribute('allow', 'autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share');
+    player.setAttribute('allowfullscreen', '');
+    player.setAttribute('scrolling', 'no');
+    player.setAttribute('frameborder', '0');
+    player.loading = 'lazy';
+
+    reel.insertBefore(player, frame);
+    frame.hidden = true;
+    reel.classList.add('is-playing');
+  }
 
   Array.prototype.forEach.call(document.querySelectorAll('[data-reel]'), function (reel) {
     var frame = reel.querySelector('[data-reel-btn]');
@@ -477,7 +325,7 @@
 
     function ensureClip() {
       if (clip || !source || reduceMotion) return;
-      clip = makeClip('reel__clip', source);
+      clip = makeVideo('reel__clip', source);
       clip.addEventListener('loadeddata', function () { reel.classList.add('is-live'); });
       clip.addEventListener('error', function () {
         reel.classList.remove('is-live');
@@ -489,6 +337,7 @@
     }
 
     function activate() {
+      if (reel.classList.contains('is-playing')) return;
       reel.classList.add('is-active');
       if (reelGrid) reelGrid.classList.add('is-focused');
       ensureClip();
@@ -510,46 +359,21 @@
     if (!frame) return;
     frame.addEventListener('focus', activate);
     frame.addEventListener('blur', deactivate);
+    frame.addEventListener('click', function () { loadEmbed(reel, frame); });
 
-    frame.addEventListener('click', function () {
-      var embed = reel.getAttribute('data-embed');
-      if (!embed) return;
-
-      var player = document.createElement('iframe');
-      player.className = 'reel__player';
-      player.src = embed;
-      player.title = reel.getAttribute('data-embed-title') || 'Video player';
-      player.setAttribute('allow', 'autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share');
-      player.setAttribute('allowfullscreen', '');
-      player.setAttribute('scrolling', 'no');
-      player.setAttribute('frameborder', '0');
-      frame.replaceWith(player);
-      player.focus();
-    });
+    if (reel.hasAttribute('data-autoload') && hasIO) {
+      var autoObserver = new IntersectionObserver(function (entries, obs) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          loadEmbed(reel, frame);
+          obs.disconnect();
+        });
+      }, { threshold: 0.4 });
+      autoObserver.observe(reel);
+    }
   });
 
-  /* 8b. Showreel frame in the hero ----------------------------------------- */
-
-  var heroFrame = document.querySelector('[data-hero-frame]');
-  if (heroFrame && !reduceMotion) {
-    var showreel = heroFrame.getAttribute('data-clip');
-    if (showreel) {
-      var reelClip = makeClip('hero__clip', showreel);
-      reelClip.addEventListener('loadeddata', function () {
-        heroFrame.classList.add('has-clip');
-        var playing = reelClip.play();
-        if (playing && playing.catch) playing.catch(function () {});
-      });
-      reelClip.addEventListener('error', function () {
-        heroFrame.classList.remove('has-clip');
-        if (reelClip.parentNode) reelClip.parentNode.removeChild(reelClip);
-      }, true);
-      heroFrame.appendChild(reelClip);
-    }
-  }
-
-  /* 8c. Pointer follower ---------------------------------------------------
-     Fine pointers only, and never under reduced motion.                   */
+  /* 7. Pointer follower ----------------------------------------------------- */
 
   var cursor = document.querySelector('[data-cursor]');
   if (cursor && !reduceMotion && window.matchMedia('(pointer: fine)').matches) {
@@ -580,56 +404,225 @@
     });
   }
 
-  /* 9. Booking widget -----------------------------------------------------
-     Set data-booking-url on the container to a Calendly (or similar) link
-     and the inline widget replaces the placeholder. Left empty, the form
-     below is the whole booking path.                                       */
+  /* 8. Booking -------------------------------------------------------------
+     With a scheduler URL the real embed takes over. Without one the page
+     runs its own picker: pick a weekday, pick a 15-minute slot, then either
+     send the request or drop the appointment straight into your calendar. */
 
-  var booking = document.querySelector('[data-booking]');
-  if (booking) {
-    var bookingUrl = booking.getAttribute('data-booking-url');
-    if (bookingUrl) {
-      var scheduler = document.createElement('iframe');
-      scheduler.src = bookingUrl;
-      scheduler.title = 'Book a call with Manny Garcia';
-      scheduler.width = '100%';
-      scheduler.height = '640';
-      scheduler.setAttribute('frameborder', '0');
-      scheduler.loading = 'lazy';
-      booking.appendChild(scheduler);
-    }
+  var bookingSlot = document.querySelector('[data-booking]');
+  var calendar = document.querySelector('[data-calendar]');
+  var bookingUrl = bookingSlot ? bookingSlot.getAttribute('data-booking-url') : '';
+
+  if (bookingSlot && bookingUrl) {
+    var scheduler = document.createElement('iframe');
+    scheduler.src = bookingUrl;
+    scheduler.title = 'Book a call with Manny Garcia';
+    scheduler.loading = 'lazy';
+    scheduler.setAttribute('frameborder', '0');
+    bookingSlot.appendChild(scheduler);
+    if (calendar) calendar.hidden = true;
+  } else if (calendar) {
+    buildCalendar(calendar);
   }
 
-  /* 10. Contact form -------------------------------------------------------
-     No backend on this site, so the form composes the email the visitor
-     would have written. Native validation still gates it.                  */
+  function buildCalendar(root) {
+    var monthLabel = root.querySelector('[data-cal-month]');
+    var grid = root.querySelector('[data-cal-grid]');
+    var slotList = root.querySelector('[data-cal-slots]');
+    var slotsTitle = root.querySelector('[data-cal-slots-title]');
+    var summary = root.querySelector('[data-cal-summary]');
+    var prev = root.querySelector('[data-cal-prev]');
+    var next = root.querySelector('[data-cal-next]');
+    var bookBtn = root.querySelector('[data-cal-book]');
+    var icsBtn = root.querySelector('[data-cal-ics]');
 
-  var form = document.querySelector('[data-form]');
-  if (form) {
-    form.addEventListener('submit', function (event) {
-      event.preventDefault();
-      if (!form.reportValidity()) return;
+    var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
+                  'July', 'August', 'September', 'October', 'November', 'December'];
+    var DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-      var data = new FormData(form);
-      var subject = 'G Management inquiry — ' + (data.get('name') || 'new inquiry');
-      var body = [
-        'Name: ' + (data.get('name') || ''),
-        'Email: ' + (data.get('email') || ''),
-        'You are: ' + (data.get('who') || ''),
-        'Needs: ' + (data.get('goal') || ''),
-        'Account or website: ' + (data.get('handle') || ''),
-        '',
-        data.get('message') || ''
-      ].join('\n');
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+    var view = new Date(today.getFullYear(), today.getMonth(), 1);
+    var lastMonth = new Date(today.getFullYear(), today.getMonth() + 2, 1);
+    var picked = null;
+    var pickedSlot = null;
+
+    // 09:00 to 16:30, every half hour
+    var SLOTS = [];
+    for (var h = 9; h <= 16; h++) {
+      SLOTS.push({ h: h, m: 0 });
+      SLOTS.push({ h: h, m: 30 });
+    }
+
+    function clock(h, m) {
+      var suffix = h < 12 ? 'am' : 'pm';
+      var hour = h % 12 === 0 ? 12 : h % 12;
+      return hour + ':' + (m < 10 ? '0' + m : m) + ' ' + suffix;
+    }
+
+    function bookable(date) {
+      var day = date.getDay();
+      return date >= today && day !== 0 && day !== 6;
+    }
+
+    function renderSlots() {
+      slotList.innerHTML = '';
+      if (!picked) {
+        slotsTitle.textContent = 'Pick a day to see times';
+        return;
+      }
+      slotsTitle.textContent = 'Times on ' + DAYS[picked.getDay()] + ', ' +
+        MONTHS[picked.getMonth()] + ' ' + picked.getDate();
+
+      SLOTS.forEach(function (slot) {
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'calendar__slot';
+        button.textContent = clock(slot.h, slot.m);
+        button.setAttribute('aria-pressed', 'false');
+
+        button.addEventListener('click', function () {
+          pickedSlot = slot;
+          Array.prototype.forEach.call(slotList.children, function (el) {
+            el.classList.remove('is-picked');
+            el.setAttribute('aria-pressed', 'false');
+          });
+          button.classList.add('is-picked');
+          button.setAttribute('aria-pressed', 'true');
+          renderSummary();
+        });
+
+        slotList.appendChild(button);
+      });
+    }
+
+    function renderSummary() {
+      var ready = Boolean(picked && pickedSlot);
+      bookBtn.disabled = !ready;
+      icsBtn.disabled = !ready;
+
+      summary.textContent = ready
+        ? DAYS[picked.getDay()] + ', ' + MONTHS[picked.getMonth()] + ' ' + picked.getDate() +
+          ' at ' + clock(pickedSlot.h, pickedSlot.m) + ' ET'
+        : 'No slot selected yet.';
+    }
+
+    function render() {
+      monthLabel.textContent = MONTHS[view.getMonth()] + ' ' + view.getFullYear();
+      prev.disabled = view <= new Date(today.getFullYear(), today.getMonth(), 1);
+      next.disabled = view >= lastMonth;
+
+      grid.innerHTML = '';
+      var first = new Date(view.getFullYear(), view.getMonth(), 1);
+      var offset = (first.getDay() + 6) % 7;  // Monday-first
+      var total = new Date(view.getFullYear(), view.getMonth() + 1, 0).getDate();
+
+      for (var i = 0; i < offset; i++) {
+        var blank = document.createElement('span');
+        blank.className = 'calendar__day is-empty';
+        grid.appendChild(blank);
+      }
+
+      for (var d = 1; d <= total; d++) {
+        (function (day) {
+          var date = new Date(view.getFullYear(), view.getMonth(), day);
+          var button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'calendar__day';
+          button.textContent = String(day);
+          button.setAttribute('aria-pressed', 'false');
+          button.setAttribute('aria-label',
+            DAYS[date.getDay()] + ', ' + MONTHS[date.getMonth()] + ' ' + day);
+
+          if (date.getTime() === today.getTime()) button.classList.add('is-today');
+
+          if (!bookable(date)) {
+            button.disabled = true;
+          } else {
+            if (picked && picked.getTime() === date.getTime()) {
+              button.classList.add('is-picked');
+              button.setAttribute('aria-pressed', 'true');
+            }
+            button.addEventListener('click', function () {
+              picked = date;
+              pickedSlot = null;
+              render();
+              renderSlots();
+              renderSummary();
+            });
+          }
+
+          grid.appendChild(button);
+        }(d));
+      }
+    }
+
+    prev.addEventListener('click', function () {
+      view = new Date(view.getFullYear(), view.getMonth() - 1, 1);
+      render();
+    });
+    next.addEventListener('click', function () {
+      view = new Date(view.getFullYear(), view.getMonth() + 1, 1);
+      render();
+    });
+
+    function stamp(date, h, m) {
+      function pad(n) { return n < 10 ? '0' + n : String(n); }
+      return date.getFullYear() + pad(date.getMonth() + 1) + pad(date.getDate()) +
+             'T' + pad(h) + pad(m) + '00';
+    }
+
+    bookBtn.addEventListener('click', function () {
+      if (!picked || !pickedSlot) return;
+      var when = DAYS[picked.getDay()] + ', ' + MONTHS[picked.getMonth()] + ' ' +
+                 picked.getDate() + ' at ' + clock(pickedSlot.h, pickedSlot.m) + ' ET';
 
       window.location.href = 'mailto:manny@gmgmt.co'
-        + '?subject=' + encodeURIComponent(subject)
-        + '&body=' + encodeURIComponent(body);
+        + '?subject=' + encodeURIComponent('Call request — ' + when)
+        + '&body=' + encodeURIComponent(
+            'Hi Manny,\n\nI would like the ' + when + ' slot for a 15-minute call.\n\n' +
+            'Name:\nBrand or handle:\nWhat I need:\n');
     });
+
+    icsBtn.addEventListener('click', function () {
+      if (!picked || !pickedSlot) return;
+      var endMinutes = pickedSlot.m + 15;
+      var endHour = pickedSlot.h + (endMinutes >= 60 ? 1 : 0);
+      var endMin = endMinutes % 60;
+
+      var ics = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//G Management//Booking//EN',
+        'CALSCALE:GREGORIAN',
+        'BEGIN:VEVENT',
+        'UID:' + Date.now() + '@gmgmt.co',
+        'DTSTAMP:' + new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z',
+        'DTSTART;TZID=America/New_York:' + stamp(picked, pickedSlot.h, pickedSlot.m),
+        'DTEND;TZID=America/New_York:' + stamp(picked, endHour, endMin),
+        'SUMMARY:Intro call — G Management',
+        'DESCRIPTION:Fifteen minutes with Manny Garcia. manny@gmgmt.co, (786) 929-5735.',
+        'LOCATION:Phone call',
+        'END:VEVENT',
+        'END:VCALENDAR'
+      ].join('\r\n');
+
+      var url = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' }));
+      var link = document.createElement('a');
+      link.href = url;
+      link.download = 'g-management-call.ics';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    });
+
+    render();
+    renderSlots();
+    renderSummary();
   }
 
-  /* 11. Copy, save contact, phone action bar -------------------------------
-     Small conveniences for an audience that arrives on a phone.          */
+  /* 9. Contact actions and phone bar ---------------------------------------- */
 
   Array.prototype.forEach.call(document.querySelectorAll('[data-copy]'), function (button) {
     var label = button.textContent;
@@ -693,23 +686,18 @@
     });
   }
 
-  var actionBar = document.querySelector('[data-action-bar]');
   if (actionBar && window.matchMedia('(max-width: 767px)').matches) {
     actionBar.hidden = false;
+    barVisible = true;
     document.body.classList.add('has-action-bar');
 
     var bookSection = document.querySelector('#book');
-    var atBooking = false;
-
-    if (bookSection && 'IntersectionObserver' in window) {
+    if (bookSection && hasIO) {
       new IntersectionObserver(function (entries) {
-        atBooking = entries[0].isIntersecting;
-        actionBar.classList.toggle('is-in', !atBooking && window.scrollY > window.innerHeight * 0.6);
+        if (entries[0].isIntersecting) actionBar.classList.remove('is-in');
       }, { threshold: 0.15 }).observe(bookSection);
     }
-
-    window.addEventListener('scroll', function () {
-      actionBar.classList.toggle('is-in', !atBooking && window.scrollY > window.innerHeight * 0.6);
-    }, { passive: true });
   }
+
+  onScroll();
 }());
