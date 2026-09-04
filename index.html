@@ -86,7 +86,7 @@
     <div class="shell hero__inner">
       <div class="hero__copy">
         <p class="hero__where" data-seq="1">
-          <span class="hero__dot" aria-hidden="true"></span>Miami, Florida &mdash; taking on new accounts
+          <span class="hero__dot" aria-hidden="true"></span>Miami, Florida
         </p>
 
         <h1 class="hero__title" data-scramble>
@@ -95,10 +95,7 @@
           <span class="line" data-seq="4"><span>brand deals for creators.</span></span>
         </h1>
 
-        <p class="hero__sub" data-seq="5">
-          We post short-form video daily on accounts we run end to end. Every figure
-          below came off a client's own dashboard, over the dates written beside it.
-        </p>
+        <p class="hero__sub" data-seq="5">Short-form video, posted daily, on accounts run end to end.</p>
 
         <div class="hero__actions" data-seq="6">
           <a class="btn btn--primary btn--lg btn--glow" href="#book">Book a 15-minute call</a>
@@ -151,29 +148,29 @@
     <div class="shell">
       <header class="section-head" data-reveal="rise">
         <h2 class="section-title" id="work-title">The work.</h2>
-        <p class="section-lead">Short-form is the whole engine. Two client cuts, playing here.</p>
+        <p class="section-lead">Two client cuts, playing here.</p>
       </header>
 
-      <!-- the recording is 1588 × 870, so its card carries that exact ratio
-           and nothing is cropped; it plays itself, muted and looping -->
-      <figure class="reel screen" data-reel data-cursor-view
-              data-video="/assets/clips/screen-recording.mp4"
-              data-embed="https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2Fshare%2Fr%2F1EtnnM8QSx%2F&show_text=false&autoplay=1&width=540"
-              data-embed-title="Facebook video from a G Management client account">
-        <button class="reel__frame" type="button" data-reel-btn>
-          <span class="reel__ghost" aria-hidden="true">Reel</span>
-          <span class="reel__platform">Facebook</span>
-          <span class="reel__badge" aria-hidden="true">
-            <svg viewBox="0 0 12 14" width="10" height="12" focusable="false"><path d="M0 0 L12 7 L0 14 Z" fill="currentColor"/></svg>Watch
-          </span>
-          <span class="visually-hidden">Play the client reel from Facebook</span>
-        </button>
-        <figcaption class="reel__caption">
-          <a href="https://www.facebook.com/share/r/1EtnnM8QSx/" target="_blank" rel="noopener">Open on Facebook</a>
-        </figcaption>
-      </figure>
-
       <div class="reels" data-reels>
+
+        <!-- the file carries a 90 degree rotation, so it displays 870 x 1588
+             and sits in the same vertical frame as the tile beside it -->
+        <figure class="reel" data-reel data-cursor-view
+                data-video="/assets/clips/screen-recording.mp4"
+                data-embed="https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2Fshare%2Fr%2F1EtnnM8QSx%2F&show_text=false&autoplay=1&width=540"
+                data-embed-title="Facebook video from a G Management client account">
+          <button class="reel__frame" type="button" data-reel-btn>
+            <span class="reel__ghost" aria-hidden="true">Reel</span>
+            <span class="reel__platform">Facebook</span>
+            <span class="reel__badge" aria-hidden="true">
+              <svg viewBox="0 0 12 14" width="10" height="12" focusable="false"><path d="M0 0 L12 7 L0 14 Z" fill="currentColor"/></svg>Watch
+            </span>
+            <span class="visually-hidden">Play the client reel from Facebook</span>
+          </button>
+          <figcaption class="reel__caption">
+            <a href="https://www.facebook.com/share/r/1EtnnM8QSx/" target="_blank" rel="noopener">Open on Facebook</a>
+          </figcaption>
+        </figure>
 
         <!-- data-autoload brings the embed in as soon as the tile is in view -->
         <figure class="reel" data-reel data-cursor-view data-autoload
