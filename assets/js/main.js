@@ -311,35 +311,53 @@
     return video;
   }
 
-  var media = document.querySelector('[data-hero-media]');
-  if (media && !reduceMotion) {
-    var sources = (media.getAttribute('data-video') || '')
+  /* Mounts the first source in a comma separated list that actually plays.
+     Each source gets one try: a file that 404s or will not decode hands
+     over to the next, and onFail runs once the list is spent.          */
+  function mountVideo(host, list, className, onPlay, onFail) {
+    var sources = String(list || '')
       .split(',')
       .map(function (s) { return s.trim(); })
       .filter(Boolean);
 
-    /* Each source gets one try. A file that 404s or will not decode hands
-       over to the next one, and when the list runs out the drifting light
-       field carries the hero on its own.                                 */
-    (function playFirstThatWorks() {
-      if (!sources.length || (navigator.connection || {}).saveData) return;
+    if (!sources.length || reduceMotion || (navigator.connection || {}).saveData) {
+      if (onFail) onFail();
+      return;
+    }
 
-      var heroVideo = makeVideo('hero__video', sources.shift());
+    (function next() {
+      if (!sources.length) {
+        if (onFail) onFail();
+        return;
+      }
 
-      heroVideo.addEventListener('loadeddata', function () {
-        media.classList.add('has-video');
-        var playing = heroVideo.play();
+      var el = makeVideo(className, sources.shift());
+
+      el.addEventListener('loadeddata', function () {
+        var playing = el.play();
         if (playing && playing.catch) playing.catch(function () {});
+        if (onPlay) onPlay(el);
       });
 
-      heroVideo.addEventListener('error', function () {
-        media.classList.remove('has-video');
-        if (heroVideo.parentNode) heroVideo.parentNode.removeChild(heroVideo);
-        playFirstThatWorks();
+      el.addEventListener('error', function () {
+        if (el.parentNode) el.parentNode.removeChild(el);
+        if (onFail) onFail();
+        next();
       }, true);
 
-      media.insertBefore(heroVideo, media.firstChild);
+      host.insertBefore(el, host.firstChild);
     }());
+  }
+
+  var media = document.querySelector('[data-hero-media]');
+  if (media) {
+    mountVideo(
+      media,
+      media.getAttribute('data-video'),
+      'hero__video',
+      function () { media.classList.add('has-video'); },
+      function () { media.classList.remove('has-video'); }
+    );
   }
 
   /* 6. Vertical video grid -------------------------------------------------
@@ -415,6 +433,25 @@
     reel.addEventListener('mouseleave', deactivate);
 
     if (!frame) return;
+
+    /* A tile with data-video carries the footage itself: the file plays in
+       the frame, muted and looping, and pressing still opens the post on
+       the platform. Without a file the poster frame stands as it did.  */
+    if (reel.getAttribute('data-video') && hasIO) {
+      var inlineObserver = new IntersectionObserver(function (entries, obs) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          obs.disconnect();
+          mountVideo(frame, reel.getAttribute('data-video'), 'reel__clip', function () {
+            reel.classList.add('is-live');
+          }, function () {
+            reel.classList.remove('is-live');
+          });
+        });
+      }, { threshold: 0.25 });
+      inlineObserver.observe(reel);
+    }
+
     frame.addEventListener('focus', activate);
     frame.addEventListener('blur', deactivate);
     frame.addEventListener('click', function () { loadEmbed(reel, frame); });
