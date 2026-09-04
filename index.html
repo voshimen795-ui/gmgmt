@@ -87,7 +87,7 @@
     <div class="shell hero__inner">
       <div class="hero__copy">
         <p class="hero__where" data-seq="1">
-          <span class="hero__dot" aria-hidden="true"></span>Miami, Florida — taking clients
+          <span class="hero__dot" aria-hidden="true"></span>Miami, Florida &mdash; taking clients
         </p>
 
         <h1 class="hero__title" data-scramble>
@@ -109,37 +109,21 @@
         <ul class="hero__proof" data-seq="7">
           <li>
             <span class="hero__proof-figure" data-count data-to="5.4" data-decimals="1" data-suffix="M">5.4M</span>
-            <span class="hero__proof-label">reached, 30 days</span>
+            <span class="hero__proof-label">accounts reached, 30 days</span>
+          </li>
+          <li>
+            <span class="hero__proof-figure" data-count data-to="15" data-suffix="M+">15M+</span>
+            <span class="hero__proof-label">views for one client</span>
           </li>
           <li>
             <span class="hero__proof-figure" data-count data-to="54" data-prefix="+" data-suffix="%">+54%</span>
-            <span class="hero__proof-label">orders, two months</span>
+            <span class="hero__proof-label">orders in two months</span>
           </li>
           <li>
             <span class="hero__proof-figure" data-count data-to="19.2" data-decimals="1" data-prefix="$" data-suffix="K">$19.2K</span>
             <span class="hero__proof-label">one link, one month</span>
           </li>
         </ul>
-      </div>
-
-      <!-- the hero carries a live client short rather than a placeholder frame -->
-      <div class="hero__stage" data-seq="8">
-        <figure class="showcase" data-reel data-cursor-view data-autoload
-                data-embed="https://www.youtube-nocookie.com/embed/WZF_Tt_xNAQ?autoplay=1&mute=1&loop=1&playlist=WZF_Tt_xNAQ&controls=1&rel=0&playsinline=1&modestbranding=1"
-                data-embed-title="YouTube Short from a G Management client account">
-          <button class="showcase__frame reel__frame" type="button" data-reel-btn>
-            <span class="reel__ghost" aria-hidden="true">Short</span>
-            <span class="reel__platform">Client short, live</span>
-            <span class="reel__badge" aria-hidden="true">
-              <svg viewBox="0 0 12 14" width="10" height="12" focusable="false"><path d="M0 0 L12 7 L0 14 Z" fill="currentColor"/></svg>Watch
-            </span>
-            <span class="visually-hidden">Play the client short from YouTube</span>
-          </button>
-          <figcaption class="showcase__note">
-            <span>15M+ views in two months &mdash; BKH Enterprises</span>
-            <a href="https://www.youtube.com/shorts/WZF_Tt_xNAQ" target="_blank" rel="noopener">Open on YouTube</a>
-          </figcaption>
-        </figure>
       </div>
     </div>
   </section>
@@ -173,7 +157,10 @@
 
       <div class="reels" data-reels>
 
-        <figure class="reel" data-reel data-cursor-view data-clip=""
+        <!-- data-video plays a self-hosted file inline, muted and looping.
+             Facebook's plugin is the fallback for when no file is present. -->
+        <figure class="reel" data-reel data-cursor-view
+                data-video="/assets/clips/facebook-reel.mp4"
                 data-embed="https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2Fshare%2Fr%2F1EtnnM8QSx%2F&show_text=false&autoplay=1&width=540"
                 data-embed-title="Facebook video from a G Management client account">
           <button class="reel__frame" type="button" data-reel-btn>
@@ -186,6 +173,23 @@
           </button>
           <figcaption class="reel__caption">
             <a href="https://www.facebook.com/share/r/1EtnnM8QSx/" target="_blank" rel="noopener">Open on Facebook</a>
+          </figcaption>
+        </figure>
+
+        <!-- data-autoload brings the embed in as soon as the tile is in view -->
+        <figure class="reel" data-reel data-cursor-view data-autoload
+                data-embed="https://www.youtube-nocookie.com/embed/WZF_Tt_xNAQ?autoplay=1&mute=1&loop=1&playlist=WZF_Tt_xNAQ&controls=1&rel=0&playsinline=1&modestbranding=1"
+                data-embed-title="YouTube Short from a G Management client account">
+          <button class="reel__frame" type="button" data-reel-btn>
+            <span class="reel__ghost" aria-hidden="true">Short</span>
+            <span class="reel__platform">YouTube</span>
+            <span class="reel__badge" aria-hidden="true">
+              <svg viewBox="0 0 12 14" width="10" height="12" focusable="false"><path d="M0 0 L12 7 L0 14 Z" fill="currentColor"/></svg>Watch
+            </span>
+            <span class="visually-hidden">Play the client short from YouTube</span>
+          </button>
+          <figcaption class="reel__caption">
+            <a href="https://www.youtube.com/shorts/WZF_Tt_xNAQ" target="_blank" rel="noopener">Open on YouTube</a>
           </figcaption>
         </figure>
 

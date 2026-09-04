@@ -56,8 +56,11 @@ or on a connection flagged `saveData`, and if no source plays the element is rem
 the drifting light field carries the hero on its own. Keep the file short and small — it
 is background, not content; ten seconds at a few hundred KB is plenty.
 
-**Reel clips.** Each tile in the vertical grid can preview a self-hosted clip on hover or
-keyboard focus — add `data-clip="/assets/clips/whatever.mp4"` to the `<figure class="reel">`.
+**Reel clips.** A tile plays a self-hosted file inline, muted and looping, as soon as it
+scrolls into view — add `data-video="/assets/clips/whatever.mp4"` to the
+`<figure class="reel">`. Several files can be listed comma separated and the first one
+that plays wins; if none do, the tile stays a poster frame and its platform embed loads on
+press. See `assets/clips/README.md`.
 The clip is only created on first hover, plays muted and looping, and is dropped if the
 file is missing. Tiles keep working without a clip: they stay poster frames that load the
 real post when pressed.
@@ -84,16 +87,16 @@ those attributes and the interaction follows.
 
 1. **Header** — wordmark, centred nav, and a booking CTA. A gold reading-progress
    hairline sits on its bottom edge and a marker slides between nav items.
-2. **Hero** — two columns on desktop, stacked on phones. Left: a headline that arrives
-   character by character behind a short glyph scramble, one sentence of value, two calls
-   to action, and three figures that count up. Right: a 9:16 stage where a client short
-   plays itself, muted and looping, so the fold is never an empty frame. The stage takes
-   its width from the viewport height, so the whole hero fits a short laptop screen. A
-   muted video plays behind the section when a file is present at `/assets/hero.mp4`.
+2. **Hero** — one centred column on a full-bleed film. A headline that arrives character
+   by character behind a short glyph scramble, one sentence of value, two calls to action,
+   and four figures that count up across a single rule. The film runs muted and looping
+   behind it; with a film present the scrim pools under the copy and thins towards the
+   edges, and the copy carries its own shadow so a bright frame cannot wash it out.
 3. **Marquee** — an infinite services loop, paused on hover.
-4. **Work** — a 9:16 Facebook tile that loads on press, beside a panel carrying the offer:
-   how a month runs, what is included, and the CTA. The panel stretches to the tile's
-   height so neither column leaves a hole.
+4. **Work** — two 9:16 tiles beside a panel carrying the offer: how a month runs, what is
+   included, and the CTA. The Facebook tile plays a self-hosted clip from
+   `/assets/clips/` inline; the YouTube tile loads and plays itself when it scrolls into
+   view. The panel stretches to the tiles' height so no column leaves a hole.
 5. **Results** — a bento grid: BKH and the Pivot Point chart across the top, then Houdini,
    the link-in-bio revenue and PAC-Hub. Every figure counts up on arrival, and the shares
    (99.7% non-follower reach, 92% US audience) grow as bars.
