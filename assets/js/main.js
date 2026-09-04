@@ -314,7 +314,7 @@
   /* Mounts the first source in a comma separated list that actually plays.
      Each source gets one try: a file that 404s or will not decode hands
      over to the next, and onFail runs once the list is spent.          */
-  function mountVideo(host, list, className, onPlay, onFail) {
+  function mountVideo(host, list, className, onPlay, onFail, startAt) {
     var sources = String(list || '')
       .split(',')
       .map(function (s) { return s.trim(); })
@@ -331,7 +331,30 @@
         return;
       }
 
-      var el = makeVideo(className, sources.shift());
+      var src = sources.shift();
+
+      /* A start offset skips the head of the file. The media fragment gets
+         the browser to paint that frame first rather than frame zero, the
+         seek covers browsers that ignore the fragment, and looping is done
+         by hand so it returns to the offset instead of to the start.    */
+      if (startAt > 0 && src.indexOf('#') === -1) src += '#t=' + startAt;
+
+      var el = makeVideo(className, src);
+
+      if (startAt > 0) {
+        el.loop = false;
+        el.removeAttribute('loop');
+
+        el.addEventListener('loadedmetadata', function () {
+          try { if (el.currentTime < startAt) el.currentTime = startAt; } catch (e) {}
+        });
+
+        el.addEventListener('ended', function () {
+          try { el.currentTime = startAt; } catch (e) {}
+          var again = el.play();
+          if (again && again.catch) again.catch(function () {});
+        });
+      }
 
       el.addEventListener('loadeddata', function () {
         var playing = el.play();
@@ -446,7 +469,7 @@
             reel.classList.add('is-live');
           }, function () {
             reel.classList.remove('is-live');
-          });
+          }, parseFloat(reel.getAttribute('data-start')) || 0);
         });
       }, { threshold: 0.25 });
       inlineObserver.observe(reel);

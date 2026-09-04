@@ -890,9 +890,12 @@ section { padding-block: var(--section-y); }
 .meter.is-in .meter__track span { width: calc(var(--pct) * 1%); }
 html:not(.js) .meter__track span { width: calc(var(--pct) * 1%); }
 
-/* the big figure has to fit its card, so only the wide one runs full size */
+/* the big figure has to fit its card, so full size only while the wide card
+   actually spans the row — at three columns it is a third of the width */
 .bento__figure { font-size: clamp(2rem, 6vw, 2.75rem); }
-.bento__card--wide .bento__figure { font-size: var(--t-figure); }
+@media (min-width: 720px) and (max-width: 999px) {
+  .bento__card--wide .bento__figure { font-size: var(--t-figure); }
+}
 
 @media (min-width: 720px) {
   .bento { grid-template-columns: repeat(6, minmax(0, 1fr)); }
@@ -900,13 +903,123 @@ html:not(.js) .meter__track span { width: calc(var(--pct) * 1%); }
   .bento__card--wide, .bento__card--chart { grid-column: span 6; }
 }
 @media (min-width: 1000px) {
-  .bento__card { grid-column: span 2; }
-  .bento__card--wide, .bento__card--chart { grid-column: span 3; }
+  /* three cards, three columns, each at its own natural height rather than
+     stretched to the tallest — a stretched short card is just a hole */
+  .bento { align-items: start; }
+  .bento__card, .bento__card--wide { grid-column: span 2; }
+}
+
+
+/* 10b. Before and after ----------------------------------------------------- */
+
+.ba { border-bottom: var(--hairline); }
+.ba .section-head { max-width: 60ch; }
+
+.ba__grid {
+  display: grid;
+  gap: var(--sp-24);
+}
+
+.ba__card {
+  display: flex;
+  flex-direction: column;
+  padding: var(--sp-32) var(--sp-24);
+  border: var(--hairline);
+  border-radius: var(--radius);
+  background: var(--surface);
+  text-align: center;
+  transition: border-color 320ms var(--ease), box-shadow 420ms var(--ease-out);
+}
+.ba__card:hover {
+  border-color: color-mix(in srgb, var(--gold) 40%, var(--line));
+  box-shadow: var(--neon-soft);
+}
+
+.ba__note {
+  margin-top: auto;
+  padding-top: var(--sp-24);
+  font-size: var(--t-label);
+  color: var(--grey);
+  text-align: left;
+  text-wrap: pretty;
+}
+
+/* one metric, two bars: the state before the work and the state after */
+.swing {
+  display: grid;
+  gap: var(--sp-24);
+  margin-top: var(--sp-24);
+  text-align: left;
+}
+.swing__k {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-8);
+  font-size: var(--t-label);
+  color: var(--grey);
+}
+.swing__k b {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+}
+
+.swing__row {
+  display: grid;
+  grid-template-columns: 3.5rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--sp-8);
+  margin-top: var(--sp-8);
+}
+.swing__label { font-size: var(--t-label); color: var(--grey); }
+
+.swing__track {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+.swing__track > span {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--grey) 55%, transparent);
+  transition: width 1100ms var(--ease-out);
+}
+.swing.is-in .swing__track > span { width: calc(var(--w) * 1%); }
+html:not(.js) .swing__track > span { width: calc(var(--w) * 1%); }
+
+.swing__row--after .swing__track > span {
+  background: linear-gradient(90deg, var(--gold), var(--gold-lift));
+  box-shadow: var(--neon-soft);
+}
+.swing__row--after .swing__track > span { transition-delay: 160ms; }
+
+.swing__v {
+  min-width: 5.5ch;
+  text-align: right;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.swing__row--after .swing__v { color: var(--paper); }
+
+@media (min-width: 1000px) {
+  .ba__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ba__card { padding: var(--sp-32); }
 }
 
 /* 11. Results — Pivot Point chart ------------------------------------------- */
 
 .chart { margin-top: var(--sp-24); }
+.ba__card .stats--row { margin-top: var(--sp-24); }
 .chart__svg { width: 100%; height: auto; }
 .chart__grid line { stroke: var(--line); stroke-width: 1; }
 .chart__ticks text, .chart__stages text {

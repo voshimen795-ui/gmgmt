@@ -155,7 +155,7 @@
 
         <!-- the file carries a 90 degree rotation, so it displays 870 x 1588
              and sits in the same vertical frame as the tile beside it -->
-        <figure class="reel" data-reel data-cursor-view
+        <figure class="reel" data-reel data-cursor-view data-start="1"
                 data-video="/assets/clips/screen-recording.mp4"
                 data-embed="https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2Fshare%2Fr%2F1EtnnM8QSx%2F&show_text=false&autoplay=1&width=540"
                 data-embed-title="Facebook video from a G Management client account">
@@ -229,48 +229,73 @@
     </div>
   </section>
 
-  <!-- ============================================================= RESULTS -->
-  <section class="results" id="results" aria-labelledby="results-title">
+  <!-- =========================================================== BEFORE/AFTER -->
+  <section class="ba" id="proof" aria-labelledby="ba-title">
     <div class="shell">
       <header class="section-head" data-reveal="rise">
-        <h2 class="section-title" id="results-title">The receipts.</h2>
-        <p class="section-lead">Five accounts, straight off their own dashboards, with the
-          dates each figure covers.</p>
+        <h2 class="section-title" id="ba-title">Before and after.</h2>
+        <p class="section-lead">The same account on both sides of the work, off the client's
+          own dashboard.</p>
       </header>
 
-      <div class="bento">
+      <div class="ba__grid">
 
-        <article class="bento__card bento__card--wide" data-reveal="rise">
+        <article class="ba__card" data-reveal="rise">
           <header class="bento__head">
-            <h3 class="bento__client">BKH Enterprises</h3>
-            <p class="bento__when">Instagram, Jul 28 &ndash; Aug 26</p>
+            <h3 class="bento__client">Houdini Holsters</h3>
+            <p class="bento__when">Shopify &middot; September 2024, then November 2024</p>
           </header>
 
-          <p class="bento__figure">
-            <span data-count-view data-to="5487050">5,487,050</span>
-          </p>
-          <p class="bento__caption">accounts reached</p>
-
-          <ul class="stats">
-            <li><span class="stats__k">Impressions</span><span class="stats__v">9,074,547</span><span class="stats__d">+54.8%</span></li>
-            <li><span class="stats__k">Interactions, Dec 20 &ndash; Jan 18</span><span class="stats__v">696,883</span><span class="stats__d">+836%</span></li>
-            <li><span class="stats__k">Followers</span><span class="stats__v">39,967</span><span class="stats__d">+10.6%</span></li>
+          <ul class="swing" data-meter>
+            <li>
+              <p class="swing__k">Sessions <b>1.7&times;</b></p>
+              <div class="swing__row">
+                <span class="swing__label">Before</span>
+                <span class="swing__track" style="--w:58.7"><span></span></span>
+                <span class="swing__v">77,440</span>
+              </div>
+              <div class="swing__row swing__row--after">
+                <span class="swing__label">After</span>
+                <span class="swing__track" style="--w:100"><span></span></span>
+                <span class="swing__v">131,814</span>
+              </div>
+            </li>
+            <li>
+              <p class="swing__k">Orders <b>2.1&times;</b></p>
+              <div class="swing__row">
+                <span class="swing__label">Before</span>
+                <span class="swing__track" style="--w:47.2"><span></span></span>
+                <span class="swing__v">1,544</span>
+              </div>
+              <div class="swing__row swing__row--after">
+                <span class="swing__label">After</span>
+                <span class="swing__track" style="--w:100"><span></span></span>
+                <span class="swing__v">3,272</span>
+              </div>
+            </li>
+            <li>
+              <p class="swing__k">Conversion rate <b>+21%</b></p>
+              <div class="swing__row">
+                <span class="swing__label">Before</span>
+                <span class="swing__track" style="--w:83"><span></span></span>
+                <span class="swing__v">1.85%</span>
+              </div>
+              <div class="swing__row swing__row--after">
+                <span class="swing__label">After</span>
+                <span class="swing__track" style="--w:100"><span></span></span>
+                <span class="swing__v">2.23%</span>
+              </div>
+            </li>
           </ul>
 
-          <div class="meter" data-meter style="--pct:99.7">
-            <div class="meter__top"><span>Reach from non-followers</span><b>99.7%</b></div>
-            <div class="meter__track"><span></span></div>
-          </div>
-          <div class="meter" data-meter style="--pct:95">
-            <div class="meter__top"><span>Reels, of views by content type</span><b>4M of 4.2M</b></div>
-            <div class="meter__track"><span></span></div>
-          </div>
+          <p class="ba__note">Traffic went up and the conversion rate went up with it, so the
+            extra sessions were buyers rather than passers-by.</p>
         </article>
 
-        <article class="bento__card bento__card--chart" data-reveal="rise">
+        <article class="ba__card" data-reveal="rise">
           <header class="bento__head">
             <h3 class="bento__client">Pivot Point</h3>
-            <p class="bento__when">Views and reach, Dec 22 &ndash; Feb 20</p>
+            <p class="bento__when">Instagram &middot; the 30 days before, then the 30 days after</p>
           </header>
 
           <figure class="chart" data-chart>
@@ -314,24 +339,50 @@
             <li><span class="stats__k">Reach</span><span class="stats__v">585,289</span><span class="stats__d">+1,095.3%</span></li>
             <li><span class="stats__k">Non-followers</span><span class="stats__v">97.7%</span><span class="stats__d">from 83.1%</span></li>
           </ul>
+          <p class="ba__note">Reach from people who did not follow the account went from
+            83.1% to 97.7%, so the rise is new audience rather than the existing one
+            watching more.</p>
         </article>
+      </div>
+    </div>
+  </section>
 
-        <article class="bento__card" data-reveal="rise">
+  <!-- ============================================================= RESULTS -->
+  <section class="results" id="results" aria-labelledby="results-title">
+    <div class="shell">
+      <header class="section-head" data-reveal="rise">
+        <h2 class="section-title" id="results-title">The receipts.</h2>
+        <p class="section-lead">Straight off the clients' own dashboards, with the dates each
+          figure covers.</p>
+      </header>
+
+      <div class="bento">
+
+        <article class="bento__card bento__card--wide" data-reveal="rise">
           <header class="bento__head">
-            <h3 class="bento__client">Houdini Holsters</h3>
-            <p class="bento__when">Shopify, September to November 2024</p>
+            <h3 class="bento__client">BKH Enterprises</h3>
+            <p class="bento__when">Instagram, Jul 28 &ndash; Aug 26</p>
           </header>
 
-          <p class="bento__figure bento__figure--gold">
-            <span data-count-view data-to="54" data-prefix="+" data-suffix="%">+54%</span>
+          <p class="bento__figure">
+            <span data-count-view data-to="5487050">5,487,050</span>
           </p>
-          <p class="bento__caption">orders, November against October</p>
+          <p class="bento__caption">accounts reached</p>
 
           <ul class="stats">
-            <li><span class="stats__k">Sessions</span><span class="stats__v">131,814</span><span class="stats__d">+38%</span></li>
-            <li><span class="stats__k">Conversion</span><span class="stats__v">2.23%</span><span class="stats__d">from 1.85% in Sep</span></li>
-            <li><span class="stats__k">Total sales</span><span class="stats__v">+52%</span><span class="stats__d">against October</span></li>
+            <li><span class="stats__k">Impressions</span><span class="stats__v">9,074,547</span><span class="stats__d">+54.8%</span></li>
+            <li><span class="stats__k">Interactions, Dec 20 &ndash; Jan 18</span><span class="stats__v">696,883</span><span class="stats__d">+836%</span></li>
+            <li><span class="stats__k">Followers</span><span class="stats__v">39,967</span><span class="stats__d">+10.6%</span></li>
           </ul>
+
+          <div class="meter" data-meter style="--pct:99.7">
+            <div class="meter__top"><span>Reach from non-followers</span><b>99.7%</b></div>
+            <div class="meter__track"><span></span></div>
+          </div>
+          <div class="meter" data-meter style="--pct:95">
+            <div class="meter__top"><span>Reels, of views by content type</span><b>4M of 4.2M</b></div>
+            <div class="meter__track"><span></span></div>
+          </div>
         </article>
 
         <article class="bento__card" data-reveal="rise">
