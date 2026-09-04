@@ -46,6 +46,11 @@
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
 
+<div class="cursor" data-cursor aria-hidden="true">
+  <span class="cursor__ring"></span>
+  <span class="cursor__label">View</span>
+</div>
+
 <header class="site-header" data-header>
   <span class="site-header__progress" aria-hidden="true"><span data-progress></span></span>
   <div class="shell site-header__inner">
@@ -58,7 +63,7 @@
       <a href="#proof" data-nav-link>Results</a>
       <a href="#work" data-nav-link>Work</a>
     </nav>
-    <a class="btn btn--primary btn--sm" href="#book">Book a call</a>
+    <a class="btn btn--primary btn--sm btn--glow" href="#book">Book a call</a>
   </div>
 </header>
 
@@ -83,17 +88,20 @@
 
     <div class="shell hero__grid">
 
-      <p class="hero__where" data-seq="1">
-        <span class="hero__dot" aria-hidden="true"></span>Miami, Florida
-      </p>
+      <div class="hero__lede">
+        <p class="hero__where" data-seq="1">
+          <span class="hero__dot" aria-hidden="true"></span>Miami, Florida
+        </p>
 
-      <h1 class="hero__title">
-        <span class="line" data-seq="2"><span>We run social media</span></span>
-        <span class="line" data-seq="3"><span>for brands, and manage</span></span>
-        <span class="line" data-seq="4"><span>brand deals for creators.</span></span>
-      </h1>
+        <h1 class="hero__title" data-scramble>
+          <span class="line" data-seq="2"><span>We run social media</span></span>
+          <span class="line" data-seq="3"><span>for brands, and manage</span></span>
+          <span class="line" data-seq="4"><span>brand deals for creators.</span></span>
+        </h1>
 
-      <div class="hero__rule" data-seq="5" aria-hidden="true"></div>
+        <div class="hero__rule" data-seq="5" aria-hidden="true"></div>
+
+      </div>
 
       <div class="hero__intro">
         <p class="hero__sub" data-seq="6">
@@ -102,10 +110,19 @@
         </p>
 
         <div class="hero__actions" data-seq="7">
-          <a class="btn btn--primary" href="#book">Book a call</a>
+          <a class="btn btn--primary btn--glow" href="#book">Book a call</a>
           <a class="btn btn--ghost" href="#proof">See the results</a>
         </div>
       </div>
+
+      <!-- Autoplaying showreel. Drop a file at data-clip and it plays here,
+           muted and looping; the frame holds its shape either way. -->
+      <figure class="hero__frame" data-seq="6" data-hero-frame data-clip="/assets/showreel.mp4">
+        <div class="hero__frame-inner">
+          <span class="hero__frame-ghost" aria-hidden="true">Reel</span>
+          <span class="hero__frame-tag">Live client work</span>
+        </div>
+      </figure>
 
       <div class="board" data-seq="5" aria-label="Client results">
         <div class="board__bar">
@@ -164,7 +181,7 @@
       <h2 class="visually-hidden" id="paths-title">Who this is for</h2>
       <div class="paths__grid">
 
-        <article class="path path--brands">
+        <article class="path path--brands" data-reveal="rise">
           <h3 class="path__title" data-reveal="title">You have a brand.</h3>
           <p class="path__pitch">
             You want sales, not a posting schedule to babysit. We take the account
@@ -179,7 +196,7 @@
           <a class="btn btn--primary" href="#book">Book a call</a>
         </article>
 
-        <article class="path path--creators">
+        <article class="path path--creators" data-reveal="rise" style="--delay:120ms">
           <h3 class="path__title" data-reveal="title">You are the brand.</h3>
           <p class="path__pitch">
             Somebody else should be answering the brand emails, holding the rate and
@@ -204,7 +221,7 @@
 
       <div class="services__stack">
 
-        <article class="service service--lead">
+        <article class="service service--lead" data-reveal="rise">
           <p class="service__for">For brands</p>
           <h3 class="service__name" data-reveal="title">Social media management</h3>
           <p class="service__body">
@@ -214,7 +231,7 @@
           </p>
         </article>
 
-        <article class="service service--mid">
+        <article class="service service--mid" data-reveal="rise">
           <p class="service__for">For brands</p>
           <h3 class="service__name" data-reveal="title">Influencer marketing</h3>
           <p class="service__body">
@@ -223,7 +240,7 @@
           </p>
         </article>
 
-        <article class="service service--tail">
+        <article class="service service--tail" data-reveal="rise">
           <p class="service__for">For creators</p>
           <h3 class="service__name" data-reveal="title">Influencer management</h3>
           <p class="service__body">
@@ -331,7 +348,7 @@
           <p class="case__window">Instagram Insights, before and after takeover</p>
         </div>
 
-        <figure class="chart" data-chart>
+        <figure class="chart" data-chart data-reveal="rise">
           <svg class="chart__svg" viewBox="0 0 720 380" role="img"
                aria-label="Line chart. Views rise from 116,498 in the month before takeover to 301,828 after two weeks and 1,224,413 after one month. Accounts reached rise from 48,792 to 163,370 to 585,289 over the same stages.">
             <g class="chart__grid" aria-hidden="true">
@@ -524,58 +541,59 @@
     <div class="shell">
       <header class="work__intro">
         <h2 class="section-title" data-reveal="title" id="work-title">The work itself.</h2>
+        <p class="work__note" data-reveal="rise">
+          Vertical video is the input — on BKH's account, Reels carried 4,000,000 of the
+          5,487,050 people the page reached.
+        </p>
       </header>
 
-      <div class="work__grid">
-        <div class="work__players">
+      <div class="reels" data-reels>
 
-        <figure class="player" data-reveal="rise" data-player
+        <figure class="reel" data-reel data-cursor-view
+                data-clip=""
                 data-embed="https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2Fshare%2Fr%2F1EtnnM8QSx%2F&show_text=false&autoplay=1&width=540"
                 data-embed-title="Facebook video from a G Management client account">
-          <button class="player__facade" type="button" data-player-btn>
-            <span class="player__platform">Facebook</span>
-            <span class="player__ghost" aria-hidden="true">Reel</span>
-            <span class="player__cue">
-              <span class="player__play" aria-hidden="true">
-                <svg viewBox="0 0 44 44" width="44" height="44" focusable="false"><circle cx="22" cy="22" r="21" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M18 14.5 L31 22 L18 29.5 Z" fill="currentColor"/></svg>
-              </span>
-              <span class="player__label">Play the reel</span>
+          <button class="reel__frame" type="button" data-reel-btn>
+            <span class="reel__ghost" aria-hidden="true">Reel</span>
+            <span class="reel__platform">Facebook</span>
+            <span class="reel__badge" aria-hidden="true">
+              <svg viewBox="0 0 12 14" width="10" height="12" focusable="false"><path d="M0 0 L12 7 L0 14 Z" fill="currentColor"/></svg>Play
             </span>
-            <span class="visually-hidden">Loads the Facebook video player.</span>
+            <span class="visually-hidden">Play the client reel from Facebook</span>
           </button>
-          <figcaption class="player__caption">
-            Client reel on Facebook.
+          <figcaption class="reel__caption">
+            Client reel.
             <a href="https://www.facebook.com/share/r/1EtnnM8QSx/" target="_blank" rel="noopener">Open on Facebook</a>
           </figcaption>
         </figure>
 
-        <figure class="player" data-reveal="rise" data-player
+        <figure class="reel" data-reel data-cursor-view
+                data-clip=""
                 data-embed="https://www.youtube-nocookie.com/embed/WZF_Tt_xNAQ?autoplay=1&rel=0&playsinline=1"
                 data-embed-title="YouTube Short from a G Management client account">
-          <button class="player__facade" type="button" data-player-btn>
-            <span class="player__platform">YouTube</span>
-            <span class="player__ghost" aria-hidden="true">Short</span>
-            <span class="player__cue">
-              <span class="player__play" aria-hidden="true">
-                <svg viewBox="0 0 44 44" width="44" height="44" focusable="false"><circle cx="22" cy="22" r="21" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M18 14.5 L31 22 L18 29.5 Z" fill="currentColor"/></svg>
-              </span>
-              <span class="player__label">Play the short</span>
+          <button class="reel__frame" type="button" data-reel-btn>
+            <span class="reel__ghost" aria-hidden="true">Short</span>
+            <span class="reel__platform">YouTube</span>
+            <span class="reel__badge" aria-hidden="true">
+              <svg viewBox="0 0 12 14" width="10" height="12" focusable="false"><path d="M0 0 L12 7 L0 14 Z" fill="currentColor"/></svg>Play
             </span>
-            <span class="visually-hidden">Loads the YouTube player.</span>
+            <span class="visually-hidden">Play the client short from YouTube</span>
           </button>
-          <figcaption class="player__caption">
-            Client short on YouTube.
+          <figcaption class="reel__caption">
+            Client short.
             <a href="https://www.youtube.com/shorts/WZF_Tt_xNAQ" target="_blank" rel="noopener">Open on YouTube</a>
           </figcaption>
         </figure>
-        </div>
 
-        <aside class="work__aside">
-          <p class="work__note">
-            Numbers are the outcome. Vertical video is the input — on BKH's account, Reels
-            carried 4,000,000 of the 5,487,050 people the page reached.
-          </p>
-        </aside>
+        <figure class="reel reel--cta">
+          <a class="reel__frame reel__frame--cta" href="#book">
+            <span class="reel__ghost" aria-hidden="true">Next</span>
+            <span class="reel__platform">Your account</span>
+            <span class="reel__cta-copy">This, on your account.</span>
+            <span class="reel__badge reel__badge--cta" aria-hidden="true">Book a call</span>
+          </a>
+          <figcaption class="reel__caption">Fifteen minutes with Manny, no deck.</figcaption>
+        </figure>
 
       </div>
     </div>
@@ -591,7 +609,7 @@
           Fifteen minutes, no deck. Tell him the account and what it needs to do. Manny
           answers every inquiry himself, usually within one business day.
         </p>
-        <ul class="contact">
+        <ul class="contact" data-reveal="rise">
           <li>
             <span class="contact__label">Email</span>
             <a class="contact__value" href="mailto:manny@gmgmt.co">manny@gmgmt.co</a>
@@ -610,7 +628,7 @@
         </ul>
       </div>
 
-      <div class="book__panel">
+      <div class="book__panel" data-reveal="rise">
         <!-- Drop a scheduler URL into data-booking-url and the inline widget takes over. -->
         <div class="booking" data-booking data-booking-url=""></div>
 
@@ -656,7 +674,7 @@
             <textarea id="f-msg" name="message" rows="3"></textarea>
           </div>
 
-          <button class="btn btn--primary btn--full" type="submit">Send it to Manny</button>
+          <button class="btn btn--primary btn--full btn--glow" type="submit">Send it to Manny</button>
           <p class="form__fallback">
             This opens your email app with the message ready. Prefer to write it yourself?
             <a href="mailto:manny@gmgmt.co">manny@gmgmt.co</a>

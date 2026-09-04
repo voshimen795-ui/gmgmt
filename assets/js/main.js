@@ -73,7 +73,7 @@
   // hero board — part of the load sequence, rows land as they slide in
   if (canAnimate) {
     Array.prototype.forEach.call(document.querySelectorAll('[data-count]'), function (el, i) {
-      countUp(el, 900 + i * 90, 1100);
+      countUp(el, 900 + i * 80, 850);
     });
   }
 
@@ -82,7 +82,7 @@
     var figureObserver = new IntersectionObserver(function (entries, obs) {
       entries.forEach(function (entry) {
         if (!entry.isIntersecting) return;
-        countUp(entry.target, 0, 1000);
+        countUp(entry.target, 0, 750);
         obs.unobserve(entry.target);
       });
     }, { threshold: 0.6, rootMargin: '0px 0px -8% 0px' });
@@ -90,6 +90,72 @@
     Array.prototype.forEach.call(document.querySelectorAll('[data-count-view]'), function (el) {
       figureObserver.observe(el);
     });
+  }
+
+  /* 1b. Headline cascade ---------------------------------------------------
+     The headline splits into words and characters, each glyph arriving on
+     its own beat behind a short scramble. Every character's width is locked
+     first so the scramble cannot shift the line. The full sentence stays on
+     the h1 as an aria-label, and nothing is split under reduced motion.  */
+
+  var headline = document.querySelector('[data-scramble]');
+  if (headline && canAnimate) {
+    var chars = [];
+    var sentence = headline.textContent.replace(/\s+/g, ' ').trim();
+
+    Array.prototype.forEach.call(headline.querySelectorAll('.line > span'), function (line) {
+      var words = line.textContent.trim().split(' ');
+      line.textContent = '';
+
+      words.forEach(function (word, wordIndex) {
+        var wrap = document.createElement('span');
+        wrap.className = 'word';
+
+        word.split('').forEach(function (glyph) {
+          var span = document.createElement('span');
+          span.className = 'ch';
+          span.textContent = glyph;
+          span.style.setProperty('--n', chars.length);
+          chars.push({ el: span, glyph: glyph });
+          wrap.appendChild(span);
+        });
+
+        line.appendChild(wrap);
+        if (wordIndex < words.length - 1) line.appendChild(document.createTextNode(' '));
+      });
+    });
+
+    headline.setAttribute('aria-label', sentence);
+
+    var widths = chars.map(function (c) { return c.el.getBoundingClientRect().width; });
+    chars.forEach(function (c, i) { c.el.style.width = widths[i].toFixed(2) + 'px'; });
+
+    headline.classList.add('is-split');
+    requestAnimationFrame(function () { headline.classList.add('is-cascading'); });
+
+    var GLYPHS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    var scrambleStart = performance.now();
+    var LAST = 250 + chars.length * 16 + 240;
+
+    (function scramble(now) {
+      var t = (now || performance.now()) - scrambleStart;
+
+      chars.forEach(function (c, i) {
+        var from = 250 + i * 16;
+        if (t < from) return;
+        c.el.textContent = t < from + 240
+          ? GLYPHS.charAt((Math.random() * GLYPHS.length) | 0)
+          : c.glyph;
+      });
+
+      if (t < LAST) requestAnimationFrame(scramble);
+      else chars.forEach(function (c) { c.el.textContent = c.glyph; });
+    }());
+
+    // if frames stall, the headline still ends up as written
+    window.setTimeout(function () {
+      chars.forEach(function (c) { c.el.textContent = c.glyph; });
+    }, LAST + 600);
   }
 
   /* 2. Reveal on view -----------------------------------------------------
@@ -273,7 +339,7 @@
         if (!canAnimate) return;
         Array.prototype.forEach.call(panel.querySelectorAll('[data-count-view]'), function (el, i) {
           el.dataset.counted = '';
-          countUp(el, 120 + i * 50, 900);
+          countUp(el, 100 + i * 45, 750);
         });
       };
 
@@ -378,28 +444,141 @@
     paint(parseFloat(range.value) / 100);
   }
 
-  /* 8. Video players ------------------------------------------------------
-     Facades keep two third-party embeds off the critical path; the player
-     only loads when someone asks for it. The caption link is always there
-     as a fallback if the platform refuses to embed.                        */
+  /* 8. Vertical video grid -----------------------------------------------
+     Each frame previews its own clip on hover or focus and pulls the rest
+     of the row back. Pressing one loads the real post from the platform;
+     nothing third-party is requested until then.                        */
 
-  Array.prototype.forEach.call(document.querySelectorAll('[data-player]'), function (player) {
-    var button = player.querySelector('[data-player-btn]');
-    if (!button) return;
+  function makeClip(className, src) {
+    var clip = document.createElement('video');
+    clip.className = className;
+    clip.muted = true;
+    clip.defaultMuted = true;
+    clip.loop = true;
+    clip.autoplay = true;
+    clip.playsInline = true;
+    clip.preload = 'metadata';
+    clip.tabIndex = -1;
+    clip.setAttribute('playsinline', '');
+    clip.setAttribute('muted', '');
+    clip.setAttribute('loop', '');
+    clip.setAttribute('autoplay', '');
+    clip.setAttribute('aria-hidden', 'true');
+    clip.src = src;
+    return clip;
+  }
 
-    button.addEventListener('click', function () {
-      var frame = document.createElement('iframe');
-      frame.className = 'player__frame';
-      frame.src = player.getAttribute('data-embed');
-      frame.title = player.getAttribute('data-embed-title') || 'Video player';
-      frame.setAttribute('allow', 'autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share');
-      frame.setAttribute('allowfullscreen', '');
-      frame.setAttribute('scrolling', 'no');
-      frame.setAttribute('frameborder', '0');
-      button.replaceWith(frame);
-      frame.focus();
+  var reelGrid = document.querySelector('[data-reels]');
+
+  Array.prototype.forEach.call(document.querySelectorAll('[data-reel]'), function (reel) {
+    var frame = reel.querySelector('[data-reel-btn]');
+    var source = reel.getAttribute('data-clip');
+    var clip = null;
+
+    function ensureClip() {
+      if (clip || !source || reduceMotion) return;
+      clip = makeClip('reel__clip', source);
+      clip.addEventListener('loadeddata', function () { reel.classList.add('is-live'); });
+      clip.addEventListener('error', function () {
+        reel.classList.remove('is-live');
+        if (clip && clip.parentNode) clip.parentNode.removeChild(clip);
+        clip = null;
+        source = '';
+      }, true);
+      frame.insertBefore(clip, frame.firstChild);
+    }
+
+    function activate() {
+      reel.classList.add('is-active');
+      if (reelGrid) reelGrid.classList.add('is-focused');
+      ensureClip();
+      if (clip) {
+        var playing = clip.play();
+        if (playing && playing.catch) playing.catch(function () {});
+      }
+    }
+
+    function deactivate() {
+      reel.classList.remove('is-active');
+      if (reelGrid) reelGrid.classList.remove('is-focused');
+      if (clip) clip.pause();
+    }
+
+    reel.addEventListener('mouseenter', activate);
+    reel.addEventListener('mouseleave', deactivate);
+
+    if (!frame) return;
+    frame.addEventListener('focus', activate);
+    frame.addEventListener('blur', deactivate);
+
+    frame.addEventListener('click', function () {
+      var embed = reel.getAttribute('data-embed');
+      if (!embed) return;
+
+      var player = document.createElement('iframe');
+      player.className = 'reel__player';
+      player.src = embed;
+      player.title = reel.getAttribute('data-embed-title') || 'Video player';
+      player.setAttribute('allow', 'autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share');
+      player.setAttribute('allowfullscreen', '');
+      player.setAttribute('scrolling', 'no');
+      player.setAttribute('frameborder', '0');
+      frame.replaceWith(player);
+      player.focus();
     });
   });
+
+  /* 8b. Showreel frame in the hero ----------------------------------------- */
+
+  var heroFrame = document.querySelector('[data-hero-frame]');
+  if (heroFrame && !reduceMotion) {
+    var showreel = heroFrame.getAttribute('data-clip');
+    if (showreel) {
+      var reelClip = makeClip('hero__clip', showreel);
+      reelClip.addEventListener('loadeddata', function () {
+        heroFrame.classList.add('has-clip');
+        var playing = reelClip.play();
+        if (playing && playing.catch) playing.catch(function () {});
+      });
+      reelClip.addEventListener('error', function () {
+        heroFrame.classList.remove('has-clip');
+        if (reelClip.parentNode) reelClip.parentNode.removeChild(reelClip);
+      }, true);
+      heroFrame.appendChild(reelClip);
+    }
+  }
+
+  /* 8c. Pointer follower ---------------------------------------------------
+     Fine pointers only, and never under reduced motion.                   */
+
+  var cursor = document.querySelector('[data-cursor]');
+  if (cursor && !reduceMotion && window.matchMedia('(pointer: fine)').matches) {
+    var targetX = -100, targetY = -100, curX = -100, curY = -100, shown = false;
+
+    window.addEventListener('pointermove', function (event) {
+      targetX = event.clientX;
+      targetY = event.clientY;
+      if (!shown) { shown = true; cursor.classList.add('is-on'); }
+    }, { passive: true });
+
+    document.addEventListener('pointerleave', function () {
+      shown = false;
+      cursor.classList.remove('is-on');
+    });
+
+    (function follow() {
+      curX += (targetX - curX) * 0.18;
+      curY += (targetY - curY) * 0.18;
+      cursor.style.setProperty('--cx', curX.toFixed(1) + 'px');
+      cursor.style.setProperty('--cy', curY.toFixed(1) + 'px');
+      requestAnimationFrame(follow);
+    }());
+
+    Array.prototype.forEach.call(document.querySelectorAll('[data-cursor-view]'), function (el) {
+      el.addEventListener('mouseenter', function () { cursor.classList.add('is-view'); });
+      el.addEventListener('mouseleave', function () { cursor.classList.remove('is-view'); });
+    });
+  }
 
   /* 9. Booking widget -----------------------------------------------------
      Set data-booking-url on the container to a Calendly (or similar) link

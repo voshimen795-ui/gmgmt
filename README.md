@@ -56,6 +56,22 @@ or on a connection flagged `saveData`, and if no source plays the element is rem
 the drifting light field carries the hero on its own. Keep the file short and small — it
 is background, not content; ten seconds at a few hundred KB is plenty.
 
+**Hero showreel.** The frame beside the headline takes a file the same way:
+
+```html
+<figure class="hero__frame" data-hero-frame data-clip="/assets/showreel.mp4">
+```
+
+It plays `autoplay loop muted playsinline`, cropped to a 16:9 rounded frame with an
+ambient bloom behind it. With no file the frame keeps its shape and shows the outlined
+title instead, so the layout never shifts.
+
+**Reel clips.** Each tile in the vertical grid can preview a self-hosted clip on hover or
+keyboard focus — add `data-clip="/assets/clips/whatever.mp4"` to the `<figure class="reel">`.
+The clip is only created on first hover, plays muted and looping, and is dropped if the
+file is missing. Tiles keep working without a clip: they stay poster frames that load the
+real post when pressed.
+
 **The two videos.** Each player stores its own embed URL:
 
 ```html
@@ -82,6 +98,11 @@ those attributes and the interaction follows.
   vCard — the card is built in the browser, there is no file to keep in sync.
 - **Chips instead of dropdowns.** Two radio groups cover who is writing and what they
   need, so the form is two typed fields and a few taps.
+- **Vertical video grid.** Three 9:16 frames. Hovering or focusing one plays its clip,
+  scales it up, lights a gold glow, and pulls the other two back with a blur so the eye
+  lands in one place. Every tile carries a Play badge; pressing one loads the real post.
+- **Pointer follower.** A small ring trails the pointer and expands into a "View" badge
+  over anything playable. Fine pointers only — never on touch, never under reduced motion.
 - **Phone action bar.** Below 768px a bar with Book a call, WhatsApp and Call slides in
   once the hero has scrolled past, and gets out of the way over the booking section.
 
@@ -113,9 +134,14 @@ wrap, and the per-line reveal is swapped for a single one on the whole headline.
 ## Motion
 
 **On load** — one orchestrated sequence of about 1.6s, then the page settles: the column
-rules draw down, the headline rises line by line out of a mask, the rule sweeps right,
-sub copy and buttons arrive, the board's gold rule wipes across and its four figures
-count up, and the ticker fades in and starts moving.
+rules draw down, the headline arrives character by character behind a short glyph
+scramble, the rule sweeps right, sub copy and buttons arrive, the board's gold rule wipes
+across and its four figures count up, and the ticker fades in and starts moving.
+
+The headline splits into words and characters at runtime. Each character's width is
+measured and locked before the scramble starts, so swapping glyphs cannot shift the line,
+and the full sentence stays on the `<h1>` as an `aria-label`. Under reduced motion it is
+never split at all.
 
 **On scroll** — deliberately limited to motion that carries meaning: headings arriving,
 the gold rule beside a testimonial drawing down, the Pivot Point chart drawing itself,
