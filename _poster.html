@@ -1,0 +1,21 @@
+<style>
+@font-face{font-family:'Archivo';src:url('/assets/fonts/archivo-latin-var.woff2') format('woff2');font-weight:400 800;font-stretch:62% 125%}
+@font-face{font-family:'Instrument Sans';src:url('/assets/fonts/instrument-sans-latin-var.woff2') format('woff2');font-weight:400 600}
+*{margin:0;padding:0;box-sizing:border-box}
+body{width:1280px;height:720px;background:#0B1018;position:relative;overflow:hidden;font-family:'Instrument Sans',sans-serif}
+.glow{position:absolute;inset:-20% -10% 10% -10%;background:
+ radial-gradient(42% 55% at 32% 42%,rgba(201,162,39,.30),transparent 70%),
+ radial-gradient(40% 50% at 78% 70%,rgba(242,241,236,.06),transparent 72%);filter:blur(50px)}
+.grain{position:absolute;inset:0;opacity:.05;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E")}
+.wrap{position:absolute;left:64px;bottom:60px;right:64px}
+.fig{font-family:'Archivo';font-size:104px;font-weight:800;font-stretch:118%;letter-spacing:-.04em;line-height:.95;color:#F2F1EC}
+.fig i{font-style:normal;color:#C9A227}
+.sub{margin-top:14px;font-size:26px;color:#A8B0BC}
+.tag{position:absolute;right:64px;top:56px;font-family:'Archivo';font-size:22px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#7E8794}
+</style>
+<div class="glow"></div><div class="grain"></div>
+<div class="tag">Client short</div>
+<div class="wrap">
+  <p class="fig">15M+<i>.</i></p>
+  <p class="sub">views in two months &mdash; BKH Enterprises</p>
+</div>

@@ -4,52 +4,2191 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script>document.documentElement.classList.add('js');</script>
-<title>G Management — social media management and influencer marketing, Miami</title>
-<meta name="description" content="Manny Garcia runs social media for brands and manages brand deals for creators. 5.4M accounts reached in 30 days, orders up 54%, $19,265 a month through one link. Book a 15-minute call.">
+<title>G Management — social media management and brand deals, Miami</title>
+<meta name="description" content="Manny Garcia runs social media for brands and brand deals for creators, out of Miami. 5.4M accounts reached in 30 days, orders up 54%. Book a 15-minute call.">
 <link rel="canonical" href="https://gmgmt.co/">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+<meta name="author" content="Manny Garcia">
 
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://gmgmt.co/">
 <meta property="og:site_name" content="G Management">
-<meta property="og:title" content="G Management — social media management and influencer marketing, Miami">
-<meta property="og:description" content="We run social media for brands, and manage brand deals for creators. 5.4M accounts reached in 30 days. Orders up 54%. $19,265 a month through one link.">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="G Management — social media management and brand deals, Miami">
+<meta property="og:description" content="Short-form video, posted daily, on accounts run end to end. 5.4M accounts reached in 30 days. Orders up 54%. $19,265 through one link. Book a 15-minute call.">
 <meta property="og:image" content="https://gmgmt.co/assets/og.png">
+<meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="G Management, Miami. Accounts reached: 5,487,050 in 30 days.">
+<meta property="og:image:alt" content="G Management, Miami. 5.4M accounts reached in 30 days, 15M+ views for one client, orders up 54%, $19.2K through one link.">
+
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="G Management — social media management and influencer marketing, Miami">
-<meta name="twitter:description" content="Real client numbers, with the dates and the names attached. Book a 15-minute call.">
+<meta name="twitter:title" content="G Management — social media management and brand deals, Miami">
+<meta name="twitter:description" content="Short-form video, posted daily, on accounts run end to end. Real client dashboards, with the dates attached.">
 <meta name="twitter:image" content="https://gmgmt.co/assets/og.png">
+<meta name="twitter:image:alt" content="G Management, Miami. 5.4M accounts reached in 30 days.">
 <meta name="theme-color" content="#070A12">
 
+<link rel="preconnect" href="https://d8j0ntlcm91z4.cloudfront.net" crossorigin>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="preload" href="/assets/fonts/archivo-latin-var.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="/assets/fonts/instrument-sans-latin-var.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/assets/css/styles.css">
+
+<!-- Both faces are set above the fold, and the stylesheet is inline below, so
+     the browser only discovers them once it has parsed all of it. Naming them
+     here starts both fetches in the first round trip instead — and the
+     headline animation waits on document.fonts.ready, so this is the gate on
+     when the hero finishes settling. -->
+<link rel="preload" href="/assets/fonts/archivo-latin-v5.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/instrument-sans-latin-v5.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+/* =============================================================================
+   G Management — one page
+    1. Fonts
+    2. Tokens
+    3. Reset + base
+    4. Layout primitives
+    5. Buttons
+    6. Header
+    7. Hero
+    8. Marquee
+    9. Work — landscape video grid
+   10. Results — bento grid, stats, meters
+   11. Results — Pivot Point chart
+   12. Voices
+   13. Book — scheduler and calendar
+   14. Contact rows + phone action bar
+   15. Footer
+   17. Motion — load, reveal, preferences
+   ========================================================================== */
+
+/* 1. Fonts ---------------------------------------------------------------- */
+
+/* Both faces are cut to the 104 glyphs this page sets, and their variable axes
+   are cut to the range it actually asks for: Archivo is used from 400 to 800
+   and never narrower than 100% wide, so the 100-900 weight and 62-125 width
+   the family ships with is delta data nobody reads. Trimming the axes took
+   the pair from 63KB to 43KB with the same glyphs on the page. */
+@font-face {
+  font-family: 'Archivo';
+  src: url('/assets/fonts/archivo-latin-v5.woff2') format('woff2');
+  font-weight: 400 800;
+  font-stretch: 100% 125%;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Instrument Sans';
+  src: url('/assets/fonts/instrument-sans-latin-v5.woff2') format('woff2');
+  font-weight: 400 600;
+  font-stretch: 100%;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* 2. Tokens --------------------------------------------------------------- */
+
+:root {
+  /* colour */
+  --ink: #070A12;
+  --surface: #101623;
+  --surface-lift: #161E2E;
+  --line: #1E2735;
+  --gold: #C9A227;
+  --gold-lift: #E4C25C;
+  --grey: #7E8794;
+  --paper: #F2F1EC;
+
+  /* type */
+  --font-display: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+  --font-body: 'Instrument Sans', 'Helvetica Neue', Arial, sans-serif;
+
+  --t-display: clamp(2.25rem, 5.4vw, 4.5rem);
+  --t-h2: clamp(2rem, 4.6vw, 3.5rem);
+  --t-h3: clamp(1.125rem, 2vw, 1.375rem);
+  --t-figure: clamp(2.5rem, 5.5vw, 4rem);
+  --t-body: 1.0625rem;
+  --t-small: 0.875rem;
+  --t-label: 0.8125rem;
+
+  /* spacing — 8px ladder only */
+  --sp-4: 4px;
+  --sp-8: 8px;
+  --sp-16: 16px;
+  --sp-24: 24px;
+  --sp-32: 32px;
+  --sp-48: 48px;
+  --sp-64: 64px;
+  --sp-96: 96px;
+  --sp-128: 128px;
+  --sp-160: 160px;
+
+  /* layout */
+  --shell: 1240px;
+  --gutter: var(--sp-24);
+  --section-y: clamp(72px, 8vw, 128px);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --hairline: 1px solid var(--line);
+
+  /* neon */
+  --neon-soft: 0 0 24px rgba(201, 162, 39, 0.3);
+  --neon: 0 0 20px rgba(201, 162, 39, 0.45),
+          0 0 56px rgba(201, 162, 39, 0.18);
+
+  /* motion */
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* The two glow shadows are literals above, because a custom property's value
+   is not checked when it is declared — an engine without color-mix() would
+   accept the mixed version and then fail on use, so a plain duplicate never
+   wins the way it does for a normal property. Guarded, they keep following
+   --gold everywhere the feature exists. */
+@supports (color: color-mix(in srgb, red 50%, blue)) {
+  :root {
+    --neon-soft: 0 0 24px color-mix(in srgb, var(--gold) 30%, transparent);
+    --neon: 0 0 20px color-mix(in srgb, var(--gold) 45%, transparent),
+            0 0 56px color-mix(in srgb, var(--gold) 18%, transparent);
+  }
+}
+
+/* 3. Reset + base --------------------------------------------------------- */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: var(--sp-64);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-body);
+  font-size: var(--t-body);
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 { font-family: var(--font-display); margin: 0; line-height: 1; }
+p, dl, ul, ol, figure, blockquote { margin: 0; }
+ul, ol { list-style: none; padding: 0; }
+img, svg, iframe, video { display: block; max-width: 100%; }
+img { height: auto; }
+a { color: inherit; }
+
+/* a hidden element stays hidden, whatever display its own class asks for */
+[hidden] { display: none !important; }
+
+:focus-visible { outline: 2px solid var(--gold-lift); outline-offset: 3px; border-radius: 2px; }
+::selection { background: var(--gold); color: var(--ink); }
+
+.visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.skip-link {
+  position: absolute;
+  left: var(--sp-16);
+  top: calc(var(--sp-8) * -8);
+  z-index: 30;
+  padding: var(--sp-8) var(--sp-16);
+  background: var(--gold);
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: none;
+  transition: top 160ms var(--ease);
+}
+.skip-link:focus { top: var(--sp-16); }
+
+/* 4. Layout primitives ---------------------------------------------------- */
+
+.shell {
+  width: 100%;
+  max-width: var(--shell);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+section { padding-block: var(--section-y); }
+
+
+/* every section opens on a centred header block */
+.section-head {
+  max-width: 46ch;
+  margin: 0 auto clamp(var(--sp-48), 5vw, var(--sp-64));
+  text-align: center;
+}
+
+/* the full stop is the brand's smallest gold accent, repeated section to
+   section without adding any furniture to the page */
+.dot { color: var(--gold); }
+
+.section-title {
+  font-size: var(--t-h2);
+  font-weight: 800;
+  font-stretch: 125%;
+  letter-spacing: -0.03em;
+}
+
+.section-lead {
+  margin-top: var(--sp-16);
+  color: var(--grey);
+}
+
+/* 5. Buttons -------------------------------------------------------------- */
+
+.btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: var(--sp-16) var(--sp-24);
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-size: var(--t-small);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  overflow: hidden;
+  isolation: isolate;
+  transition: color 200ms var(--ease), border-color 200ms var(--ease),
+              box-shadow 320ms var(--ease), transform 320ms var(--ease-out);
+}
+.btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 420ms var(--ease-out);
+}
+.btn:hover::before, .btn:focus-visible::before { transform: scaleX(1); }
+.btn:hover { transform: translateY(-1px); }
+
+.btn--primary { background: var(--gold); color: var(--ink); }
+.btn--primary::before {
+  background: linear-gradient(100deg, var(--gold) 0%, var(--gold-lift) 50%, var(--gold) 100%);
+}
+
+.btn--ghost { border-color: var(--line); color: var(--paper); background: transparent; }
+.btn--ghost::before { background: var(--surface); }
+.btn--ghost:hover, .btn--ghost:focus-visible { border-color: var(--gold); }
+
+.btn--lg { min-height: 56px; padding: var(--sp-16) var(--sp-32); font-size: 1rem; }
+.btn--sm { min-height: 44px; padding: var(--sp-8) var(--sp-16); }
+.btn--full { width: 100%; }
+
+.btn--glow:hover, .btn--glow:focus-visible { box-shadow: var(--neon); }
+.btn[disabled] { opacity: 0.45; pointer-events: none; }
+
+/* 6. Header --------------------------------------------------------------- */
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: rgba(7, 10, 18, 0.94);
+  background: color-mix(in srgb, var(--ink) 94%, transparent);
+  border-bottom: 1px solid transparent;
+  transition: background-color 300ms var(--ease), border-color 300ms var(--ease);
+}
+.site-header.is-stuck {
+  background: rgba(7, 10, 18, 0.94);
+  background: color-mix(in srgb, var(--ink) 94%, transparent);
+  border-bottom-color: var(--line);
+}
+
+.site-header__progress {
+  position: absolute;
+  left: 0; right: 0; bottom: -1px;
+  height: 2px;
+  overflow: hidden;
+}
+.site-header__progress span {
+  display: block;
+  height: 100%;
+  background: var(--gold);
+  box-shadow: var(--neon-soft);
+  transform: scaleX(var(--p, 0));
+  transform-origin: left;
+}
+
+.site-header__inner {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: var(--sp-16);
+  min-height: 68px;
+}
+
+.wordmark {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--sp-4);
+  font-family: var(--font-display);
+  text-decoration: none;
+  letter-spacing: -0.02em;
+}
+.wordmark__g { font-size: 1.25rem; font-weight: 800; font-stretch: 125%; color: var(--gold); }
+.wordmark__rest {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--grey);
+  transition: color 200ms var(--ease);
+}
+.wordmark:hover .wordmark__rest { color: var(--paper); }
+
+.site-nav { display: none; position: relative; gap: var(--sp-32); justify-self: center; }
+.site-nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: var(--t-small);
+  font-weight: 500;
+  color: var(--grey);
+  text-decoration: none;
+  transition: color 200ms var(--ease);
+}
+.site-nav a:hover { color: var(--paper); }
+.site-nav a.is-active { color: var(--gold); }
+
+.site-nav__marker {
+  position: absolute;
+  bottom: 12px;
+  left: 0;
+  height: 1px;
+  width: var(--w, 0px);
+  background: var(--gold);
+  box-shadow: var(--neon-soft);
+  transform: translateX(var(--x, 0px));
+  opacity: var(--o, 0);
+  transition: transform 380ms var(--ease-out), width 380ms var(--ease-out),
+              opacity 200ms var(--ease);
+}
+
+/* The header used to carry `backdrop-filter: blur(14px) saturate(140%)` here,
+   and it is a sticky bar sitting over a full-screen hero film. A backdrop
+   filter has to re-read and re-blur everything behind it every time that
+   backdrop changes — which, over a playing video, is every single frame, for
+   as long as the hero is on screen, on the compositor thread the page also
+   scrolls on. It was desktop-only, which is exactly where the stutter was.
+
+   The bar is over near-black at every scroll position, so the glass was
+   costing a frame budget to blur something nobody could see through. A flat
+   translucent ink reads identically and costs nothing. */
+@media (min-width: 900px) {
+  .site-header {
+    background: rgba(7, 10, 18, 0.86);
+    background: color-mix(in srgb, var(--ink) 86%, transparent);
+  }
+  .site-header__inner { grid-template-columns: 1fr auto 1fr; }
+  .site-nav { display: flex; }
+  .site-header .btn { justify-self: end; }
+}
+
+/* 7. Hero ----------------------------------------------------------------- */
+
+.hero {
+  position: relative;
+  display: grid;
+  align-content: center;
+  padding-block: var(--sp-48) var(--sp-64);
+  overflow: hidden;
+}
+
+.hero__media { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+.hero__media > * { position: absolute; }
+
+.hero__video {
+  inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 1200ms var(--ease-out);
+}
+.hero__media.has-video .hero__video { opacity: 0.72; }
+.hero__media.has-video .hero__field { opacity: 0.35; }
+
+/* This carried `filter: blur(40px)` across a box 150% of the viewport in both
+   directions, and section 17 then animated it. A filtered layer that is being
+   transformed has its blur re-rasterised as it moves, at full viewport size,
+   for the whole 32-second loop — the single most expensive thing the hero was
+   doing, and it was gated to desktops with a mouse.
+
+   Both are gone. The gradients underneath are radial falloffs that were
+   already soft; widening their stops gives the same light with no filter at
+   all, so the layer is now a plain painted background that composites once. */
+.hero__field {
+  inset: -25%;
+  background:
+    radial-gradient(42% 50% at 50% 22%, rgba(201, 162, 39, 0.22), transparent 76%),
+    radial-gradient(48% 54% at 22% 72%, rgba(242, 241, 236, 0.065), transparent 78%);
+  background:
+    radial-gradient(42% 50% at 50% 22%, color-mix(in srgb, var(--gold) 22%, transparent), transparent 76%),
+    radial-gradient(48% 54% at 22% 72%, color-mix(in srgb, var(--paper) 6.5%, transparent), transparent 78%);
+}
+
+.hero__grain {
+  inset: 0;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* With no video the scrim only has to soften the light field. With one it
+   pools under the centred copy and thins out towards the frame edges. */
+.hero__scrim {
+  inset: 0;
+  background:
+    radial-gradient(120% 90% at 50% 30%, transparent 8%, var(--ink) 80%),
+    linear-gradient(to bottom, rgba(7, 10, 18, 0.45), var(--ink) 92%);
+  background:
+    radial-gradient(120% 90% at 50% 30%, transparent 8%, var(--ink) 80%),
+    linear-gradient(to bottom, color-mix(in srgb, var(--ink) 45%, transparent), var(--ink) 92%);
+}
+
+.hero__media.has-video .hero__scrim {
+  background:
+    linear-gradient(to bottom,
+      rgba(7, 10, 18, 0.88) 0%,
+      rgba(7, 10, 18, 0.62) 22%,
+      rgba(7, 10, 18, 0.72) 62%,
+      var(--ink) 100%);
+  background:
+    linear-gradient(to bottom,
+      color-mix(in srgb, var(--ink) 88%, transparent) 0%,
+      color-mix(in srgb, var(--ink) 62%, transparent) 22%,
+      color-mix(in srgb, var(--ink) 72%, transparent) 62%,
+      var(--ink) 100%);
+}
+
+@media (min-width: 980px) {
+  .hero__media.has-video .hero__scrim {
+    background:
+      radial-gradient(60% 54% at 50% 50%,
+        rgba(7, 10, 18, 0.84) 0%,
+        rgba(7, 10, 18, 0.62) 58%,
+        transparent 100%),
+      linear-gradient(to bottom,
+        rgba(7, 10, 18, 0.6) 0%,
+        rgba(7, 10, 18, 0.2) 22%,
+        rgba(7, 10, 18, 0.3) 68%,
+        var(--ink) 100%);
+    background:
+      radial-gradient(60% 54% at 50% 50%,
+        color-mix(in srgb, var(--ink) 84%, transparent) 0%,
+        color-mix(in srgb, var(--ink) 62%, transparent) 58%,
+        transparent 100%),
+      linear-gradient(to bottom,
+        color-mix(in srgb, var(--ink) 60%, transparent) 0%,
+        color-mix(in srgb, var(--ink) 20%, transparent) 22%,
+        color-mix(in srgb, var(--ink) 30%, transparent) 68%,
+        var(--ink) 100%);
+  }
+}
+
+.hero__inner {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  text-align: center;
+}
+
+.hero__copy { width: 100%; min-width: 0; }
+
+/* the film underneath can land on a bright frame at any moment, so the
+   copy carries its own shadow rather than trusting the scrim alone */
+.hero__media.has-video ~ .hero__inner .hero__copy {
+  text-shadow: 0 1px 2px rgba(7, 10, 18, 0.55),
+               0 2px 28px rgba(7, 10, 18, 0.7);
+  text-shadow: 0 1px 2px color-mix(in srgb, var(--ink) 55%, transparent),
+               0 2px 28px color-mix(in srgb, var(--ink) 70%, transparent);
+}
+/* Same story as the header, on a smaller box: this button sits over the film,
+   so its backdrop blur was re-running on every decoded frame. The button is
+   opaque enough that the blur behind it was never visible. */
+.hero__media.has-video ~ .hero__inner .btn--ghost {
+  border-color: rgba(242, 241, 236, 0.3);
+  border-color: color-mix(in srgb, var(--paper) 30%, transparent);
+  background: rgba(7, 10, 18, 0.66);
+  background: color-mix(in srgb, var(--ink) 66%, transparent);
+  text-shadow: none;
+}
+
+.hero__where {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-8);
+  padding: var(--sp-8) var(--sp-16);
+  border: var(--hairline);
+  border-radius: 999px;
+  font-size: var(--t-label);
+  font-weight: 500;
+  color: var(--grey);
+}
+.hero__dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 8px var(--gold);
+}
+
+.hero__title {
+  margin-top: var(--sp-24);
+  font-size: var(--t-display);
+  font-weight: 800;
+  font-stretch: 125%;
+  letter-spacing: -0.04em;
+  line-height: 0.94;
+  text-wrap: balance;
+}
+.hero__title .line { display: block; overflow: hidden; padding-bottom: 0.06em; }
+.hero__title .line > span { display: block; }
+.hero__title .word { display: inline-block; white-space: nowrap; }
+.hero__title .ch { display: inline-block; }
+
+.hero__sub {
+  margin: var(--sp-24) auto 0;
+  max-width: 52ch;
+  color: var(--grey);
+  font-size: 1.0625rem;
+  text-wrap: balance;
+}
+
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-16);
+  margin-top: var(--sp-32);
+}
+
+/* the four headline figures — the full table lives in Results */
+.hero__proof {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-24) 0;
+  width: 100%;
+  max-width: 960px;
+  margin: var(--sp-48) auto 0;
+  padding-top: var(--sp-32);
+  border-top: var(--hairline);
+}
+.hero__proof li {
+  display: grid;
+  gap: var(--sp-4);
+  justify-items: center;
+  min-width: 0;
+  padding-inline: var(--sp-16);
+}
+.hero__proof li:nth-child(even) { border-left: var(--hairline); }
+.hero__proof-figure {
+  font-family: var(--font-display);
+  font-size: clamp(1.625rem, 3.6vw, 2.375rem);
+  font-weight: 800;
+  font-stretch: 118%;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.hero__proof-label { font-size: var(--t-label); color: var(--grey); text-wrap: balance; }
+
+@media (min-width: 720px) {
+  .hero__proof { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .hero__proof li + li { border-left: var(--hairline); }
+}
+
+@media (min-width: 980px) {
+  .hero { min-height: calc(100vh - 68px); min-height: calc(100svh - 68px);
+          padding-block: var(--sp-64); }
+}
+
+/* 8. Client roll ------------------------------------------------------------ */
+
+.roll {
+  padding-block: var(--sp-32);
+  border-bottom: var(--hairline);
+  text-align: center;
+}
+.roll__label {
+  margin-bottom: var(--sp-16);
+  font-size: var(--t-label);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--grey);
+}
+
+.marquee {
+  overflow: hidden;
+  contain: paint;
+  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+}
+.marquee__track { display: flex; width: max-content; }
+.marquee__set { display: flex; align-items: center; }
+.marquee__set span {
+  padding-inline: var(--sp-24);
+  font-family: var(--font-display);
+  font-size: clamp(1rem, 2vw, 1.375rem);
+  font-weight: 800;
+  font-stretch: 118%;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: rgba(242, 241, 236, 0.78);
+  color: color-mix(in srgb, var(--paper) 78%, transparent);
+}
+.marquee__set i {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 12px var(--gold);
+}
+
+/* 9. Work — landscape video grid -------------------------------------------- */
+
+.work { border-bottom: var(--hairline); }
+
+.reels {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--sp-24);
+  align-items: stretch;
+  max-width: 720px;
+  margin-inline: auto;
+}
+
+/* A landscape tile has no reason to be capped at a phone's width: it is given
+   the whole column it sits in, so the picture is as large as the row allows. */
+.reel {
+  position: relative;
+  width: 100%;
+}
+
+/* the tile is one box: the player is laid over the thumbnail rather than
+   inserted above it, so pressing never adds a second frame to the page */
+
+/* The thumbnail is a real lazy image rather than a CSS background. Three
+   posters is 83KB, the tiles sit a long way below the fold, and a background
+   image is fetched as soon as its element is laid out — wherever it is. As
+   an <img loading="lazy"> that weight leaves the opening load entirely and
+   arrives only when the section is approached. */
+.reel__thumb {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+
+/* Every clip is encoded 16:9 — landscape, the shape a video player is, the
+   shape YouTube is — and every clip fills that box corner to corner. Where a
+   source was shot vertical the fill is a blurred, darkened copy of its own
+   frame either side, so the whole picture is visible and nothing is cropped
+   out of it. There are no bars and no box the picture floats inside. */
+.reel__frame {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  padding: var(--sp-16);
+  border: 1px solid rgb(68, 66, 50);
+  border: 1px solid color-mix(in srgb, var(--gold) 22%, var(--line));
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--surface-lift);
+  color: var(--paper);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 420ms var(--ease-out), border-color 300ms var(--ease),
+              box-shadow 420ms var(--ease-out);
+}
+/* The dimming that used to be a background layer under the poster now rides
+   over the image, on the layer that already carried the vignette. The
+   `backdrop-filter: blur(0px)` that sat here did nothing but promote the
+   tile to its own compositing layer, so it is gone. */
+.reel__frame::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(rgba(7, 10, 18, 0.22), rgba(7, 10, 18, 0.22)),
+    radial-gradient(60% 60% at 50% 50%, transparent, rgba(7, 10, 18, 0.42));
+  background:
+    linear-gradient(color-mix(in srgb, var(--ink) 22%, transparent),
+                    color-mix(in srgb, var(--ink) 22%, transparent)),
+    radial-gradient(60% 60% at 50% 50%, transparent,
+                    color-mix(in srgb, var(--ink) 42%, transparent));
+  pointer-events: none;
+}
+.reel__frame:hover, .reel__frame:focus-visible {
+  transform: translateY(-3px);
+  border-color: var(--gold);
+  box-shadow: 0 22px 50px rgba(7, 10, 18, 0.8), var(--neon);
+  box-shadow: 0 22px 50px color-mix(in srgb, var(--ink) 80%, transparent), var(--neon);
+}
+
+.reel__platform {
+  position: relative;
+  z-index: 2;
+  padding: 5px var(--sp-8);
+  border-radius: 999px;
+  background: rgba(7, 10, 18, 0.7);
+  background: color-mix(in srgb, var(--ink) 70%, transparent);
+  font-size: var(--t-label);
+  font-weight: 500;
+  color: var(--paper);
+}
+
+/* the play mark sits dead centre and grows a little under the pointer */
+.reel__play {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  color: var(--ink);
+  pointer-events: none;
+}
+.reel__play svg {
+  padding: 18px 16px 18px 21px;
+  border-radius: 999px;
+  background: var(--gold);
+  box-shadow: 0 10px 30px rgba(7, 10, 18, 0.6), var(--neon-soft);
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--ink) 60%, transparent), var(--neon-soft);
+  transition: transform 320ms var(--ease-out), background-color 240ms var(--ease);
+  box-sizing: content-box;
+}
+.reel__frame:hover .reel__play svg,
+.reel__frame:focus-visible .reel__play svg {
+  transform: scale(1.08);
+  background: var(--gold-lift);
+}
+
+/* the player sits exactly where the thumbnail was. The clips are encoded at
+   the tile's own 16:9, so `cover` crops nothing — it only guards against a
+   rounding gap at the edges. */
+.reel__player {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: 1px solid rgb(107, 94, 47);
+  border: 1px solid color-mix(in srgb, var(--gold) 45%, var(--line));
+  border-radius: var(--radius);
+  background: #000;
+  box-shadow: var(--neon-soft);
+}
+
+/* The YouTube Short is the one clip we cannot re-encode, so it is framed
+   rather than filled: the embed is held at the Short's own 9:16 down the
+   middle of the tile at full height, and the poster's blurred fill — already
+   baked into the image — carries the rest of the box. Same landscape tile,
+   same edge-to-edge picture, no black bars of the player's own. */
+.reel--embed .reel__player {
+  left: 50%;
+  right: auto;
+  width: auto;
+  aspect-ratio: 9 / 16;
+  transform: translateX(-50%);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.reel.is-playing .reel__frame { pointer-events: none; }
+/* nothing of the still tile is left over the picture once it is playing —
+   on the embed the thumbnail stays, because it is the blurred fill */
+.reel.is-playing .reel__frame::before,
+.reel.is-playing .reel__platform,
+.reel.is-playing .reel__play { opacity: 0; }
+
+.reel__caption {
+  margin-top: var(--sp-16);
+  font-size: var(--t-label);
+  color: var(--grey);
+  text-align: center;
+}
+.reel__caption a {
+  color: var(--paper);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--line);
+}
+.reel__caption a:hover { color: var(--gold-lift); text-decoration-color: var(--gold); }
+
+/* the offer panel beside the reel — content, not an empty tile */
+.playbook {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 520px;
+  padding: var(--sp-32) var(--sp-24);
+  border: var(--hairline);
+  border-radius: var(--radius);
+  background: var(--surface);
+  text-align: left;
+}
+.playbook__title {
+  font-size: var(--t-h3);
+  font-weight: 700;
+  font-stretch: 112%;
+  letter-spacing: -0.02em;
+}
+.playbook__steps {
+  display: grid;
+  align-content: space-between;
+  gap: var(--sp-16);
+  flex: 1;
+  margin-block: var(--sp-24);
+}
+.playbook__steps li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: baseline;
+  gap: var(--sp-16);
+  padding-top: var(--sp-16);
+  border-top: var(--hairline);
+}
+.playbook__n {
+  font-family: var(--font-display);
+  font-size: var(--t-small);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--gold);
+}
+.playbook__step { font-size: var(--t-small); color: var(--grey); line-height: 1.55; }
+.playbook__step b { color: var(--paper); font-weight: 600; }
+.playbook__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-8);
+  margin-bottom: var(--sp-24);
+}
+.playbook__tags li {
+  padding: 6px var(--sp-16);
+  border: var(--hairline);
+  border-radius: 999px;
+  font-size: var(--t-label);
+  color: var(--grey);
+}
+
+.playbook__note {
+  margin-top: var(--sp-8);
+  font-size: var(--t-label);
+  color: var(--grey);
+  text-align: center;
+}
+
+@media (min-width: 720px) {
+  .playbook { max-width: none; padding: var(--sp-32); }
+}
+
+/* One column or three, never two: a two-column row leaves the third tile
+   orphaned beside a gap, and the three cuts are meant to be read as one row.
+   Below the switch each tile gets the full column, which is the bigger picture
+   anyway — a 16:9 tile across a 360px phone is wider than the 9:16 tile it
+   replaces ever was on a desktop.
+
+   900px is where the header already becomes its desktop self, so the row and
+   the nav arrive together. The offer panel spans the whole row underneath
+   rather than being squeezed in beside a tile. */
+@media (min-width: 900px) {
+  .reels {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    max-width: none;
+  }
+  .playbook { grid-column: 1 / -1; }
+}
+
+/* 10. Results — bento grid -------------------------------------------------- */
+
+.results { border-bottom: var(--hairline); }
+
+.bento {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--sp-32);
+}
+
+.bento__card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: var(--sp-32) var(--sp-24);
+  border: var(--hairline);
+  border-radius: var(--radius);
+  background: var(--surface);
+  text-align: center;
+  overflow: hidden;
+  transition: border-color 320ms var(--ease), transform 420ms var(--ease-out),
+              box-shadow 420ms var(--ease-out);
+}
+.bento__card::before {
+  content: "";
+  position: absolute;
+  inset: -40% 20% 60%;
+  background: radial-gradient(50% 60% at 50% 50%,
+              rgba(201, 162, 39, 0.22), transparent 70%);
+  background: radial-gradient(50% 60% at 50% 50%,
+              color-mix(in srgb, var(--gold) 22%, transparent), transparent 70%);
+  opacity: 0;
+  transition: opacity 420ms var(--ease);
+  pointer-events: none;
+}
+.bento__card:hover {
+  border-color: rgb(107, 94, 47);
+  border-color: color-mix(in srgb, var(--gold) 45%, var(--line));
+  transform: translateY(-4px);
+  box-shadow: 0 24px 60px rgba(7, 10, 18, 0.7), var(--neon-soft);
+  box-shadow: 0 24px 60px color-mix(in srgb, var(--ink) 70%, transparent), var(--neon-soft);
+}
+.bento__card:hover::before { opacity: 1; }
+
+.bento__head { position: relative; }
+.bento__client {
+  font-size: var(--t-h3);
+  font-weight: 700;
+  font-stretch: 112%;
+  letter-spacing: -0.02em;
+}
+.bento__when { margin-top: var(--sp-4); font-size: var(--t-label); color: var(--grey); }
+
+.bento__figure {
+  position: relative;
+  margin-top: var(--sp-24);
+  font-family: var(--font-display);
+  font-size: var(--t-figure);
+  font-weight: 800;
+  font-stretch: 125%;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.bento__figure--gold { color: var(--gold); text-shadow: var(--neon-soft); }
+.bento__caption {
+  position: relative;
+  margin-top: var(--sp-8);
+  font-size: var(--t-small);
+  color: var(--grey);
+}
+
+.stats {
+  position: relative;
+  display: grid;
+  gap: 0;
+  margin-top: var(--sp-24);
+  text-align: left;
+}
+.stats li {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: baseline;
+  gap: var(--sp-8);
+  padding-block: var(--sp-8);
+  border-top: var(--hairline);
+}
+.stats__k { font-size: var(--t-small); color: var(--grey); }
+.stats__v {
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.stats__d { font-size: var(--t-label); color: var(--gold); font-variant-numeric: tabular-nums; }
+
+.stats--row { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-16); }
+.stats--row li {
+  grid-template-columns: 1fr;
+  justify-items: center;
+  text-align: center;
+  border-top: 0;
+  gap: var(--sp-4);
+}
+
+.meter { position: relative; margin-top: var(--sp-24); text-align: left; }
+.meter__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--sp-8);
+  font-size: var(--t-label);
+  color: var(--grey);
+  margin-bottom: var(--sp-8);
+}
+.meter__top b { color: var(--paper); font-variant-numeric: tabular-nums; }
+.meter__track {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+.meter__track span {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--gold), var(--gold-lift));
+  box-shadow: var(--neon-soft);
+  transition: width 1200ms var(--ease-out);
+}
+.meter.is-in .meter__track span { width: calc(var(--pct) * 1%); }
+html:not(.js) .meter__track span { width: calc(var(--pct) * 1%); }
+
+/* the big figure has to fit its card, so full size only while the wide card
+   actually spans the row — at three columns it is a third of the width */
+.bento__figure { font-size: clamp(2rem, 6vw, 2.75rem); }
+@media (min-width: 720px) and (max-width: 999px) {
+  .bento__card--wide .bento__figure { font-size: var(--t-figure); }
+}
+
+@media (min-width: 720px) {
+  .bento { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .bento__card { grid-column: span 3; padding: var(--sp-32); }
+  .bento__card--wide, .bento__card--chart { grid-column: span 6; }
+}
+@media (min-width: 1000px) {
+  /* three cards, three columns, each at its own natural height rather than
+     stretched to the tallest — a stretched short card is just a hole */
+  .bento { align-items: start; }
+  .bento__card, .bento__card--wide { grid-column: span 2; }
+}
+
+
+/* 10b. Before and after ----------------------------------------------------- */
+
+.ba {
+  position: relative;
+  isolation: isolate;
+  border-bottom: var(--hairline);
+  background: rgba(16, 22, 35, 0.3);
+  background: color-mix(in srgb, var(--surface) 30%, transparent);
+}
+
+/* gold motes drifting behind the proof, drawn only while the section is
+   on screen and never under reduced motion */
+.motes {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1200ms var(--ease);
+}
+.motes.is-on { opacity: 1; }
+@media (max-width: 899px) { .motes { display: none; } }
+.ba .shell { position: relative; z-index: 1; }
+.ba .section-head { max-width: 60ch; }
+
+.ba__grid {
+  display: grid;
+  align-items: start;
+  gap: var(--sp-32);
+}
+
+.ba__card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: var(--sp-32) var(--sp-24);
+  border: var(--hairline);
+  border-radius: var(--radius);
+  background: var(--surface);
+  text-align: center;
+  transition: border-color 320ms var(--ease), box-shadow 420ms var(--ease-out);
+}
+.ba__card {
+  transition: border-color 320ms var(--ease), transform 420ms var(--ease-out),
+              box-shadow 420ms var(--ease-out);
+}
+/* a gold seam along the top edge, brighter when the card is under the pointer */
+.ba__card::after {
+  content: "";
+  position: absolute;
+  left: var(--sp-24);
+  right: var(--sp-24);
+  top: -1px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent,
+              rgba(201, 162, 39, 0.65), transparent);
+  background: linear-gradient(90deg, transparent,
+              color-mix(in srgb, var(--gold) 65%, transparent), transparent);
+  opacity: 0.5;
+  transition: opacity 420ms var(--ease);
+  pointer-events: none;
+}
+.ba__card:hover::after { opacity: 1; }
+
+.ba__card:hover {
+  border-color: rgb(98, 88, 47);
+  border-color: color-mix(in srgb, var(--gold) 40%, var(--line));
+  transform: translateY(-3px);
+  box-shadow: 0 24px 60px rgba(7, 10, 18, 0.7), var(--neon-soft);
+  box-shadow: 0 24px 60px color-mix(in srgb, var(--ink) 70%, transparent), var(--neon-soft);
+}
+
+.ba__note {
+  margin-top: var(--sp-24);
+  padding-top: var(--sp-24);
+  border-top: var(--hairline);
+  font-size: var(--t-label);
+  color: var(--grey);
+  text-align: left;
+  text-wrap: pretty;
+}
+
+
+/* the two windows a card compares, stated before the numbers */
+.ba__span {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-8);
+  margin-top: var(--sp-16);
+}
+.ba__chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 6px var(--sp-16);
+  border: var(--hairline);
+  border-radius: 999px;
+  font-size: var(--t-label);
+  color: var(--grey);
+}
+.ba__chip b {
+  color: var(--paper);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.ba__chip--after { border-color: rgb(107, 94, 47);
+ border-color: color-mix(in srgb, var(--gold) 45%, var(--line)); }
+.ba__chip--after b { color: var(--gold-lift); }
+.ba__arrow { color: var(--grey); }
+
+/* the screenshots the figures were read off */
+.ba__pair figcaption {
+  margin-top: var(--sp-8);
+  font-size: var(--t-label);
+  color: var(--grey);
+  text-align: left;
+  text-wrap: pretty;
+}
+
+.ba__pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-16);
+  margin-top: var(--sp-32);
+  padding-top: var(--sp-32);
+  border-top: var(--hairline);
+}
+.ba__pair--stack { grid-template-columns: minmax(0, 1fr); gap: var(--sp-24); }
+/* both panels sit on one baseline: the row takes the taller image and the
+   shorter one is centred on the same white it already has */
+.ba__pair figure { display: grid; grid-template-rows: 1fr auto; min-width: 0; }
+/* both panels are cropped to the same square around the date and the figure,
+   so the two sides read at one glance */
+/* the frame: it clips, it lights up, and the sheen runs across it */
+.shot {
+  position: relative;
+  display: block;
+  height: 100%;
+  overflow: hidden;
+  border: var(--hairline);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  isolation: isolate;
+  transition: border-color 320ms var(--ease), box-shadow 520ms var(--ease-out),
+              transform 520ms var(--ease-out);
+}
+.shot img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: transform 900ms var(--ease-out), filter 520ms var(--ease);
+}
+.ba__pair--stack .shot img { height: auto; object-fit: fill; }
+
+.ba__pair figure:hover .shot {
+  transform: translateY(-4px);
+  border-color: rgb(124, 107, 45);
+  border-color: color-mix(in srgb, var(--gold) 55%, var(--line));
+  box-shadow: 0 22px 50px rgba(7, 10, 18, 0.78), var(--neon-soft);
+  box-shadow: 0 22px 50px color-mix(in srgb, var(--ink) 78%, transparent), var(--neon-soft);
+}
+.ba__pair figure:hover .shot img { transform: scale(1.045); filter: saturate(1.06); }
+
+/* a gold light travelling the border, only while the pointer is on it */
+@property --ang { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
+
+.shot::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: 2;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(from var(--ang),
+              transparent 0 62%,
+              rgba(201, 162, 39, 0.85) 76%,
+              var(--gold-lift) 82%,
+              transparent 94%);
+  background: conic-gradient(from var(--ang),
+              transparent 0 62%,
+              color-mix(in srgb, var(--gold) 85%, transparent) 76%,
+              var(--gold-lift) 82%,
+              transparent 94%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 320ms var(--ease);
+  pointer-events: none;
+}
+.ba__pair figure:hover .shot::before {
+  opacity: 1;
+  animation: shot-ring 2.6s linear infinite;
+}
+@keyframes shot-ring { to { --ang: 360deg; } }
+
+/* and a single sheen sweeping across the glass */
+.shot::after {
+  content: "";
+  position: absolute;
+  top: -20%;
+  bottom: -20%;
+  left: 0;
+  width: 45%;
+  z-index: 1;
+  background: linear-gradient(100deg,
+              transparent,
+              rgba(255, 255, 255, 0.42) 45%,
+              rgba(228, 194, 92, 0.3) 60%,
+              transparent);
+  background: linear-gradient(100deg,
+              transparent,
+              color-mix(in srgb, #fff 42%, transparent) 45%,
+              color-mix(in srgb, var(--gold-lift) 30%, transparent) 60%,
+              transparent);
+  transform: translateX(-160%) skewX(-14deg);
+  opacity: 0;
+  pointer-events: none;
+}
+.ba__pair figure:hover .shot::after {
+  animation: shot-sheen 1100ms var(--ease-out) forwards;
+}
+@keyframes shot-sheen {
+  0%   { opacity: 0; transform: translateX(-160%) skewX(-14deg); }
+  12%  { opacity: 1; }
+  100% { opacity: 0; transform: translateX(320%) skewX(-14deg); }
+}
+.ba__pair figcaption { text-align: center; font-variant-numeric: tabular-nums; }
+.ba__pair .is-after { color: var(--gold-lift); }
+
+/* one metric, two bars: the state before the work and the state after */
+.swing {
+  display: grid;
+  gap: var(--sp-16);
+  margin-top: var(--sp-32);
+  text-align: left;
+}
+.swing li + li { padding-top: var(--sp-16); border-top: var(--hairline); }
+.swing__k {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-8);
+  font-size: var(--t-label);
+  color: var(--grey);
+}
+.swing__k b {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+}
+
+.swing__row {
+  display: grid;
+  grid-template-columns: 3.5rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--sp-8);
+  margin-top: var(--sp-8);
+}
+.swing__label { font-size: var(--t-label); color: var(--grey); }
+
+.swing__track {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+.swing__track > span {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: 999px;
+  background: rgba(126, 135, 148, 0.55);
+  background: color-mix(in srgb, var(--grey) 55%, transparent);
+  transition: width 1100ms var(--ease-out);
+}
+.swing.is-in .swing__track > span { width: calc(var(--w) * 1%); }
+html:not(.js) .swing__track > span { width: calc(var(--w) * 1%); }
+
+.swing__row--after .swing__track > span {
+  background: linear-gradient(90deg, var(--gold), var(--gold-lift));
+  box-shadow: var(--neon-soft);
+}
+.swing__row--after .swing__track > span { transition-delay: 160ms; }
+
+.swing__v {
+  min-width: 5.5ch;
+  text-align: right;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.swing__row--after .swing__v { color: var(--paper); }
+
+@media (min-width: 1000px) {
+  .ba__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ba__card { padding: var(--sp-32); }
+}
+
+/* 11. Results — Pivot Point chart ------------------------------------------- */
+
+.chart { margin-top: var(--sp-24); }
+.ba__card .stats--row { margin-top: var(--sp-24); }
+.chart__svg { width: 100%; height: auto; }
+.chart__grid line { stroke: var(--line); stroke-width: 1; }
+.chart__ticks text, .chart__stages text {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 500;
+  fill: var(--grey);
+  font-variant-numeric: tabular-nums;
+}
+.chart__line { fill: none; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.chart__line--views { stroke: var(--gold); filter: drop-shadow(0 0 6px rgba(201, 162, 39, 0.55));
+ filter: drop-shadow(0 0 6px color-mix(in srgb, var(--gold) 55%, transparent)); }
+.chart__line--reach { stroke: var(--grey); stroke-width: 2; }
+
+.dot { fill: var(--ink); stroke-width: 3; }
+.dot--views { stroke: var(--gold); }
+.dot--reach { stroke: var(--grey); stroke-width: 2; }
+.dot--peak { fill: var(--gold); stroke: var(--gold); }
+
+[data-chart] .chart__line { stroke-dasharray: 1; stroke-dashoffset: 1; }
+[data-chart] .chart__dots { opacity: 0; }
+[data-chart].is-drawn .chart__line { animation: draw 900ms var(--ease-out) forwards; }
+[data-chart].is-drawn .chart__line--reach { animation-delay: 120ms; }
+[data-chart].is-drawn .chart__dots { animation: fade-in 300ms var(--ease) 800ms forwards; }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+@keyframes fade-in { to { opacity: 1; } }
+
+.chart__key {
+  display: flex;
+  justify-content: center;
+  gap: var(--sp-24);
+  margin-top: var(--sp-8);
+  font-size: var(--t-label);
+  color: var(--grey);
+}
+.key { display: inline-flex; align-items: center; gap: var(--sp-8); }
+.key::before { content: ""; width: 16px; height: 2px; background: currentColor; }
+.key--views { color: var(--gold); }
+
+@media (max-width: 639px) { .chart__ticks { display: none; } .chart__stages text { font-size: 22px; } }
+
+/* 12. Voices ---------------------------------------------------------------- */
+
+.voices {
+  border-bottom: var(--hairline);
+  background: rgba(16, 22, 35, 0.3);
+  background: color-mix(in srgb, var(--surface) 30%, transparent);
+}
+.voices__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--sp-24);
+  max-width: 1000px;
+  margin-inline: auto;
+}
+
+/* the two quotes are different lengths; centring the block spreads the
+   difference instead of pooling it at the bottom of the shorter card */
+.voice {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--sp-32);
+  border: var(--hairline);
+  border-radius: var(--radius);
+  background: var(--surface);
+  text-align: center;
+  transition: border-color 320ms var(--ease), box-shadow 420ms var(--ease-out);
+}
+.voice:hover {
+  border-color: rgb(98, 88, 47);
+  border-color: color-mix(in srgb, var(--gold) 40%, var(--line));
+  box-shadow: var(--neon-soft);
+}
+.voice p {
+  font-family: var(--font-display);
+  font-size: clamp(1.125rem, 2.2vw, 1.5rem);
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+}
+.voice footer { margin-top: var(--sp-24); display: grid; gap: var(--sp-4); }
+.voice__name { font-size: var(--t-small); font-weight: 600; }
+.voice__role { font-size: var(--t-label); color: var(--grey); }
+
+@media (min-width: 800px) { .voices__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* 12b. FAQ ------------------------------------------------------------------ */
+
+.faq { border-bottom: var(--hairline); }
+
+.faq__list {
+  max-width: 820px;
+  margin-inline: auto;
+  border-top: var(--hairline);
+}
+
+.qa { border-bottom: var(--hairline); }
+
+.qa summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-16);
+  padding-block: var(--sp-24);
+  font-family: var(--font-display);
+  font-size: clamp(1.0625rem, 1.6vw, 1.25rem);
+  font-weight: 700;
+  font-stretch: 112%;
+  letter-spacing: -0.02em;
+  cursor: pointer;
+  list-style: none;
+  transition: color 200ms var(--ease);
+}
+.qa summary::-webkit-details-marker { display: none; }
+.qa summary:hover { color: var(--gold-lift); }
+
+/* the marker is drawn rather than typed, so it can turn */
+.qa summary::after {
+  content: "";
+  flex: none;
+  width: 12px; height: 12px;
+  border-right: 2px solid var(--gold);
+  border-bottom: 2px solid var(--gold);
+  transform: rotate(45deg) translate(-2px, -2px);
+  transition: transform 320ms var(--ease-out);
+}
+.qa[open] summary::after { transform: rotate(-135deg) translate(-2px, -2px); }
+
+.qa p {
+  max-width: 68ch;
+  padding-bottom: var(--sp-24);
+  color: var(--grey);
+  font-size: var(--t-small);
+  line-height: 1.65;
+  text-wrap: pretty;
+}
+.qa[open] p { animation: rise 420ms var(--ease-out) both; }
+
+/* 13. Book — scheduler and calendar ---------------------------------------- */
+
+.booker {
+  position: relative;
+  max-width: 880px;
+  margin-inline: auto;
+  padding: var(--sp-32) var(--sp-24);
+  border: 1px solid rgb(98, 88, 47);
+  border: 1px solid color-mix(in srgb, var(--gold) 40%, var(--line));
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, var(--surface), var(--ink));
+  box-shadow: 0 0 0 1px rgba(201, 162, 39, 0.1),
+              0 32px 80px rgba(7, 10, 18, 0.8),
+              var(--neon-soft);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--gold) 10%, transparent),
+              0 32px 80px color-mix(in srgb, var(--ink) 80%, transparent),
+              var(--neon-soft);
+}
+
+.booker__embed:empty { display: none; }
+.booker__embed { margin-bottom: var(--sp-32); min-height: 620px; }
+.booker__embed iframe { width: 100%; min-height: 620px; border: 0; border-radius: var(--radius-sm); }
+
+.calendar { display: grid; gap: var(--sp-32); }
+.calendar__pane { min-width: 0; }
+.calendar__side {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-16);
+}
+
+.calendar__head {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-16);
+}
+.calendar__month {
+  min-width: 12ch;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.calendar__nav {
+  width: 44px; height: 44px;
+  border: var(--hairline);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--paper);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: border-color 200ms var(--ease), color 200ms var(--ease);
+}
+.calendar__nav:hover { border-color: var(--gold); color: var(--gold); }
+.calendar__nav[disabled] { opacity: 0.35; pointer-events: none; }
+
+.calendar__weekdays,
+.calendar__grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--sp-4);
+}
+.calendar__weekdays span {
+  text-align: center;
+  font-size: var(--t-label);
+  color: var(--grey);
+  padding-bottom: var(--sp-4);
+}
+
+.calendar__day {
+  min-height: 48px;
+  display: grid;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: rgba(22, 30, 46, 0.7);
+  background: color-mix(in srgb, var(--surface-lift) 70%, transparent);
+  color: var(--paper);
+  font-family: var(--font-body);
+  font-size: var(--t-small);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: border-color 200ms var(--ease), background-color 200ms var(--ease),
+              color 200ms var(--ease), box-shadow 260ms var(--ease);
+}
+.calendar__day:hover { border-color: var(--gold); }
+.calendar__day[disabled] { background: transparent; color: rgba(126, 135, 148, 0.55);
+ color: color-mix(in srgb, var(--grey) 55%, transparent); cursor: default; }
+.calendar__day.is-empty { background: none; border: 0; pointer-events: none; }
+.calendar__day.is-today { border-color: var(--line); color: var(--gold); }
+.calendar__day.is-picked {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--ink);
+  font-weight: 700;
+  box-shadow: var(--neon);
+}
+
+.calendar__slots-title { font-size: var(--t-small); color: var(--grey); text-align: center; }
+.calendar__slot-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+  gap: var(--sp-8);
+  margin-top: var(--sp-16);
+}
+.calendar__slot {
+  min-height: 44px;
+  padding: var(--sp-8);
+  border: var(--hairline);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--paper);
+  font-family: var(--font-body);
+  font-size: var(--t-small);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: border-color 200ms var(--ease), color 200ms var(--ease),
+              background-color 200ms var(--ease), box-shadow 260ms var(--ease);
+}
+.calendar__slot:hover { border-color: var(--gold); color: var(--gold); }
+.calendar__slot.is-picked {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--ink);
+  font-weight: 700;
+  box-shadow: var(--neon-soft);
+}
+.calendar__zone { margin-top: var(--sp-16); font-size: var(--t-label); color: var(--grey); text-align: center; }
+
+.calendar__confirm { border-top: var(--hairline); padding-top: var(--sp-24); }
+.calendar__summary {
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-bottom: var(--sp-16);
+}
+.calendar__actions { display: grid; gap: var(--sp-8); }
+
+@media (min-width: 640px) {
+  .booker { padding: var(--sp-48); }
+}
+@media (min-width: 860px) {
+  .calendar { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: var(--sp-48); }
+  .calendar__slot-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+
+/* 13b. Booking — header, steps, lead form ----------------------------------- */
+
+.booker__head {
+  display: grid;
+  gap: var(--sp-8);
+  margin-bottom: var(--sp-32);
+  padding-bottom: var(--sp-24);
+  border-bottom: var(--hairline);
+  text-align: center;
+}
+.booker__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-8);
+  margin-inline: auto;
+  padding: var(--sp-8) var(--sp-16);
+  border: 1px solid rgb(107, 94, 47);
+  border: 1px solid color-mix(in srgb, var(--gold) 45%, var(--line));
+  border-radius: 999px;
+  font-size: var(--t-label);
+  font-weight: 600;
+  color: var(--gold-lift);
+}
+.booker__dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 8px var(--gold);
+}
+.booker__meet { color: var(--grey); font-weight: 500; }
+.booker__note {
+  max-width: 54ch;
+  margin-inline: auto;
+  font-size: var(--t-small);
+  color: var(--grey);
+  text-wrap: pretty;
+}
+
+.reach {
+  display: grid;
+  gap: var(--sp-24);
+  max-width: 880px;
+  margin: var(--sp-32) auto 0;
+}
+
+.lead {
+  display: grid;
+  gap: var(--sp-16);
+  padding: var(--sp-32) var(--sp-24);
+  border: var(--hairline);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.lead__title {
+  font-size: var(--t-h3);
+  font-weight: 700;
+  font-stretch: 112%;
+  letter-spacing: -0.02em;
+}
+.lead__note { font-size: var(--t-label); color: var(--grey); margin-top: calc(var(--sp-8) * -1); }
+
+.field { display: grid; gap: 6px; }
+.field label { font-size: var(--t-label); color: var(--grey); }
+.field input,
+.field textarea {
+  width: 100%;
+  padding: var(--sp-8) var(--sp-16);
+  min-height: 48px;
+  border: var(--hairline);
+  border-radius: var(--radius-sm);
+  background: rgba(22, 30, 46, 0.7);
+  background: color-mix(in srgb, var(--surface-lift) 70%, transparent);
+  color: var(--paper);
+  font-family: var(--font-body);
+  font-size: var(--t-small);
+  transition: border-color 200ms var(--ease), box-shadow 260ms var(--ease);
+}
+.field textarea { min-height: 96px; resize: vertical; padding-top: var(--sp-16); }
+.field input:focus,
+.field textarea:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: var(--neon-soft);
+}
+.field--trap { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
+.lead__actions { display: flex; flex-wrap: wrap; gap: var(--sp-8); margin-top: var(--sp-8); }
+.lead__actions .btn { flex: 1 1 12rem; }
+
+.lead__status { min-height: 1.4em; font-size: var(--t-label); color: var(--grey); }
+.lead__status.is-ok { color: var(--gold-lift); }
+.lead__status.is-warn { color: var(--paper); }
+
+.reach__side { display: grid; gap: var(--sp-24); align-content: start; }
+
+.booker__steps { display: grid; gap: var(--sp-16); }
+.booker__steps li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: baseline;
+  gap: var(--sp-16);
+  padding-top: var(--sp-16);
+  border-top: var(--hairline);
+  font-size: var(--t-small);
+  color: var(--grey);
+}
+.booker__n {
+  font-family: var(--font-display);
+  font-size: var(--t-small);
+  font-weight: 800;
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (min-width: 860px) {
+  .reach { grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); gap: var(--sp-32); }
+  .lead { padding: var(--sp-32); }
+}
+
+/* 14. Contact rows + phone action bar --------------------------------------- */
+
+.contact { margin-top: 0; }
+.contact li {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-8);
+  padding-block: var(--sp-8);
+  border-top: var(--hairline);
+}
+.contact__label { flex: none; min-width: 64px; font-size: var(--t-label); color: var(--grey); }
+.contact__value {
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+a.contact__value:hover { color: var(--gold-lift); }
+
+.contact__act {
+  margin-left: auto;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: var(--sp-8) var(--sp-16);
+  background: none;
+  border: var(--hairline);
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-size: var(--t-label);
+  font-weight: 500;
+  color: var(--grey);
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 200ms var(--ease), border-color 200ms var(--ease);
+}
+.contact__act:hover { color: var(--paper); border-color: var(--gold); }
+.contact__act.is-done { color: var(--gold); border-color: var(--gold); }
+
+.action-bar {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 25;
+  display: flex;
+  gap: var(--sp-8);
+  padding: var(--sp-8) var(--sp-16);
+  padding-bottom: calc(var(--sp-8) + env(safe-area-inset-bottom, 0px));
+  /* fixed to the bottom of a scrolling page, so a backdrop filter here meant
+     re-blurring the strip behind it on every scrolled frame — on the phones
+     that can least afford it, and behind a background already 92% opaque */
+  background: rgb(9, 12, 21);
+  background: color-mix(in srgb, var(--ink) 97%, var(--surface));
+  border-top: var(--hairline);
+  transform: translateY(110%);
+  transition: transform 420ms var(--ease-out);
+}
+.action-bar.is-in { transform: none; }
+.action-bar[hidden] { display: none; }
+.action-bar .btn { flex: 1; }
+
+@media (min-width: 768px) { .action-bar { display: none; } }
+@media (max-width: 767px) { body.has-action-bar { padding-bottom: 76px; } }
+
+/* 15. Footer ---------------------------------------------------------------- */
+
+.site-footer { border-top: var(--hairline); padding-block: var(--sp-48) var(--sp-24); }
+
+.site-footer__top {
+  display: grid;
+  gap: var(--sp-32);
+  padding-bottom: var(--sp-32);
+  border-bottom: var(--hairline);
+}
+
+.site-footer__mark {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 800;
+  font-stretch: 125%;
+  letter-spacing: -0.02em;
+}
+.site-footer__line { margin-top: var(--sp-8); max-width: 36ch; font-size: var(--t-small); color: var(--grey); }
+
+.site-footer__heading { font-size: var(--t-label); color: var(--grey); margin-bottom: var(--sp-8); }
+.site-footer__nav, .site-footer__contact { display: grid; gap: var(--sp-4); align-content: start; }
+.site-footer__nav a, .site-footer__contact a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  font-size: var(--t-small);
+  text-decoration: none;
+  color: var(--paper);
+  transition: color 200ms var(--ease);
+}
+.site-footer__nav a:hover, .site-footer__contact a:hover { color: var(--gold-lift); }
+
+.site-footer__bottom {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--sp-16);
+  padding-top: var(--sp-24);
+  font-size: var(--t-label);
+  color: var(--grey);
+}
+
+@media (min-width: 720px) {
+  .site-footer__top { grid-template-columns: 2fr 1fr 1fr; gap: var(--sp-48); }
+}
+
+/* 17. Motion ---------------------------------------------------------------- */
+
+@keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+@keyframes marquee { from { transform: none; } to { transform: translateX(-33.333%); } }
+@keyframes pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(201, 162, 39, 0.55);
+ box-shadow: 0 0 0 0 color-mix(in srgb, var(--gold) 55%, transparent); }
+  70%  { box-shadow: 0 0 0 8px rgba(0, 0, 0, 0);
+ box-shadow: 0 0 0 8px color-mix(in srgb, var(--gold) 0%, transparent); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+ box-shadow: 0 0 0 0 color-mix(in srgb, var(--gold) 0%, transparent); }
+}
+@keyframes ch-in { from { opacity: 0; transform: translateY(0.5em); } to { opacity: 1; transform: none; } }
+
+/* page load sequence, gated on JS so a scripted-off page renders complete */
+.js [data-seq] { animation: rise 700ms var(--ease-out) both; }
+.js [data-seq="1"] { animation-delay: 120ms; }
+.js [data-seq="2"], .js [data-seq="3"], .js [data-seq="4"] { animation-delay: 200ms; }
+.js [data-seq="5"] { animation-delay: 760ms; }
+.js [data-seq="6"] { animation-delay: 860ms; }
+.js [data-seq="7"] { animation-delay: 960ms; }
+.js [data-seq="8"] { animation-delay: 420ms; }
+
+/* The light field used to drift here, on desktops with a mouse. It is the
+   layer the hero paints its glow with, it spans 150% of the viewport, and it
+   carried a 40px blur — so the drift meant re-rasterising a full-screen blur
+   on every frame, for ever, directly on top of a playing video. That is what
+   made the top of the page stutter on a computer and never on a phone. The
+   blur is gone from section 7 and the drift is gone from here; the hero holds
+   still and the film is what moves. */
+.js .hero__dot { animation: pulse 2600ms var(--ease) 1600ms infinite; }
+.js .marquee__track { animation: marquee 28s linear infinite; }
+.marquee:hover .marquee__track { animation-play-state: paused; }
+/* and paused outright while the row is off screen — see section 4b in main.js */
+.marquee__track.is-idle { animation-play-state: paused; }
+
+/* headline: the per-line reveal steps aside once characters take over */
+.js [data-scramble].is-split .line > span { animation: none; opacity: 1; transform: none; }
+.js [data-scramble].is-split .ch { opacity: 0; transform: translateY(0.5em); }
+/* `will-change: transform, opacity` used to sit here, which asks the browser
+   for a composited layer per glyph — around sixty of them, all at once, in the
+   same second the hero film is being fetched and decoded. An opacity and
+   transform animation is promoted by the compositor anyway while it runs, so
+   the hint bought nothing and the layer count cost the opening frames. */
+.js [data-scramble].is-cascading .ch {
+  animation: ch-in 620ms var(--ease-out) both;
+  animation-delay: calc(250ms + var(--n) * 16ms);
+}
+
+/* once every glyph has landed the animation is dropped and the letters are
+   left as plain painted text */
+.js [data-scramble].is-done .ch {
+  animation: none;
+  opacity: 1;
+  transform: none;
+}
+
+/* reveal on view */
+.js [data-reveal="rise"] {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 800ms var(--ease-out), transform 800ms var(--ease-out);
+  transition-delay: var(--delay, 0ms);
+}
+.js [data-reveal="rise"].is-in { opacity: 1; transform: none; }
+
+/* a screenshot arrives by uncovering itself from the bottom up */
+.js [data-reveal="shot"] {
+  opacity: 0;
+  transform: translateY(18px) scale(0.98);
+  clip-path: inset(14% 0 0 0 round 10px);
+  transition: opacity 900ms var(--ease-out),
+              transform 1100ms var(--ease-out),
+              clip-path 1100ms var(--ease-out);
+  transition-delay: var(--delay, 0ms);
+}
+.js [data-reveal="shot"].is-in {
+  opacity: 1;
+  transform: none;
+  clip-path: inset(0 0 0 0 round 10px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    transition-delay: 0ms !important;
+  }
+
+  .js [data-seq], .js .hero__field, .js .hero__dot,
+  .js .marquee__track, .js [data-scramble] .ch, .js .btn {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+  }
+
+  .js [data-reveal] { opacity: 1; transform: none; }
+  .js [data-reveal="shot"] { clip-path: none; }
+  .shot::before, .shot::after { display: none; }
+  .ba__pair figure:hover .shot img { transform: none; }
+  .motes { display: none; }
+  .reel__frame:hover { transform: none; }
+  [data-chart] .chart__line { stroke-dashoffset: 0; }
+  [data-chart] .chart__dots { opacity: 1; }
+  .meter__track span { width: calc(var(--pct) * 1%); }
+}
+</style>
 
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
-  "@type": "ProfessionalService",
-  "name": "G Management",
-  "url": "https://gmgmt.co/",
-  "email": "manny@gmgmt.co",
-  "telephone": "+1-786-929-5735",
-  "areaServed": "United States",
-  "address": { "@type": "PostalAddress", "addressLocality": "Miami", "addressRegion": "FL", "addressCountry": "US" },
-  "founder": { "@type": "Person", "name": "Manny Garcia" },
-  "description": "Social media management, influencer marketing for brands, and influencer management for creators."
+  "@graph": [
+    {
+      "@type": "ProfessionalService",
+      "@id": "https://gmgmt.co/#business",
+      "name": "G Management",
+      "url": "https://gmgmt.co/",
+      "email": "manny@gmgmt.co",
+      "image": "https://gmgmt.co/assets/og.png",
+      "priceRange": "$$",
+      "areaServed": {
+        "@type": "Country",
+        "name": "United States"
+      },
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Miami",
+        "addressRegion": "FL",
+        "addressCountry": "US"
+      },
+      "founder": {
+        "@type": "Person",
+        "name": "Manny Garcia"
+      },
+      "description": "Social media management for brands and brand deal management for creators: short-form video strategy, editing, daily posting and monthly reporting.",
+      "knowsAbout": [
+        "Social media management",
+        "Short-form video",
+        "Instagram Reels",
+        "YouTube Shorts",
+        "TikTok",
+        "Influencer marketing",
+        "Brand deals"
+      ],
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Services",
+        "itemListElement": [
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "Social media management for brands"
+            }
+          },
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "Short-form video production and daily posting"
+            }
+          },
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "Brand deal management for creators"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://gmgmt.co/#website",
+      "url": "https://gmgmt.co/",
+      "name": "G Management",
+      "publisher": {
+        "@id": "https://gmgmt.co/#business"
+      },
+      "inLanguage": "en-US"
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://gmgmt.co/#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What do you actually run?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The account, end to end. Hooks and angles, the edit, the posting rhythm, and the monthly report. The first week is setup; after that short-form goes out daily."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is this organic, or is it ads?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Almost entirely organic, and the dashboards say so. Pivot Point Grips' 1.2M views came with 0.2% from ads, its two-week figure with 0.1%. One account on this page did run ads alongside: 29.2% of BKH's 5.4M reach was paid. We would rather write that down than have you find it later."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How long before anything moves?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Pivot Point Grips went from 116,498 views in the month before the takeover to 301,828 in the first fortnight after it, and 1,224,413 by the end of the first month. Houdini took two months to show up in orders. Two accounts, not a promise — but that is the shape of it."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do you work with creators as well as brands?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. For brands we run the account. For creators we manage the brand deals: who to take, what to charge, and getting paid."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What do you need from me to start?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Access to the account and whatever footage already exists. The first week is spent going through what has worked on the page before, so nothing gets rebuilt that was already working."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What does it cost?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "It depends on the account, the cadence and whether creators are involved. The fifteen minutes ends with a number, not a proposal to be sent later."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Where are you, and who do you work with?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Miami, Florida, working with brands and creators across the United States. Calls run in Miami time."
+          }
+        }
+      ]
+    }
+  ]
 }
+</script>
+
+<!-- Google Analytics 4. Put the measurement ID (G-XXXXXXXXXX) in data-ga4 and
+     the tag loads; leave it empty and nothing is requested. -->
+<script data-ga4="">
+(function () {
+  var id = (document.currentScript.getAttribute('data-ga4') || '').trim();
+  if (!id) return;
+  var tag = document.createElement('script');
+  tag.async = true;
+  tag.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(id);
+  document.head.appendChild(tag);
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function () { window.dataLayer.push(arguments); };
+  window.gtag('js', new Date());
+  window.gtag('config', id, { anonymize_ip: true });
+}());
 </script>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
-
-<div class="cursor" data-cursor aria-hidden="true">
-  <span class="cursor__ring"></span>
-  <span class="cursor__label">Watch</span>
-</div>
 
 <!-- ============================================================== HEADER -->
 <header class="site-header" data-header>
@@ -75,7 +2214,13 @@
 
   <!-- ================================================================ HERO -->
   <section class="hero" id="top">
-    <div class="hero__media" data-hero-media data-video="/assets/hero.mp4" aria-hidden="true">
+    <!-- Sources are tried in order and the first one that produces a frame
+         wins, so the hosted cut still leads. The local loop behind it is what
+         guarantees the section is never empty: a phone that cannot reach or
+         cannot decode the hosted file gets this instead of nothing. Replace
+         the second entry to change what that fallback is. -->
+    <div class="hero__media" data-hero-media aria-hidden="true"
+         data-video="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260808_112712_da9d53df-6d27-4b12-bdf6-aa9dc2622bdf.mp4, /assets/hero-loop-v3.mp4">
       <span class="hero__field"></span>
       <span class="hero__grain"></span>
       <span class="hero__scrim"></span>
@@ -84,7 +2229,7 @@
     <div class="shell hero__inner">
       <div class="hero__copy">
         <p class="hero__where" data-seq="1">
-          <span class="hero__dot" aria-hidden="true"></span>Miami, Florida — taking clients
+          <span class="hero__dot" aria-hidden="true"></span>Miami, Florida
         </p>
 
         <h1 class="hero__title" data-scramble>
@@ -93,10 +2238,7 @@
           <span class="line" data-seq="4"><span>brand deals for creators.</span></span>
         </h1>
 
-        <p class="hero__sub" data-seq="5">
-          Organic short-form video, run end to end. The numbers on this page are
-          client dashboards, with the dates attached.
-        </p>
+        <p class="hero__sub" data-seq="5">Short-form video, posted daily, on accounts run end to end.</p>
 
         <div class="hero__actions" data-seq="6">
           <a class="btn btn--primary btn--lg btn--glow" href="#book">Book a 15-minute call</a>
@@ -106,11 +2248,15 @@
         <ul class="hero__proof" data-seq="7">
           <li>
             <span class="hero__proof-figure" data-count data-to="5.4" data-decimals="1" data-suffix="M">5.4M</span>
-            <span class="hero__proof-label">reached, 30 days</span>
+            <span class="hero__proof-label">accounts reached, 30 days</span>
+          </li>
+          <li>
+            <span class="hero__proof-figure" data-count data-to="15" data-suffix="M+">15M+</span>
+            <span class="hero__proof-label">views for one client</span>
           </li>
           <li>
             <span class="hero__proof-figure" data-count data-to="54" data-prefix="+" data-suffix="%">+54%</span>
-            <span class="hero__proof-label">orders, two months</span>
+            <span class="hero__proof-label">orders in two months</span>
           </li>
           <li>
             <span class="hero__proof-figure" data-count data-to="19.2" data-decimals="1" data-prefix="$" data-suffix="K">$19.2K</span>
@@ -118,72 +2264,98 @@
           </li>
         </ul>
       </div>
-
-      <!-- the hero carries a live client short rather than a placeholder frame -->
-      <div class="hero__stage" data-seq="8">
-        <figure class="showcase" data-reel data-cursor-view data-autoload
-                data-embed="https://www.youtube-nocookie.com/embed/WZF_Tt_xNAQ?autoplay=1&mute=1&loop=1&playlist=WZF_Tt_xNAQ&controls=1&rel=0&playsinline=1&modestbranding=1"
-                data-embed-title="YouTube Short from a G Management client account">
-          <button class="showcase__frame reel__frame" type="button" data-reel-btn>
-            <span class="reel__ghost" aria-hidden="true">Short</span>
-            <span class="reel__platform">Client short, live</span>
-            <span class="reel__badge" aria-hidden="true">
-              <svg viewBox="0 0 12 14" width="10" height="12" focusable="false"><path d="M0 0 L12 7 L0 14 Z" fill="currentColor"/></svg>Watch
-            </span>
-            <span class="visually-hidden">Play the client short from YouTube</span>
-          </button>
-          <figcaption class="showcase__note">
-            <span>15M+ views in two months &mdash; BKH Enterprises</span>
-            <a href="https://www.youtube.com/shorts/WZF_Tt_xNAQ" target="_blank" rel="noopener">Open on YouTube</a>
-          </figcaption>
-        </figure>
-      </div>
     </div>
   </section>
 
-  <!-- ============================================================= MARQUEE -->
-  <div class="marquee" aria-hidden="true">
-    <div class="marquee__track" data-marquee>
-      <div class="marquee__set">
-        <span>Viral content</span><i></i><span>Brand deals</span><i></i>
-        <span>Short-form video</span><i></i><span>Growth</span><i></i>
-      </div>
-      <div class="marquee__set">
-        <span>Viral content</span><i></i><span>Brand deals</span><i></i>
-        <span>Short-form video</span><i></i><span>Growth</span><i></i>
-      </div>
-      <div class="marquee__set">
-        <span>Viral content</span><i></i><span>Brand deals</span><i></i>
-        <span>Short-form video</span><i></i><span>Growth</span><i></i>
+  <!-- ============================================================== CLIENTS -->
+  <section class="roll" aria-labelledby="roll-title">
+    <p class="roll__label" id="roll-title">Accounts we run short-form for</p>
+
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee__track" data-marquee>
+        <div class="marquee__set">
+          <span>BKH Enterprises</span><i></i><span>Pivot Point Grips</span><i></i>
+          <span>Houdini Holsters</span><i></i><span>PAC-Hub</span><i></i>
+          <span>PJ Vilardo</span><i></i><span>Greg Lepkoff</span><i></i>
+          <span>Limitless Law</span><i></i><span>Catholic Gathering</span><i></i>
+          <span>Hit 24</span><i></i><span>Fulfill Easy</span><i></i>
+        </div>
+        <div class="marquee__set">
+          <span>BKH Enterprises</span><i></i><span>Pivot Point Grips</span><i></i>
+          <span>Houdini Holsters</span><i></i><span>PAC-Hub</span><i></i>
+          <span>PJ Vilardo</span><i></i><span>Greg Lepkoff</span><i></i>
+          <span>Limitless Law</span><i></i><span>Catholic Gathering</span><i></i>
+          <span>Hit 24</span><i></i><span>Fulfill Easy</span><i></i>
+        </div>
+        <div class="marquee__set">
+          <span>BKH Enterprises</span><i></i><span>Pivot Point Grips</span><i></i>
+          <span>Houdini Holsters</span><i></i><span>PAC-Hub</span><i></i>
+          <span>PJ Vilardo</span><i></i><span>Greg Lepkoff</span><i></i>
+          <span>Limitless Law</span><i></i><span>Catholic Gathering</span><i></i>
+          <span>Hit 24</span><i></i><span>Fulfill Easy</span><i></i>
+        </div>
       </div>
     </div>
-  </div>
-  <p class="visually-hidden">Services: viral content, brand deals, short-form video, growth.</p>
+
+    <p class="visually-hidden">Clients: BKH Enterprises, Pivot Point, Houdini Holsters and
+      PAC-Hub. Services: short-form video, daily posting, brand deals and creator management.</p>
+  </section>
 
   <!-- ================================================================ WORK -->
   <section class="work" id="work" aria-labelledby="work-title">
     <div class="shell">
       <header class="section-head" data-reveal="rise">
-        <h2 class="section-title" id="work-title">The work.</h2>
-        <p class="section-lead">Vertical video is the engine. Press play.</p>
+        <h2 class="section-title" id="work-title">The work<span class="dot">.</span></h2>
+        <p class="section-lead">Client cuts, playing here.</p>
       </header>
 
       <div class="reels" data-reels>
 
-        <figure class="reel" data-reel data-cursor-view data-clip=""
-                data-embed="https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2Fshare%2Fr%2F1EtnnM8QSx%2F&show_text=false&autoplay=1&width=540"
-                data-embed-title="Facebook video from a G Management client account">
+        <figure class="reel" data-reel
+                data-video="/assets/clips/reel-1-v9.mp4"
+                data-poster="/assets/clips/reel-1-poster-v9.webp">
           <button class="reel__frame" type="button" data-reel-btn>
-            <span class="reel__ghost" aria-hidden="true">Reel</span>
-            <span class="reel__platform">Facebook</span>
-            <span class="reel__badge" aria-hidden="true">
-              <svg viewBox="0 0 12 14" width="10" height="12" focusable="false"><path d="M0 0 L12 7 L0 14 Z" fill="currentColor"/></svg>Watch
+            <img class="reel__thumb" src="/assets/clips/reel-1-poster-v9.webp" alt=""
+                 width="768" height="432" loading="lazy" decoding="async" fetchpriority="low">
+            <span class="reel__platform">Devito &amp; Jenne</span>
+            <span class="reel__play" aria-hidden="true">
+              <svg viewBox="0 0 14 16" width="13" height="15" focusable="false"><path d="M0 0 L14 8 L0 16 Z" fill="currentColor"/></svg>
             </span>
-            <span class="visually-hidden">Play the client reel from Facebook</span>
+            <span class="visually-hidden">Play the client reel</span>
           </button>
-          <figcaption class="reel__caption">
-            <a href="https://www.facebook.com/share/r/1EtnnM8QSx/" target="_blank" rel="noopener">Open on Facebook</a>
-          </figcaption>
+        </figure>
+
+        <figure class="reel" data-reel
+                data-video="/assets/clips/reel-2-v9.mp4"
+                data-poster="/assets/clips/reel-2-poster-v9.webp">
+          <button class="reel__frame" type="button" data-reel-btn>
+            <img class="reel__thumb" src="/assets/clips/reel-2-poster-v9.webp" alt=""
+                 width="768" height="432" loading="lazy" decoding="async" fetchpriority="low">
+            <span class="reel__platform">Short-form</span>
+            <span class="reel__play" aria-hidden="true">
+              <svg viewBox="0 0 14 16" width="13" height="15" focusable="false"><path d="M0 0 L14 8 L0 16 Z" fill="currentColor"/></svg>
+            </span>
+            <span class="visually-hidden">Play the client cut</span>
+          </button>
+        </figure>
+
+        <!-- The one clip that is not ours to re-encode. Its poster carries the
+             same 16:9 blurred fill the other two are encoded with, and the
+             embed is laid over it at the Short's own 9:16 — so the tile is the
+             same landscape box, filled edge to edge, as the two beside it. -->
+        <figure class="reel reel--embed" data-reel
+                data-embed="https://www.youtube-nocookie.com/embed/WZF_Tt_xNAQ?autoplay=1&loop=1&playlist=WZF_Tt_xNAQ&rel=0&playsinline=1&modestbranding=1"
+                data-embed-title="YouTube Short from a G Management client account"
+                data-poster="/assets/clips/reel-3-poster-v6.webp">
+          <button class="reel__frame" type="button" data-reel-btn>
+            <img class="reel__thumb" src="/assets/clips/reel-3-poster-v6.webp" alt=""
+                 width="768" height="432" loading="lazy" decoding="async" fetchpriority="low">
+            <span class="reel__platform">YouTube</span>
+            <span class="reel__play" aria-hidden="true">
+              <svg viewBox="0 0 14 16" width="13" height="15" focusable="false"><path d="M0 0 L14 8 L0 16 Z" fill="currentColor"/></svg>
+            </span>
+            <span class="visually-hidden">Play the client short from YouTube</span>
+          </button>
         </figure>
 
         <!-- the second column carries the offer, so no tile sits on the page empty -->
@@ -193,18 +2365,19 @@
           <ol class="playbook__steps">
             <li>
               <span class="playbook__n">01</span>
-              <p class="playbook__step"><b>We take the account.</b> Hooks, angles, posting
-                cadence and the edit style, set in the first week.</p>
+              <p class="playbook__step"><b>Week one is setup.</b> We go through what has
+                already worked on the account, write the hooks, and set a posting rhythm
+                the page can actually hold.</p>
             </li>
             <li>
               <span class="playbook__n">02</span>
-              <p class="playbook__step"><b>Short-form goes out daily.</b> Reels, Shorts and
-                TikToks cut for reach, not for a portfolio.</p>
+              <p class="playbook__step"><b>Then it posts, every day.</b> Reels, Shorts and
+                TikToks, cut for the way people watch now &mdash; not for a showreel.</p>
             </li>
             <li>
               <span class="playbook__n">03</span>
-              <p class="playbook__step"><b>You get the dashboard.</b> Reach, orders and
-                revenue, reported the same way the receipts below are.</p>
+              <p class="playbook__step"><b>You see what we see.</b> Reach, orders and
+                revenue, in the same plain format as the receipts below.</p>
             </li>
           </ol>
 
@@ -218,55 +2391,116 @@
           </ul>
 
           <a class="btn btn--primary btn--full btn--glow" href="#book">Book a 15-minute call</a>
-          <p class="playbook__note">Fifteen minutes with Manny, no deck.</p>
+          <p class="playbook__note">Fifteen minutes with Manny. No deck, no pitch.</p>
         </div>
 
       </div>
     </div>
   </section>
 
-  <!-- ============================================================= RESULTS -->
-  <section class="results" id="results" aria-labelledby="results-title">
+  <!-- =========================================================== BEFORE/AFTER -->
+  <section class="ba" id="proof" aria-labelledby="ba-title">
+    <canvas class="motes" data-motes aria-hidden="true"></canvas>
+
     <div class="shell">
       <header class="section-head" data-reveal="rise">
-        <h2 class="section-title" id="results-title">The receipts.</h2>
-        <p class="section-lead">Real accounts. Client dashboards. Dates attached.</p>
+        <h2 class="section-title" id="ba-title">Before and after<span class="dot">.</span></h2>
+        <p class="section-lead">The same account on both sides of the work, off the client's
+          own dashboard.</p>
       </header>
 
-      <div class="bento">
+      <div class="ba__grid">
 
-        <article class="bento__card bento__card--wide" data-reveal="rise">
+        <article class="ba__card" data-reveal="rise">
           <header class="bento__head">
-            <h3 class="bento__client">BKH Enterprises</h3>
-            <p class="bento__when">Instagram, 30 days</p>
+            <h3 class="bento__client">Houdini Holsters</h3>
+            <p class="bento__when">Shopify &middot; sessions, orders and conversion rate</p>
           </header>
 
-          <p class="bento__figure">
-            <span data-count-view data-to="5487050">5,487,050</span>
+          <p class="ba__span">
+            <span class="ba__chip">Before <b>Sep 1&ndash;30, 2024</b></span>
+            <span class="ba__arrow" aria-hidden="true">&rarr;</span>
+            <span class="ba__chip ba__chip--after">After <b>Nov 1&ndash;30, 2024</b></span>
           </p>
-          <p class="bento__caption">accounts reached</p>
 
-          <ul class="stats">
-            <li><span class="stats__k">Impressions</span><span class="stats__v">9,074,547</span><span class="stats__d">+54.8%</span></li>
-            <li><span class="stats__k">Interactions</span><span class="stats__v">696,883</span><span class="stats__d">+836%</span></li>
-            <li><span class="stats__k">Followers</span><span class="stats__v">39,967</span><span class="stats__d">+10.6%</span></li>
+          <ul class="swing" data-meter>
+            <li>
+              <p class="swing__k">Sessions <b>1.7&times;</b></p>
+              <div class="swing__row">
+                <span class="swing__label">Before</span>
+                <span class="swing__track" style="--w:58.7"><span></span></span>
+                <span class="swing__v">77,440</span>
+              </div>
+              <div class="swing__row swing__row--after">
+                <span class="swing__label">After</span>
+                <span class="swing__track" style="--w:100"><span></span></span>
+                <span class="swing__v">131,814</span>
+              </div>
+            </li>
+            <li>
+              <p class="swing__k">Orders <b>2.1&times;</b></p>
+              <div class="swing__row">
+                <span class="swing__label">Before</span>
+                <span class="swing__track" style="--w:47.2"><span></span></span>
+                <span class="swing__v">1,544</span>
+              </div>
+              <div class="swing__row swing__row--after">
+                <span class="swing__label">After</span>
+                <span class="swing__track" style="--w:100"><span></span></span>
+                <span class="swing__v">3,272</span>
+              </div>
+            </li>
+            <li>
+              <p class="swing__k">Conversion rate <b>+21%</b></p>
+              <div class="swing__row">
+                <span class="swing__label">Before</span>
+                <span class="swing__track" style="--w:83"><span></span></span>
+                <span class="swing__v">1.85%</span>
+              </div>
+              <div class="swing__row swing__row--after">
+                <span class="swing__label">After</span>
+                <span class="swing__track" style="--w:100"><span></span></span>
+                <span class="swing__v">2.23%</span>
+              </div>
+            </li>
           </ul>
 
-          <div class="meter" data-meter style="--pct:99.7">
-            <div class="meter__top"><span>Reach from non-followers</span><b>99.7%</b></div>
-            <div class="meter__track"><span></span></div>
+          <div class="ba__pair ba__pair--stack">
+            <figure data-reveal="shot" style="--delay:0ms">
+              <span class="shot">
+                <img src="/assets/proof/houdini-before-v2.webp" loading="lazy" decoding="async"
+                   width="1200" height="492"
+                   alt="Shopify dashboard, September 1 to 30, 2024: 77,440 sessions, 1,544 orders, 1.85 per cent conversion rate.">
+              </span>
+
+              <figcaption>Before &middot; 1,544 orders at 1.85%</figcaption>
+            </figure>
+            <figure data-reveal="shot" style="--delay:140ms">
+              <span class="shot">
+                <img src="/assets/proof/houdini-after-v2.webp" loading="lazy" decoding="async"
+                   width="1200" height="536"
+                   alt="Shopify dashboard, November 1 to 30, 2024: 131,814 sessions, 3,272 orders, 2.23 per cent conversion rate.">
+              </span>
+
+              <figcaption class="is-after">After &middot; 3,272 orders at 2.23%</figcaption>
+            </figure>
           </div>
-          <div class="meter" data-meter style="--pct:95">
-            <div class="meter__top"><span>Reels share of reach</span><b>4M of 4.2M</b></div>
-            <div class="meter__track"><span></span></div>
-          </div>
+
+          <p class="ba__note">Traffic went up and the conversion rate went up with it, so the
+            extra sessions were buyers rather than passers-by.</p>
         </article>
 
-        <article class="bento__card bento__card--chart" data-reveal="rise">
+        <article class="ba__card" data-reveal="rise">
           <header class="bento__head">
-            <h3 class="bento__client">Pivot Point</h3>
-            <p class="bento__when">Views and reach, before and after takeover</p>
+            <h3 class="bento__client">Pivot Point Grips</h3>
+            <p class="bento__when">Instagram &middot; views and accounts reached</p>
           </header>
+
+          <p class="ba__span">
+            <span class="ba__chip">Before <b>Dec 22 &ndash; Jan 20</b></span>
+            <span class="ba__arrow" aria-hidden="true">&rarr;</span>
+            <span class="ba__chip ba__chip--after">After <b>Jan 22 &ndash; Feb 20</b></span>
+          </p>
 
           <figure class="chart" data-chart>
             <svg class="chart__svg" viewBox="0 0 720 380" role="img"
@@ -309,24 +2543,71 @@
             <li><span class="stats__k">Reach</span><span class="stats__v">585,289</span><span class="stats__d">+1,095.3%</span></li>
             <li><span class="stats__k">Non-followers</span><span class="stats__v">97.7%</span><span class="stats__d">from 83.1%</span></li>
           </ul>
-        </article>
+          <div class="ba__pair">
+            <figure data-reveal="shot" style="--delay:0ms">
+              <span class="shot">
+                <img src="/assets/proof/pivot-point-before-v2.webp" loading="lazy" decoding="async"
+                   width="760" height="780"
+                   alt="Instagram Views panel, last 30 days, December 22 to January 20: 116,498 views, 48,792 accounts reached, 83.1 per cent non-followers.">
+              </span>
 
-        <article class="bento__card" data-reveal="rise">
+              <figcaption>Before &middot; 116,498 views</figcaption>
+            </figure>
+            <figure data-reveal="shot" style="--delay:140ms">
+              <span class="shot">
+                <img src="/assets/proof/pivot-point-after-v2.webp" loading="lazy" decoding="async"
+                   width="760" height="821"
+                   alt="Instagram Views panel, last 30 days, January 22 to February 20: 1,224,413 views, 585,289 accounts reached, up 1,095.3 per cent, 97.7 per cent non-followers.">
+              </span>
+
+              <figcaption class="is-after">After &middot; 1,224,413 views</figcaption>
+            </figure>
+          </div>
+
+          <p class="ba__note">Reach from people who did not follow the account went from
+            83.1% to 97.7%, so the rise is new audience rather than the existing one
+            watching more.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================= RESULTS -->
+  <section class="results" id="results" aria-labelledby="results-title">
+    <div class="shell">
+      <header class="section-head" data-reveal="rise">
+        <h2 class="section-title" id="results-title">The receipts<span class="dot">.</span></h2>
+        <p class="section-lead">Straight off the clients' own dashboards, with the dates each
+          figure covers.</p>
+      </header>
+
+      <div class="bento">
+
+        <article class="bento__card bento__card--wide" data-reveal="rise">
           <header class="bento__head">
-            <h3 class="bento__client">Houdini Holsters</h3>
-            <p class="bento__when">Shopify, Sep to Nov 2024</p>
+            <h3 class="bento__client">BKH Enterprises</h3>
+            <p class="bento__when">Instagram, Jul 28 &ndash; Aug 26</p>
           </header>
 
-          <p class="bento__figure bento__figure--gold">
-            <span data-count-view data-to="54" data-prefix="+" data-suffix="%">+54%</span>
+          <p class="bento__figure">
+            <span data-count-view data-to="5487050">5,487,050</span>
           </p>
-          <p class="bento__caption">orders</p>
+          <p class="bento__caption">accounts reached</p>
 
           <ul class="stats">
-            <li><span class="stats__k">Sessions</span><span class="stats__v">131,814</span><span class="stats__d">+38%</span></li>
-            <li><span class="stats__k">Conversion</span><span class="stats__v">2.23%</span><span class="stats__d">from 1.85%</span></li>
-            <li><span class="stats__k">Total sales</span><span class="stats__v">+52%</span><span class="stats__d">two months</span></li>
+            <li><span class="stats__k">Impressions</span><span class="stats__v">9,074,547</span><span class="stats__d">+54.8%</span></li>
+            <li><span class="stats__k">Interactions, Dec 20 &ndash; Jan 18</span><span class="stats__v">696,883</span><span class="stats__d">+836%</span></li>
+            <li><span class="stats__k">Followers</span><span class="stats__v">39,967</span><span class="stats__d">+10.6%</span></li>
           </ul>
+
+          <div class="meter" data-meter style="--pct:99.7">
+            <div class="meter__top"><span>Reach from non-followers</span><b>99.7%</b></div>
+            <div class="meter__track"><span></span></div>
+          </div>
+          <div class="meter" data-meter style="--pct:95">
+            <div class="meter__top"><span>Reels, of views by content type</span><b>4M of 4.2M</b></div>
+            <div class="meter__track"><span></span></div>
+          </div>
         </article>
 
         <article class="bento__card" data-reveal="rise">
@@ -338,7 +2619,7 @@
           <p class="bento__figure bento__figure--gold">
             <span data-count-view data-to="19265" data-prefix="$">$19,265</span>
           </p>
-          <p class="bento__caption">sales in January 2025, from $2,950 in September</p>
+          <p class="bento__caption">sales in January 2025, from $2,950.33 in September</p>
 
           <ul class="stats">
             <li><span class="stats__k">Referrals</span><span class="stats__v">10,727</span><span class="stats__d">from 1,016</span></li>
@@ -377,7 +2658,8 @@
   <section class="voices" id="voices" aria-labelledby="voices-title">
     <div class="shell">
       <header class="section-head" data-reveal="rise">
-        <h2 class="section-title" id="voices-title">The clients.</h2>
+        <h2 class="section-title" id="voices-title">The clients<span class="dot">.</span></h2>
+        <p class="section-lead">In their words, not ours.</p>
       </header>
 
       <div class="voices__grid">
@@ -396,17 +2678,86 @@
     </div>
   </section>
 
+  <!-- ================================================================= FAQ -->
+  <section class="faq" id="faq" aria-labelledby="faq-title">
+    <div class="shell">
+      <header class="section-head" data-reveal="rise">
+        <h2 class="section-title" id="faq-title">Before you ask<span class="dot">.</span></h2>
+      </header>
+
+      <div class="faq__list">
+        <details class="qa" data-reveal="rise">
+          <summary><span>What do you actually run?</span></summary>
+          <p>The account, end to end. Hooks and angles, the edit, the posting rhythm, and the
+            monthly report. The first week is setup; after that short-form goes out daily.</p>
+        </details>
+
+        <details class="qa" data-reveal="rise">
+          <summary><span>Is this organic, or is it ads?</span></summary>
+          <p>Almost entirely organic, and the dashboards say so. Pivot Point Grips' 1.2M views came
+            with 0.2% from ads, its two-week figure with 0.1%. One account on this page did run
+            ads alongside: 29.2% of BKH's 5.4M reach was paid. We would rather write that down
+            than have you find it later.</p>
+        </details>
+
+        <details class="qa" data-reveal="rise">
+          <summary><span>How long before anything moves?</span></summary>
+          <p>Pivot Point Grips went from 116,498 views in the month before the takeover to 301,828 in
+            the first fortnight after it, and 1,224,413 by the end of the first month. Houdini
+            took two months to show up in orders. Two accounts, not a promise &mdash; but that is
+            the shape of it.</p>
+        </details>
+
+        <details class="qa" data-reveal="rise">
+          <summary><span>Do you work with creators as well as brands?</span></summary>
+          <p>Yes. For brands we run the account. For creators we manage the brand deals: who to
+            take, what to charge, and getting paid.</p>
+        </details>
+
+        <details class="qa" data-reveal="rise">
+          <summary><span>What do you need from me to start?</span></summary>
+          <p>Access to the account and whatever footage already exists. The first week is spent
+            going through what has worked on the page before, so nothing gets rebuilt that was
+            already working.</p>
+        </details>
+
+        <details class="qa" data-reveal="rise">
+          <summary><span>What does it cost?</span></summary>
+          <p>It depends on the account, the cadence and whether creators are involved. The
+            fifteen minutes ends with a number, not a proposal to be sent later.</p>
+        </details>
+
+        <details class="qa" data-reveal="rise">
+          <summary><span>Where are you, and who do you work with?</span></summary>
+          <p>Miami, Florida, working with brands and creators across the United States. Calls
+            run in Miami time.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
   <!-- ================================================================ BOOK -->
   <section class="book" id="book" aria-labelledby="book-title">
     <div class="shell">
       <header class="section-head" data-reveal="rise">
-        <h2 class="section-title" id="book-title">Book a call.</h2>
-        <p class="section-lead">Fifteen minutes with Manny. Pick a slot.</p>
+        <h2 class="section-title" id="book-title">Book a call<span class="dot">.</span></h2>
+        <p class="section-lead">Fifteen minutes with Manny. Pick a time and the invite lands in
+          your inbox.</p>
       </header>
 
       <div class="booker" data-reveal="rise">
-        <!-- Drop a Cal.com or Calendly URL in data-booking-url and the real
-             scheduler replaces the built-in picker. -->
+        <div class="booker__head">
+          <p class="booker__badge">
+            <span class="booker__dot" aria-hidden="true"></span>15 minutes
+            <span class="booker__meet" data-meet-note hidden>&middot; on Google Meet</span>
+          </p>
+          <p class="booker__note">Weekdays, Miami time. No deck, no pitch &mdash; he asks what the
+            account is doing now and says whether he can move it.</p>
+        </div>
+
+        <!-- Put a Cal.com, Calendly or Google appointment URL in data-booking-url.
+             The real scheduler then replaces the picker below and, with Google
+             Calendar connected, every booking carries its own Meet link. -->
         <div class="booker__embed" data-booking data-booking-url=""></div>
 
         <div class="calendar" data-calendar>
@@ -433,29 +2784,84 @@
               <p class="calendar__summary" data-cal-summary>No slot selected yet.</p>
               <div class="calendar__actions">
                 <button class="btn btn--primary btn--full btn--glow" type="button" data-cal-book disabled>Request this slot</button>
-                <button class="btn btn--ghost btn--full" type="button" data-cal-ics disabled>Add to my calendar</button>
+                <button class="btn btn--ghost btn--full" type="button" data-cal-gcal disabled>Add to Google Calendar</button>
+                <button class="btn btn--ghost btn--full" type="button" data-cal-ics disabled>Download the invite</button>
               </div>
             </div>
           </div>
         </div>
+      </div>
 
-        <ul class="contact" data-reveal="rise">
-          <li>
-            <span class="contact__label">Email</span>
-            <a class="contact__value" href="mailto:manny@gmgmt.co">manny@gmgmt.co</a>
-            <button class="contact__act" type="button" data-copy="manny@gmgmt.co">Copy</button>
-          </li>
-          <li>
-            <span class="contact__label">Phone</span>
-            <a class="contact__value" href="tel:+17869295735">(786) 929-5735</a>
-            <a class="contact__act" href="https://wa.me/17869295735" target="_blank" rel="noopener">WhatsApp</a>
-          </li>
-          <li>
-            <span class="contact__label">Based in</span>
-            <span class="contact__value">Miami, Florida</span>
-            <button class="contact__act" type="button" data-vcard>Save contact</button>
-          </li>
-        </ul>
+      <div class="reach">
+        <!-- Put a form endpoint in data-endpoint (Web3Forms, Formspree and
+             anything else that takes a POST and answers JSON all work). With
+             none set the form composes the same message as an email. -->
+        <form class="lead" data-lead data-endpoint="" novalidate>
+          <h3 class="lead__title">Rather write first<span class="dot">?</span></h3>
+          <p class="lead__note">Two lines is enough. It reaches Manny's inbox, and his phone.</p>
+
+          <div class="field">
+            <label for="lead-name">Name</label>
+            <input id="lead-name" name="name" type="text" autocomplete="name" required>
+          </div>
+
+          <div class="field">
+            <label for="lead-email">Email</label>
+            <input id="lead-email" name="email" type="email" autocomplete="email" required>
+          </div>
+
+          <div class="field">
+            <label for="lead-brand">Brand or handle</label>
+            <input id="lead-brand" name="brand" type="text" autocomplete="organization">
+          </div>
+
+          <div class="field">
+            <label for="lead-message">What do you need?</label>
+            <textarea id="lead-message" name="message" rows="3" required></textarea>
+          </div>
+
+          <input type="hidden" name="subject" value="New enquiry from gmgmt.co">
+          <p class="field field--trap" aria-hidden="true">
+            <label for="lead-company">Company</label>
+            <input id="lead-company" name="botcheck" type="text" tabindex="-1" autocomplete="off">
+          </p>
+
+          <div class="lead__actions">
+            <button class="btn btn--primary btn--glow" type="submit" data-lead-send>Send it</button>
+            <button class="btn btn--ghost" type="button" data-lead-whatsapp>Send on WhatsApp</button>
+          </div>
+
+          <p class="lead__status" data-lead-status role="status" aria-live="polite"></p>
+        </form>
+
+        <div class="reach__side">
+          <ol class="booker__steps">
+            <li><span class="booker__n">01</span><p>Pick a time, or write. Either reaches him
+              the same day.</p></li>
+            <li><span class="booker__n">02</span><p>You get the invite with the meeting link,
+              and a note on what to have open.</p></li>
+            <li><span class="booker__n">03</span><p>Fifteen minutes: the account now, what he
+              would change, what it costs.</p></li>
+          </ol>
+
+          <ul class="contact">
+            <li>
+              <span class="contact__label">Email</span>
+              <a class="contact__value" href="mailto:manny@gmgmt.co">manny@gmgmt.co</a>
+              <button class="contact__act" type="button" data-copy="manny@gmgmt.co">Copy</button>
+            </li>
+            <li>
+              <span class="contact__label">Message</span>
+              <span class="contact__value">WhatsApp</span>
+              <a class="contact__act" href="https://wa.me/17869295735" target="_blank" rel="noopener">Open chat</a>
+            </li>
+            <li>
+              <span class="contact__label">Based in</span>
+              <span class="contact__value">Miami, Florida</span>
+              <button class="contact__act" type="button" data-vcard>Save contact</button>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
   </section>
@@ -467,7 +2873,8 @@
     <div class="site-footer__top">
       <div class="site-footer__brand">
         <p class="site-footer__mark">G Management</p>
-        <p class="site-footer__line">Social media management and influencer marketing, out of Miami.</p>
+        <p class="site-footer__line">Social media management and brand deals, run out of Miami
+          for brands and creators in the United States.</p>
       </div>
 
       <nav class="site-footer__nav" aria-label="Footer">
@@ -481,7 +2888,6 @@
       <div class="site-footer__contact">
         <p class="site-footer__heading">Contact</p>
         <a href="mailto:manny@gmgmt.co">manny@gmgmt.co</a>
-        <a href="tel:+17869295735">(786) 929-5735</a>
         <a href="https://wa.me/17869295735" target="_blank" rel="noopener">WhatsApp</a>
       </div>
     </div>
@@ -496,7 +2902,7 @@
 <div class="action-bar" data-action-bar hidden>
   <a class="btn btn--primary btn--sm btn--glow" href="#book">Book a call</a>
   <a class="btn btn--ghost btn--sm" href="https://wa.me/17869295735" target="_blank" rel="noopener">WhatsApp</a>
-  <a class="btn btn--ghost btn--sm" href="tel:+17869295735" aria-label="Call (786) 929-5735">Call</a>
+  <a class="btn btn--ghost btn--sm" href="mailto:manny@gmgmt.co">Email</a>
 </div>
 
 <script src="/assets/js/main.js" defer></script>
