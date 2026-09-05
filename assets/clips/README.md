@@ -24,7 +24,7 @@ the page that element sits, and these tiles are a long way below the fold.
 
 ## Getting a source into that shape
 
-**Already vertical** (`reel-1-v4.mp4`, from a 870x1588 phone recording): scale
+**Already vertical** (`reel-1-v7.mp4`, from a 870x1588 phone recording): scale
 to 1280 tall and fill the few pixels either side from a blurred copy, so
 nothing at all is cropped:
 
@@ -73,13 +73,29 @@ play is a user gesture, so the clip is allowed its sound and starts unmuted; if
 a browser refuses anyway the script retries muted rather than leaving a dead
 tile.
 
-**`reel-1-v4.mp4` is silent, and no encoding setting will change that: the
-source file is silent.** It carries a full AAC track that is digital silence
-end to end — `volumedetect` reports a mean and a max of -91 dB, which is the
-noise floor of an empty stream, and the encoder spends 2 kbit/s on it. The
-clip needs to be re-supplied with its audio intact; the tile will pick it up
-with no code change. `reel-2-v6.mp4`, for comparison, measures -18.9 dB mean
-and -0.4 dB peak.
+The first clip's audio had to be recovered. The original upload carried a full
+AAC track that was digital silence end to end — `volumedetect` reported a mean
+and a max of -91 dB, the noise floor of an empty stream — so no encoding
+setting could have brought it back. A second copy of the same reel turned up
+with the sound intact but at 360x640, a quarter of the resolution.
+
+Rather than ship the small one, the audio was lifted off it and muxed onto the
+sharp video. The two copies are the same cut but not the same timeline: the
+low-resolution one runs **1.1417s behind**. That offset was measured, not
+guessed — PSNR between the two, scanned at half-second steps, then at frame
+steps around the peak, giving a clear maximum at -1.1417 that four frame pairs
+then confirmed by eye (identical burned-in captions at 5s, 12s, 18s and 22s):
+
+    ffmpeg -ss $((6+d)) -t 10 -i sharp.mp4 -ss 6 -t 10 -i with-sound.mp4 \
+      -filter_complex "[0:v]scale=180:320,setpts=PTS-STARTPTS[a];
+                       [1:v]scale=180:320,setpts=PTS-STARTPTS[b];[a][b]psnr" \
+      -f null /dev/null
+
+The audio input is then trimmed by that much before muxing, so `-ss 1.1417`
+goes on the second input and the map is `-map "[v]" -map 1:a`. Its last 1.2s
+run silent, which is the logo end card.
+
+Both clips now measure about -18.6 dB mean, so they are level with each other.
 
 Check any new clip before shipping it:
 
@@ -98,6 +114,6 @@ when a tile is pressed, so they cost nothing on load.
 ## Filenames carry a version
 
 `/assets` is served with a long cache life and these files carry no content
-hash, so a re-encode **must** land under a new name (`-v4` -> `-v5`) and the
+hash, so a re-encode **must** land under a new name (`-v6` -> `-v7`) and the
 reference in `index.html` must move with it. Overwriting a name in place means
 phones that already hold the old copy keep showing it, possibly for weeks.
