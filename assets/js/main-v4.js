@@ -1049,7 +1049,7 @@
     }
 
     function leadText(v) {
-      return 'New enquiry from gmgmt.co\n\n'
+      return 'New enquiry from gmgmt.com\n\n'
         + 'Name: ' + v.name + '\n'
         + 'Email: ' + v.email + '\n'
         + 'Brand or handle: ' + (v.brand || '—') + '\n\n'
@@ -1079,7 +1079,7 @@
       if (!endpoint) {
         say('Opening your mail app with the message ready.', 'ok');
         window.location.href = 'mailto:manny@gmgmt.co'
-          + '?subject=' + encodeURIComponent('New enquiry from gmgmt.co')
+          + '?subject=' + encodeURIComponent('New enquiry from gmgmt.com')
           + '&body=' + encodeURIComponent(leadText(v));
         return;
       }
@@ -1095,8 +1095,8 @@
           email: v.email,
           brand: v.brand,
           message: v.message,
-          subject: 'New enquiry from gmgmt.co',
-          from_name: 'gmgmt.co'
+          subject: 'New enquiry from gmgmt.com',
+          from_name: 'gmgmt.com'
         })
       }).then(function (response) {
         if (!response.ok) throw new Error(String(response.status));
@@ -1274,7 +1274,7 @@
         'TITLE:Social media management and influencer marketing',
         'EMAIL;TYPE=INTERNET,WORK:manny@gmgmt.co',
         'ADR;TYPE=WORK:;;;Miami;FL;;United States',
-        'URL:https://gmgmt.co/',
+        'URL:https://gmgmt.com/',
         'END:VCARD'
       ].join('\r\n');
 

@@ -1,4 +1,4 @@
-# G Management — gmgmt.co
+# G Management — gmgmt.com
 
 Single-page site for G Management, a social media and influencer marketing agency in
 Miami run by Manny Garcia. Static HTML, CSS and JavaScript. No build step, no framework,
@@ -6,7 +6,7 @@ no dependencies.
 
 ```
 index.html                  the page, with all styling inline in its <style>
-assets/js/main-v3.js        counters, chart, reels, player, booking, form, motes
+assets/js/main-v4.js        counters, chart, reels, player, booking, form, motes
 assets/fonts/               self-hosted variable fonts (Archivo, Instrument Sans)
 assets/og.png               link-preview image (1200×630)
 favicon.svg
@@ -26,7 +26,7 @@ Then open <http://127.0.0.1:8099/>.
 ## Deploying
 
 Upload the repository root as-is to any static host. It expects to live at the domain
-root (gmgmt.co). Nothing needs compiling.
+root (gmgmt.com). Nothing needs compiling.
 
 
 ## What was done for speed
@@ -199,7 +199,7 @@ A phone pays for things a laptop gives away. The page also holds to these:
   the browser would otherwise only discover them after parsing all of it — and the headline
   animation waits on `document.fonts.ready`, so this is the gate on when the hero settles.
 - **Everything with a version in its name is cached for a year.** The fonts, `/assets/clips`,
-  the hero loop and `main-v3.js` are served `immutable`; `index.html` is
+  the hero loop and `main-v4.js` are served `immutable`; `index.html` is
   `max-age=0, must-revalidate`. The script carries a version so it can never be a stale copy
   paired with a fresh document — see the `vercel.json` note above, which is the bug that put
   it there.
@@ -281,7 +281,7 @@ no tag, no cookie.
 
 ### The link preview
 
-`og:image`, `og:url` and the canonical all point at `https://gmgmt.co/`. Link previews
+`og:image`, `og:url` and the canonical all point at `https://gmgmt.com/`. Link previews
 (WhatsApp, iMessage, Slack, X) fetch that absolute URL, so the image and description
 only appear once the domain is connected. Sharing a `*.vercel.app` link before then
 shows the title and description but no image. If the site is going to live somewhere
