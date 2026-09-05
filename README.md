@@ -166,8 +166,22 @@ those attributes and the interaction follows.
    which it is holding.
 4. **Work** — three 9:16 tiles above a panel carrying the offer: how a month runs, what is
    included, and the CTA. The Facebook tile plays a self-hosted clip from
-   `/assets/clips/` inline; the middle tile loads a Google Drive preview on press; the
-   YouTube tile loads and plays itself when it scrolls into view.
+   `/assets/clips/` inline; so does the middle one, which also opens the full cut on Drive
+   when pressed; the YouTube tile loads and plays itself when it scrolls into view.
+
+   The middle clip arrived 4K landscape with a compressor's watermark in the corner. It is
+   cropped off and the frame set on a blurred, darkened copy of itself, which fills the 9:16
+   tile without cutting anyone out of shot:
+
+```
+ffmpeg -i source.mp4 -filter_complex "\
+ [0:v]crop=3840:1840:0:0,split=2[bg][fg];\
+ [bg]scale=720:1280:force_original_aspect_ratio=increase,crop=720:1280,\
+     gblur=sigma=24,eq=brightness=-0.16:saturation=0.85[bgb];\
+ [fg]scale=720:-2[fgs];\
+ [bgb][fgs]overlay=(W-w)/2:(H-h)/2,format=yuv420p[v]" \
+ -map "[v]" -c:v libx264 -preset slow -crf 28 -an -movflags +faststart out.mp4
+```
 
    The Drive tile needs the file shared as **Anyone with the link** — without that, pressing
    it shows Google's request-access screen. Give it the same treatment as the others by
