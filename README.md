@@ -379,7 +379,14 @@ those attributes and the interaction follows.
 3. **Clients** — the account names on an infinite roll, faded at both edges and paused on
    hover. Swap a name for an `<img>` when a client sends a logo file; the row does not care
    which it is holding.
-4. **Work** — **every tile is its clip's own shape**, so there is no crop anywhere on
+4. **Work** — two named groups: **Short-form**, the two clips shot vertical, and
+   **Long-form**, the podcast cut that spans the row beneath them. Each label is centred
+   between two gold hairlines that draw outward from the words as the row arrives — three
+   transforms and one opacity, all composited, all of them finished the moment they land,
+   riding the reveal observer the rest of the page already uses rather than adding any
+   script. Spacing is 24px inside a group and 48 between them, on the page's own ladder.
+
+   **Every tile is its clip's own shape**, so there is no crop anywhere on
    the page: not in the tile, not in the thumbnail, not in the player. The two clips shot
    vertical take a column each; the one shot landscape spans the row beneath them and
    closes the block off. Three uncropped tiles of two different shapes cannot make a
