@@ -401,14 +401,30 @@
   }
 
   var media = document.querySelector('[data-hero-media]');
+
   if (media) {
-    mountVideo(
-      media,
-      media.getAttribute('data-video'),
-      'hero__video',
-      function () { media.classList.add('has-video'); },
-      function () { media.classList.remove('has-video'); }
-    );
+    var startHeroFilm = function () {
+      mountVideo(
+        media,
+        media.getAttribute('data-video'),
+        'hero__video',
+        function () { media.classList.add('has-video'); },
+        function () { media.classList.remove('has-video'); }
+      );
+    };
+
+    /* Nothing about the page waits on this film, so it is fetched once the
+       page has finished loading and the main thread has a spare moment. */
+    var whenIdle = function () {
+      if (window.requestIdleCallback) {
+        window.requestIdleCallback(startHeroFilm, { timeout: 2500 });
+      } else {
+        window.setTimeout(startHeroFilm, 400);
+      }
+    };
+
+    if (document.readyState === 'complete') whenIdle();
+    else window.addEventListener('load', whenIdle);
   }
 
   /* 6. Reels ---------------------------------------------------------------
