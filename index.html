@@ -867,12 +867,16 @@ section { padding-block: var(--section-y); }
     gap: var(--sp-16);
   }
   .reels .reel { max-width: 300px; }
+  /* The offer belongs under all three tiles, not squeezed into one column
+     beside them. This has to hold from the width the grid becomes columns —
+     it used to start only at 1000px, which left every tablet width showing
+     the panel as a narrow strip under the first tile. */
+  .playbook { grid-column: 1 / -1; }
 }
 
 @media (min-width: 1000px) {
   .reels { max-width: none; gap: var(--sp-24); }
   .reels .reel { max-width: 320px; }
-  .playbook { grid-column: 1 / -1; }
 }
 
 /* 10. Results — bento grid -------------------------------------------------- */
@@ -2260,10 +2264,10 @@ a.contact__value:hover { color: var(--gold-lift); }
       <div class="reels" data-reels>
 
         <figure class="reel" data-reel data-start="1.7"
-                data-video="/assets/clips/reel-1-v4.mp4"
-                data-poster="/assets/clips/reel-1-poster-v5.webp">
+                data-video="/assets/clips/reel-1-v7.mp4"
+                data-poster="/assets/clips/reel-1-poster-v7.webp">
           <button class="reel__frame" type="button" data-reel-btn>
-            <img class="reel__thumb" src="/assets/clips/reel-1-poster-v5.webp" alt=""
+            <img class="reel__thumb" src="/assets/clips/reel-1-poster-v7.webp" alt=""
                  width="432" height="768" loading="lazy" decoding="async">
             <span class="reel__platform">Devito &amp; Jenne</span>
             <span class="reel__play" aria-hidden="true">
