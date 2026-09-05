@@ -384,7 +384,9 @@ those attributes and the interaction follows.
    between two gold hairlines that draw outward from the words as the row arrives — three
    transforms and one opacity, all composited, all of them finished the moment they land,
    riding the reveal observer the rest of the page already uses rather than adding any
-   script. Spacing is 24px inside a group and 48 between them, on the page's own ladder.
+   script. They are set 22px on a phone up to 34px on a desktop, a heading rather than a
+   caption, and tracking comes back in as the size goes up. Spacing is 24px inside a group
+   and 56 between them, on the page's own ladder.
 
    **Every tile is its clip's own shape**, so there is no crop anywhere on
    the page: not in the tile, not in the thumbnail, not in the player. The two clips shot

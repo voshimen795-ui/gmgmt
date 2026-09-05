@@ -759,37 +759,45 @@ section { padding-block: var(--section-y); }
    and every one of them stops the moment it lands — there is nothing here still
    running while the page is being read. It rides the reveal observer the rest
    of the page already uses, so it adds no script at all. */
+/* Sized to be read across the room, not squinted at: it is the label that tells
+   a visitor which half of the work they are looking at, so it sits between the
+   section title and the body rather than down with the small print. Tracking
+   comes back in as the size goes up — 0.2em is what makes a 13px label legible
+   and what would tear a 34px one apart. */
 .reel-kicker {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--sp-16);
-  margin-top: var(--sp-24);
+  gap: clamp(var(--sp-16), 2.4vw, var(--sp-32));
+  margin-top: var(--sp-32);
   font-family: var(--font-display);
-  font-size: var(--t-label);
+  font-size: clamp(1.375rem, 3.2vw, 2.125rem);
   font-weight: 800;
-  font-stretch: 112%;
-  letter-spacing: 0.2em;
+  font-stretch: 118%;
+  letter-spacing: 0.08em;
+  line-height: 1.1;
   text-transform: uppercase;
   text-align: center;
   color: var(--paper);
-  text-shadow: 0 0 28px rgba(201, 162, 39, 0.45);
-  text-shadow: 0 0 28px color-mix(in srgb, var(--gold) 45%, transparent);
+  text-shadow: 0 0 32px rgba(201, 162, 39, 0.5);
+  text-shadow: 0 0 32px color-mix(in srgb, var(--gold) 50%, transparent);
 }
 /* the first one opens the block, so the section head's own margin is the space
    above it and it needs none of its own */
 .reels > .reel-kicker:first-child { margin-top: 0; }
 
-/* 24 inside a group, 48 between them: the kickers sit 24 above their own tiles
-   and 48 below the ones before, and the offer panel takes the same 48 so it
-   reads as the next thing rather than the last tile's caption */
-.reels > .playbook { margin-top: var(--sp-24); }
+/* 24 inside a group, 56 between them: the kickers sit 24 above their own tiles
+   and 56 below the ones before, and the offer panel takes the same so it reads
+   as the next thing rather than the last tile's caption. The gap grew with the
+   type — a label this size needs the air to read as a heading and not as
+   something stuck to the tile above it. */
+.reels > .playbook { margin-top: var(--sp-32); }
 
 .reel-kicker::before,
 .reel-kicker::after {
   content: "";
   flex: 1 1 0;
-  max-width: 108px;
+  max-width: 148px;
   height: 1px;
   background: linear-gradient(to right, transparent, var(--gold));
 }
