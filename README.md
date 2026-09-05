@@ -30,6 +30,32 @@ Upload the repository root as-is to any static host. It expects to live at the d
 root (gmgmt.co). Nothing needs compiling.
 
 
+## What was done for speed
+
+A phone pays for things a laptop gives away. The page holds to these:
+
+- **No decoder runs off screen.** Every clip mounted is watched and paused the moment it
+  leaves the viewport, and started again when it returns. Three videos on one page would
+  otherwise keep three decoders busy for the whole visit.
+- **One player at a time on a phone.** The YouTube tile only loads itself under 900px wide
+  — below that it stays a poster and loads on press.
+- **No filter on the hero film.** A CSS filter over a full-screen video is recomposited every
+  frame; the look lives in the scrim instead.
+- **No blend mode, no animated blur, no backdrop blur on phones.** The grain is plain
+  opacity, the drifting light field animates only on a desktop pointer, and the sticky
+  header uses a solid ground below 900px.
+- **No 100vmax inset shadow.** The poster dimming is a gradient layer.
+- **No permanent promotion.** The headline drops `will-change` from all 57 glyphs once they
+  have landed.
+- **No motes on phones**, and none anywhere under reduced motion.
+
+Measured on a 6x throttled CPU at 390px, scrolling the whole page: blocking time went from
+355-460ms to about 50ms, and long tasks from six or seven to one.
+
+`content-visibility: auto` was tried on the sections and taken back out: the page height
+moved by 1,400px as sections rendered, and the reveal observer cannot see inside a skipped
+subtree, so content stayed invisible.
+
 ## Turning on the three things that need an account
 
 Everything below is a one-line edit in `index.html`. Nothing needs a build step, a
