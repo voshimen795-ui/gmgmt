@@ -6,7 +6,7 @@ no dependencies.
 
 ```
 index.html                  the page, with all styling inline in its <style>
-assets/js/main.js           counters, chart, reels, booking, form, motes
+assets/js/main-v2.js        counters, chart, reels, player, booking, form, motes
 assets/fonts/               self-hosted variable fonts (Archivo, Instrument Sans)
 assets/og.png               link-preview image (1200×630)
 favicon.svg
@@ -120,13 +120,24 @@ Where it came from:
   the phone keeps pulling at it. So while there is still something to fall back to, each
   source gets six seconds to produce a first frame and is abandoned if it misses. The last
   source in the list has nowhere to go and is left alone to take as long as it needs.
-- **`vercel.json`** gives a year of immutable caching to the things whose filenames carry a
-  version — the fonts, `/assets/clips`, the hero loop — and ten minutes with revalidation to
-  everything else. The split matters in both directions. It briefly gave *everything* under
-  `/assets` the year, which was a mistake, because `main.js` has no version in its name and
-  a deploy would not have reached anyone holding a cached copy. And ten minutes for a 4MB
-  clip is a re-download nobody needs. Bump the version suffix whenever a versioned file's
-  contents change, and the old copy can never be served in its place.
+- **`vercel.json`** gives a year of immutable caching to everything whose filename carries a
+  version — the fonts, `/assets/clips`, the hero loop, and the script — and ten minutes with
+  revalidation to whatever is left. `index.html` itself is `max-age=0, must-revalidate`, so
+  the document is always the current one.
+
+  **The script has a version in its name for a reason, and it is not caching efficiency.**
+  It used to be `main.js` on `max-age=600, stale-while-revalidate=86400`, and that pairing
+  is a trap: `stale-while-revalidate` lets a browser keep serving a stale copy for a day
+  after it goes off, revalidating in the background. So a returning visitor could be handed
+  **today's `index.html` with yesterday's script**. That is not a slow update, it is a
+  broken page — this site's CSS lives inside the document, so markup, styles and behaviour
+  ship as one thing and a script that disagrees with them has nothing to hold onto. It
+  happened: the players opened in the page instead of over it, because the new stylesheet
+  had dropped the rule the old script's markup depended on.
+
+  A version in the filename makes it impossible. The document names the exact build it
+  needs, so the two can never be out of step. **Bump `-v2` whenever `main-v2.js` changes**,
+  in the same commit as the markup that needs it.
 
 **If the copy changes, re-subset the fonts.** The subset covers printable ASCII plus the
 punctuation the page uses. A character outside that set will silently fall back to Helvetica
@@ -188,9 +199,11 @@ A phone pays for things a laptop gives away. The page also holds to these:
 - **Both faces are preloaded.** They are set above the fold and the stylesheet is inline, so
   the browser would otherwise only discover them after parsing all of it — and the headline
   animation waits on `document.fonts.ready`, so this is the gate on when the hero settles.
-- **Versioned files are cached for a year.** `/assets/clips` and the hero loop carry a
-  version in the name, so they are served `immutable`. `main.js` does not, so it stays on a
-  ten-minute cache and a deploy still reaches people.
+- **Everything with a version in its name is cached for a year.** The fonts, `/assets/clips`,
+  the hero loop and `main-v2.js` are served `immutable`; `index.html` is
+  `max-age=0, must-revalidate`. The script carries a version so it can never be a stale copy
+  paired with a fresh document — see the `vercel.json` note above, which is the bug that put
+  it there.
 - **No motes on phones**, and none anywhere under reduced motion.
 
 ### Old phones
@@ -288,7 +301,7 @@ Put a Calendly (or similar) embed URL in `data-booking-url` and the inline sched
 appears above the form. Left empty, the slot stays hidden and the form is the booking
 path. The form has no backend — it composes an email to `manny@gmgmt.co` and opens the
 visitor's mail app. If a real form endpoint is added later, swap the `submit` handler in
-`assets/js/main.js`.
+`assets/clips/README.md`.
 
 **Hero background video.** The hero has a media layer wired for the client's own footage:
 
