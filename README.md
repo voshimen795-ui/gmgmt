@@ -34,6 +34,8 @@ root (gmgmt.co). Nothing needs compiling.
 
 A phone pays for things a laptop gives away. The page holds to these:
 
+- **The hero film waits.** It is fetched after the load event, on an idle callback, so it
+  never competes with first paint. Its host is preconnected in the head.
 - **Nothing plays until it is asked to.** The three tiles arrive as thumbnails; the page
   loads no video file and no third-party player. On arrival: zero video elements, zero
   iframes.
@@ -50,8 +52,8 @@ A phone pays for things a laptop gives away. The page holds to these:
 - **No motes on phones**, and none anywhere under reduced motion.
 
 Measured on a 6x throttled CPU at 390px, scrolling the whole page: 41fps with six or seven
-long tasks and 355-460ms blocked, before. 50fps with no long tasks and nothing blocked,
-after.
+long tasks and 355-460ms blocked at the start of that work; 58fps with no long tasks and
+nothing blocked now.
 
 `content-visibility: auto` was tried on the sections and taken back out: the page height
 moved by 1,400px as sections rendered, and the reveal observer cannot see inside a skipped
@@ -197,6 +199,10 @@ those attributes and the interaction follows.
    Pressing mounts the real player — the file with its own controls and sound, or YouTube's
    embed for the one that lives there. Nothing is decoded and no third party is contacted
    until someone presses play.
+
+   Both self-hosted clips are encoded 1280x720 with the frame set on a blurred, darkened
+   copy of itself, so the playing video looks like its own thumbnail rather than snapping to
+   letterbox the moment it starts.
 
 4b. **Before and after** — each screenshot sits in a `.shot` frame: it uncovers itself from
    the bottom as it arrives, lifts under the pointer with the image scaling inside the clip,
