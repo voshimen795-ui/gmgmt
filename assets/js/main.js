@@ -563,7 +563,7 @@
        the error card for an instant every single time.
 
        A head you have to skip is a head that should not be in the file. It is
-       cut in the encode now: `reel-1-v9.mp4` opens on the first frame of the
+       cut in the encode now: `reel-1-v10.mp4` opens on the first frame of the
        actual clip, and there is nothing left to seek past. If a future clip
        arrives with junk at the front, trim it with ffmpeg rather than putting
        the offset back — see assets/clips/README.md. */

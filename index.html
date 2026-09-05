@@ -681,7 +681,7 @@ section { padding-block: var(--section-y); }
    inserted above it, so pressing never adds a second frame to the page */
 
 /* The thumbnail is a real lazy image rather than a CSS background. Three
-   posters is 83KB, the tiles sit a long way below the fold, and a background
+   posters is 35KB, the tiles sit a long way below the fold, and a background
    image is fetched as soon as its element is laid out — wherever it is. As
    an <img loading="lazy"> that weight leaves the opening load entirely and
    arrives only when the section is approached. */
@@ -696,10 +696,17 @@ section { padding-block: var(--section-y); }
 }
 
 /* Every clip is encoded 16:9 — landscape, the shape a video player is, the
-   shape YouTube is — and every clip fills that box corner to corner. Where a
-   source was shot vertical the fill is a blurred, darkened copy of its own
-   frame either side, so the whole picture is visible and nothing is cropped
-   out of it. There are no bars and no box the picture floats inside. */
+   shape YouTube is — and every clip fills that box corner to corner with real
+   picture. No bars, no blurred filler, no box the picture floats inside.
+
+   A landscape source goes in at its native width and needs nothing. A source
+   shot vertical is cropped to the widest 16:9 window its frame can give, which
+   for a 870x1588 phone recording is 870x489 — a third of the height. The window
+   is placed by what has to survive rather than by centring: on the first clip it
+   sits at y=300, the lowest offset that still clears the burned-in captions,
+   which are the client's own edit and the reason the reel is on this page.
+   Above that offset a caption gets cut; below it the framing loses more face for
+   nothing. Checked at seven points across the clip. */
 .reel__frame {
   position: relative;
   display: flex;
@@ -2312,10 +2319,10 @@ a.contact__value:hover { color: var(--gold-lift); }
       <div class="reels" data-reels>
 
         <figure class="reel" data-reel
-                data-video="/assets/clips/reel-1-v9.mp4"
-                data-poster="/assets/clips/reel-1-poster-v9.webp">
+                data-video="/assets/clips/reel-1-v10.mp4"
+                data-poster="/assets/clips/reel-1-poster-v10.webp">
           <button class="reel__frame" type="button" data-reel-btn>
-            <img class="reel__thumb" src="/assets/clips/reel-1-poster-v9.webp" alt=""
+            <img class="reel__thumb" src="/assets/clips/reel-1-poster-v10.webp" alt=""
                  width="768" height="432" loading="lazy" decoding="async" fetchpriority="low">
             <span class="reel__platform">Devito &amp; Jenne</span>
             <span class="reel__play" aria-hidden="true">
@@ -2339,10 +2346,14 @@ a.contact__value:hover { color: var(--gold-lift); }
           </button>
         </figure>
 
-        <!-- The one clip that is not ours to re-encode. Its poster carries the
-             same 16:9 blurred fill the other two are encoded with, and the
-             embed is laid over it at the Short's own 9:16 — so the tile is the
-             same landscape box, filled edge to edge, as the two beside it. -->
+        <!-- The one clip that is not ours to re-encode, so it is the one tile
+             that cannot be cropped to fill: an iframe's content cannot be
+             windowed from out here. Its poster carries a blurred fill and the
+             embed is laid over it at the Short's own 9:16 down the middle. The
+             alternative — letting the embed span the whole 16:9 box — is worse,
+             because YouTube then pillarboxes the Short in flat black.
+             Replace this with a self-hosted file the moment one exists, and it
+             gets the same crop-to-fill as the two beside it. -->
         <figure class="reel reel--embed" data-reel
                 data-embed="https://www.youtube-nocookie.com/embed/WZF_Tt_xNAQ?autoplay=1&loop=1&playlist=WZF_Tt_xNAQ&rel=0&playsinline=1&modestbranding=1"
                 data-embed-title="YouTube Short from a G Management client account"
