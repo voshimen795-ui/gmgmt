@@ -50,7 +50,12 @@ Where it came from:
 - **The fonts carry only the glyphs this page uses** — 102 of them. 120KB of woff2 became
   63KB. They are no longer preloaded either: preloading raced them against the stylesheet on
   a narrow pipe, and `font-display: swap` paints the text immediately regardless.
-- **The tile thumbnails are WebP at 900px** rather than 1280px JPEG: 75KB became 22KB.
+- **The tile thumbnails are WebP at 900px** rather than 1280px JPEG: 75KB became 32KB for
+  three of them.
+- **No third party is asked for a thumbnail.** The YouTube tile used to pull its poster from
+  i.ytimg.com, which answers with a grey placeholder rather than a 404 when a Short has no
+  thumbnail in the size asked for. Its poster is drawn locally instead, in the page's own
+  fonts and colours, and the page now requests nothing from any other host on arrival.
 - **The hero film is desktop-only.** It is also skipped when the browser reports a metered
   or slow connection, and it starts on an idle callback after the load event. A phone never
   spends anything on it. To put it back everywhere, drop the `wideEnough && goodLine` test
