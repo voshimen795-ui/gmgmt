@@ -7,8 +7,7 @@
    3. Reveal on view (rows, meters, chart)
    4. Header — progress, stuck state, sliding nav marker
    5. Hero background video
-   6. Vertical video grid
-   7. Pointer follower
+   6. Reels — thumbnail until pressed
    8. Booking — inline scheduler or built-in calendar
    9. Contact actions and phone bar
   10. Lead form
@@ -412,151 +411,80 @@
     );
   }
 
-  /* 6. Vertical video grid -------------------------------------------------
-     A tile previews its own clip on hover, and loads the real post from the
-     platform when pressed. Tiles marked data-autoload bring the embed in as
-     soon as they scroll into view, so the client's video is simply playing
-     on the page.                                                          */
-
-  var reelGrid = document.querySelector('[data-reels]');
-
-  function loadEmbed(reel, frame) {
-    if (reel.classList.contains('is-playing')) return;
-    var embed = reel.getAttribute('data-embed');
-    if (!embed) return;
-
-    var player = document.createElement('iframe');
-    player.className = 'reel__player';
-    player.src = embed;
-    player.title = reel.getAttribute('data-embed-title') || 'Video player';
-    player.setAttribute('allow', 'autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share');
-    player.setAttribute('allowfullscreen', '');
-    player.setAttribute('scrolling', 'no');
-    player.setAttribute('frameborder', '0');
-    player.loading = 'lazy';
-
-    /* the poster frame stays up until the player has actually loaded, so a
-       slow platform never leaves a blank rectangle on the page */
-    player.addEventListener('load', function () {
-      frame.hidden = true;
-      reel.classList.add('is-loaded');
-    });
-
-    reel.insertBefore(player, frame);
-    reel.classList.add('is-playing');
-  }
+  /* 6. Reels ---------------------------------------------------------------
+     Every tile is a thumbnail until it is pressed. Nothing is decoded, no
+     third party is contacted and no bytes are spent on a visitor who never
+     presses play. Pressing mounts the real thing: the file in a player with
+     its own controls, or the platform's embed where the video lives there. */
 
   Array.prototype.forEach.call(document.querySelectorAll('[data-reel]'), function (reel) {
     var frame = reel.querySelector('[data-reel-btn]');
-    var source = reel.getAttribute('data-clip');
-    var clip = null;
-
-    function ensureClip() {
-      if (clip || !source || reduceMotion) return;
-      clip = makeVideo('reel__clip', source);
-      clip.addEventListener('loadeddata', function () { reel.classList.add('is-live'); });
-      clip.addEventListener('error', function () {
-        reel.classList.remove('is-live');
-        if (clip && clip.parentNode) clip.parentNode.removeChild(clip);
-        clip = null;
-        source = '';
-      }, true);
-      frame.insertBefore(clip, frame.firstChild);
-    }
-
-    function activate() {
-      if (reel.classList.contains('is-playing')) return;
-      reel.classList.add('is-active');
-      if (reelGrid) reelGrid.classList.add('is-focused');
-      ensureClip();
-      if (clip) {
-        var playing = clip.play();
-        if (playing && playing.catch) playing.catch(function () {});
-      }
-    }
-
-    function deactivate() {
-      reel.classList.remove('is-active');
-      if (reelGrid) reelGrid.classList.remove('is-focused');
-      if (clip) clip.pause();
-    }
-
-    reel.addEventListener('mouseenter', activate);
-    reel.addEventListener('mouseleave', deactivate);
-
     if (!frame) return;
 
-    /* A tile with data-video carries the footage itself: the file plays in
-       the frame, muted and looping, and pressing still opens the post on
-       the platform. Without a file the poster frame stands as it did.  */
-    if (reel.getAttribute('data-video') && hasIO) {
-      var inlineObserver = new IntersectionObserver(function (entries, obs) {
-        entries.forEach(function (entry) {
-          if (!entry.isIntersecting) return;
-          obs.disconnect();
-          mountVideo(frame, reel.getAttribute('data-video'), 'reel__clip', function () {
-            reel.classList.add('is-live');
-          }, function () {
-            reel.classList.remove('is-live');
-          }, parseFloat(reel.getAttribute('data-start')) || 0);
+    var file = reel.getAttribute('data-video');
+    var embed = reel.getAttribute('data-embed');
+    var startAt = parseFloat(reel.getAttribute('data-start')) || 0;
+    var mounted = false;
+
+    function mount() {
+      if (mounted) return;
+      mounted = true;
+      reel.classList.add('is-playing');
+
+      if (file) {
+        var src = startAt > 0 ? file + '#t=' + startAt : file;
+        var video = document.createElement('video');
+        video.className = 'reel__player';
+        video.src = src;
+        video.controls = true;
+        video.autoplay = true;
+        video.playsInline = true;
+        video.preload = 'auto';
+        video.setAttribute('playsinline', '');
+
+        if (startAt > 0) {
+          video.addEventListener('loadedmetadata', function () {
+            try { if (video.currentTime < startAt) video.currentTime = startAt; } catch (e) {}
+          });
+        }
+
+        video.addEventListener('loadeddata', function () {
+          frame.hidden = true;
+          reel.classList.add('is-loaded');
+          watchPlayback(video);
         });
-      }, { threshold: 0.25 });
-      inlineObserver.observe(reel);
+
+        video.addEventListener('error', function () {
+          reel.classList.remove('is-playing');
+          frame.hidden = false;
+          mounted = false;
+          if (video.parentNode) video.parentNode.removeChild(video);
+        }, true);
+
+        reel.insertBefore(video, frame);
+        var playing = video.play();
+        if (playing && playing.catch) playing.catch(function () {});
+        return;
+      }
+
+      if (!embed) return;
+
+      var player = document.createElement('iframe');
+      player.className = 'reel__player';
+      player.src = embed;
+      player.title = reel.getAttribute('data-embed-title') || 'Video player';
+      player.setAttribute('allow', 'autoplay; encrypted-media; picture-in-picture; fullscreen');
+      player.setAttribute('allowfullscreen', '');
+      player.setAttribute('frameborder', '0');
+      player.addEventListener('load', function () {
+        frame.hidden = true;
+        reel.classList.add('is-loaded');
+      });
+      reel.insertBefore(player, frame);
     }
 
-    frame.addEventListener('focus', activate);
-    frame.addEventListener('blur', deactivate);
-    frame.addEventListener('click', function () { loadEmbed(reel, frame); });
-
-    /* Autoloading tiles wait for the page to finish loading, so the embed
-       never competes with the hero's own paint, and they stay click-to-play
-       on a connection the browser has flagged as metered.                 */
-    var roomForEmbed = window.matchMedia('(min-width: 900px)').matches;
-
-    if (reel.hasAttribute('data-autoload') && hasIO && roomForEmbed &&
-        !(navigator.connection || {}).saveData) {
-      var autoObserver = new IntersectionObserver(function (entries, obs) {
-        entries.forEach(function (entry) {
-          if (!entry.isIntersecting) return;
-          obs.disconnect();
-          if (document.readyState === 'complete') loadEmbed(reel, frame);
-          else window.addEventListener('load', function () { loadEmbed(reel, frame); });
-        });
-      }, { threshold: 0.4 });
-      autoObserver.observe(reel);
-    }
+    frame.addEventListener('click', mount);
   });
-
-  /* 7. Pointer follower ----------------------------------------------------- */
-
-  var cursor = document.querySelector('[data-cursor]');
-  if (cursor && !reduceMotion && window.matchMedia('(pointer: fine)').matches) {
-    var targetX = -100, targetY = -100, curX = -100, curY = -100, shown = false;
-
-    window.addEventListener('pointermove', function (event) {
-      targetX = event.clientX;
-      targetY = event.clientY;
-      if (!shown) { shown = true; cursor.classList.add('is-on'); }
-    }, { passive: true });
-
-    document.addEventListener('pointerleave', function () {
-      shown = false;
-      cursor.classList.remove('is-on');
-    });
-
-    (function follow() {
-      curX += (targetX - curX) * 0.18;
-      curY += (targetY - curY) * 0.18;
-      cursor.style.setProperty('--cx', curX.toFixed(1) + 'px');
-      cursor.style.setProperty('--cy', curY.toFixed(1) + 'px');
-      requestAnimationFrame(follow);
-    }());
-
-    Array.prototype.forEach.call(document.querySelectorAll('[data-cursor-view]'), function (el) {
-      el.addEventListener('mouseenter', function () { cursor.classList.add('is-view'); });
-      el.addEventListener('mouseleave', function () { cursor.classList.remove('is-view'); });
-    });
-  }
 
   /* 8. Booking -------------------------------------------------------------
      With a scheduler URL the real embed takes over. Without one the page

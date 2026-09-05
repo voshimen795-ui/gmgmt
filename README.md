@@ -34,11 +34,11 @@ root (gmgmt.co). Nothing needs compiling.
 
 A phone pays for things a laptop gives away. The page holds to these:
 
-- **No decoder runs off screen.** Every clip mounted is watched and paused the moment it
-  leaves the viewport, and started again when it returns. Three videos on one page would
-  otherwise keep three decoders busy for the whole visit.
-- **One player at a time on a phone.** The YouTube tile only loads itself under 900px wide
-  — below that it stays a poster and loads on press.
+- **Nothing plays until it is asked to.** The three tiles arrive as thumbnails; the page
+  loads no video file and no third-party player. On arrival: zero video elements, zero
+  iframes.
+- **No decoder runs off screen.** A player mounted by a press is watched and paused the
+  moment it leaves the viewport, and resumed when it returns.
 - **No filter on the hero film.** A CSS filter over a full-screen video is recomposited every
   frame; the look lives in the scrim instead.
 - **No blend mode, no animated blur, no backdrop blur on phones.** The grain is plain
@@ -49,8 +49,9 @@ A phone pays for things a laptop gives away. The page holds to these:
   have landed.
 - **No motes on phones**, and none anywhere under reduced motion.
 
-Measured on a 6x throttled CPU at 390px, scrolling the whole page: blocking time went from
-355-460ms to about 50ms, and long tasks from six or seven to one.
+Measured on a 6x throttled CPU at 390px, scrolling the whole page: 41fps with six or seven
+long tasks and 355-460ms blocked, before. 50fps with no long tasks and nothing blocked,
+after.
 
 `content-visibility: auto` was tried on the sections and taken back out: the page height
 moved by 1,400px as sections rendered, and the reveal observer cannot see inside a skipped
@@ -190,30 +191,13 @@ those attributes and the interaction follows.
 3. **Clients** — the account names on an infinite roll, faded at both edges and paused on
    hover. Swap a name for an `<img>` when a client sends a logo file; the row does not care
    which it is holding.
-4. **Work** — three 9:16 tiles above a panel carrying the offer: how a month runs, what is
-   included, and the CTA. The Facebook tile plays a self-hosted clip from
-   `/assets/clips/` inline; so does the middle one, which also opens the full cut on Drive
-   when pressed; the YouTube tile loads and plays itself when it scrolls into view.
+4. **Work** — three 16:9 tiles above a panel carrying the offer. Each tile is a thumbnail
+   until it is pressed: the poster is painted twice, blurred to fill the frame and contained
+   on top, so a vertical clip and a landscape one sit in the same box with nothing cropped.
+   Pressing mounts the real player — the file with its own controls and sound, or YouTube's
+   embed for the one that lives there. Nothing is decoded and no third party is contacted
+   until someone presses play.
 
-   The middle clip arrived 4K landscape with a compressor's watermark in the corner. It is
-   cropped off and the frame set on a blurred, darkened copy of itself, which fills the 9:16
-   tile without cutting anyone out of shot:
-
-```
-ffmpeg -i source.mp4 -filter_complex "\
- [0:v]crop=3840:1840:0:0,split=2[bg][fg];\
- [bg]scale=720:1280:force_original_aspect_ratio=increase,crop=720:1280,\
-     gblur=sigma=24,eq=brightness=-0.16:saturation=0.85[bgb];\
- [fg]scale=720:-2[fgs];\
- [bgb][fgs]overlay=(W-w)/2:(H-h)/2,format=yuv420p[v]" \
- -map "[v]" -c:v libx264 -preset slow -crf 28 -an -movflags +faststart out.mp4
-```
-
-   The Drive tile needs the file shared as **Anyone with the link** — without that, pressing
-   it shows Google's request-access screen. Give it the same treatment as the others by
-   putting the file at `/assets/clips/reel-2.mp4` (re-encoded with the command below) and
-   adding `data-video="/assets/clips/reel-2.mp4"` to the figure: it then plays inline, muted
-   and looping, with no third party involved.
 4b. **Before and after** — each screenshot sits in a `.shot` frame: it uncovers itself from
    the bottom as it arrives, lifts under the pointer with the image scaling inside the clip,
    a light travels its border (a conic gradient turned by an `@property` angle) and one sheen
