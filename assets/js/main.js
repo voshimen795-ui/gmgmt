@@ -442,6 +442,14 @@
     var startAt = parseFloat(reel.getAttribute('data-start')) || 0;
     var mounted = false;
 
+    /* the thumbnail the tile is painted with, handed to the player so the
+       picture never changes at the moment of pressing */
+    function posterUrl() {
+      var raw = (reel.style.getPropertyValue('--poster') || '').trim();
+      var match = raw.match(/url\((['"]?)(.*?)\1\)/);
+      return match ? match[2] : '';
+    }
+
     function mount() {
       if (mounted) return;
       mounted = true;
@@ -451,6 +459,7 @@
         var src = startAt > 0 ? file + '#t=' + startAt : file;
         var video = document.createElement('video');
         video.className = 'reel__player';
+        video.poster = posterUrl();
         video.src = src;
         video.controls = true;
         video.autoplay = true;
@@ -465,14 +474,12 @@
         }
 
         video.addEventListener('loadeddata', function () {
-          frame.hidden = true;
           reel.classList.add('is-loaded');
           watchPlayback(video);
         });
 
         video.addEventListener('error', function () {
           reel.classList.remove('is-playing');
-          frame.hidden = false;
           mounted = false;
           if (video.parentNode) video.parentNode.removeChild(video);
         }, true);
@@ -493,7 +500,6 @@
       player.setAttribute('allowfullscreen', '');
       player.setAttribute('frameborder', '0');
       player.addEventListener('load', function () {
-        frame.hidden = true;
         reel.classList.add('is-loaded');
       });
       reel.insertBefore(player, frame);
