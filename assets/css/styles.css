@@ -773,13 +773,9 @@ section { padding-block: var(--section-y); }
   .playbook { grid-column: 1 / -1; max-width: none; padding: var(--sp-32); }
 }
 
-@media (min-width: 1060px) {
-  .reels {
-    grid-template-columns: minmax(0, 280px) minmax(0, 280px) minmax(0, 1fr);
-    max-width: none;
-  }
-  .reels .reel { max-width: none; }
-  .playbook { grid-column: auto; }
+/* three tiles across, the offer panel on the row beneath them */
+@media (min-width: 1000px) {
+  .reels { grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: none; }
 }
 
 /* 10. Results — bento grid -------------------------------------------------- */
