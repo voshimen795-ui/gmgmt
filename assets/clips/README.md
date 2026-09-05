@@ -2,42 +2,67 @@
 
 Self-hosted video for the three tiles in the Work section.
 
-## One shape: 16:9, edge to edge
+## The tile is 16:9. The clips are not.
 
-Every tile is **16:9** and the two clips we host are encoded **1280x720**, so the
-video fills the tile corner to corner. Landscape is the shape a video player is
-and the shape a visitor already reads as "a video"; a column of vertical tiles
-reads as three phone screenshots.
+Every tile in the row is **16:9** — landscape, the shape a video player is —
+and its thumbnail fills it corner to corner with real picture. No black bars,
+no blurred filler, no picture floating in a box it does not fit.
 
-**The box is filled with real picture.** No black bars, and no blurred filler
-either — a blurred band reads as a video that did not fit, which is the thing it
-was meant to hide.
+**The thumbnail is the only thing here that is 16:9.** The clips keep their own
+shape and open over the page when a tile is pressed.
 
-A landscape source needs nothing: it goes in at its native width. A source shot
-vertical is **cropped** to the widest 16:9 window its frame can give. For an
-870x1588 phone recording that window is 870x489 — the full width and a third of
-the height. Using less width does not help; the window is already as large as
-16:9 allows.
+That split is the whole design, and it exists because of a measurement. Two of
+these three were shot vertical, as 9:16 close-ups. A 16:9 window out of a
+870x1588 frame is 870x489 — the widest one that frame can give, and a third of
+its height. In the first clip **the speaker's head is taller than that window**:
+top of the scalp above it, chin below it, at every offset. So playing it inside
+the tile leaves exactly two options, and both were tried and both are wrong:
 
-Two thirds of the height goes, so **where the window sits is the whole
-decision**, and it is made by what has to survive, not by centring. See "Placing
-the window" below.
+- crop it, and his head is cut off for the whole clip;
+- fill the sides with blur, and two thirds of the tile is filler — which reads
+  as a video that did not fit, the thing the blur was there to hide.
 
-The poster is the clip's own **first frame** at 768x432, so the picture does not
-change at the moment of pressing. It is a real `<img class="reel__thumb"
-loading="lazy">` in the tile, not a CSS background: a background image is
-fetched as soon as its element is laid out, wherever on the page that element
-sits, and these tiles are a long way below the fold.
+Out of the tile, neither problem exists. The row stays three uniform landscape
+tiles with no blur and no dead space; the clip plays whole. It is also what
+finally frees the YouTube Short: an embed cannot be cropped from outside the
+iframe at all, so it was stuck with blurred sides, and in the player it simply
+opens 9:16 with no black bars.
 
-    ffmpeg -i out.mp4 -frames:v 1 -vf "scale=768:432:flags=lanczos" \
-      -c:v libwebp -quality 64 -compression_level 6 out-poster.webp
+**A still can be chosen where 700 moving frames cannot.** That is why the
+thumbnail crop is free: pick a moment where a 16:9 window falls well — an
+exterior, a wide two-shot, a face with room around it — and crop there. The
+first tile uses the house exterior at 1.0s for exactly this reason; the third
+crops its poster around the face and both caption lines.
+
+    ffmpeg -ss <good moment> -i out.mp4 -frames:v 1 \
+      -vf "crop=<w>:<h>:<x>:<y>,scale=768:432:flags=lanczos" \
+      -c:v libwebp -quality 66 -compression_level 6 out-poster.webp
 
 768 wide covers the ~400px the tile is ever given at 2x, and all three together
-are 36KB.
+are 36KB. They are real `<img class="reel__thumb" loading="lazy">` elements, not
+CSS backgrounds: a background image is fetched as soon as its element is laid
+out, wherever on the page that element sits, and these tiles are a long way
+below the fold.
+
+The thumbnail no longer has to be the clip's first frame. It used to, so the
+picture would not change at the moment of pressing — but pressing now opens a
+different surface at a different shape, so there is nothing to match.
+
+## data-ratio
+
+Each tile carries its clip's own width/height as a plain number:
+
+    <figure class="reel" data-reel data-ratio="0.548" ...>
+
+The player sizes itself from that, so the box is the right shape before a byte
+of media has arrived instead of opening at some default and jumping. A `<video>`
+corrects it from the real frame on `loadedmetadata`, which covers a re-encode
+that changed shape without the markup being updated — but get it right in the
+markup anyway.
 
 ## Cut the head off the file, never at play time
 
-`reel-1-v10.mp4` is made from a screen recording of a Facebook post, and the
+`reel-1-v11.mp4` is made from a screen recording of a Facebook post, and the
 recording opens on about a second of a **"Video unavailable"** card, then black,
 then a loading spinner, before the clip itself starts.
 
@@ -57,49 +82,33 @@ first frame of real picture, and cut there in the encode:
 
 ## Getting a source into shape
 
-**Shot vertical** (`reel-1-v10.mp4`, from an 870x1588 phone recording — the file
-reads 1588x870 with a -90 rotation, which ffmpeg applies on its own, so the crop
-below is written against the upright frame):
+There is no reshaping any more. Each clip is encoded at its **own** aspect ratio,
+whole, and the player gives it a box that matches. No crop, no blurred band,
+nothing added and nothing taken away.
+
+**Shot vertical** (`reel-1-v11.mp4`, from an 870x1588 phone recording — the file
+reads 1588x870 with a -90 rotation, which ffmpeg applies on its own):
 
     ffmpeg -ss <cut> -i source.mp4 -ss <cut> -i audio-source.mp4 -filter_complex "
-      [0:v]crop=870:489:0:<offset>,scale=1280:720:flags=lanczos,setsar=1,
-           fps=30,format=yuv420p[v]" \
+      [0:v]scale=720:-2:flags=lanczos,setsar=1,fps=30,format=yuv420p[v]" \
       -map "[v]" -map 1:a -shortest -c:v libx264 -profile:v high -level 4.0 \
-      -preset slow -crf 25 -g 60 -keyint_min 60 -sc_threshold 0 \
+      -preset slow -crf 26 -g 60 -keyint_min 60 -sc_threshold 0 \
       -c:a aac -b:a 96k -ac 2 -ar 44100 -movflags +faststart out.mp4
 
-**Shot landscape** (`reel-2-v9.mp4`, from a 1280x614 podcast edit): it is already
-the right shape and goes in at its native width, untouched. 1280x614 is 2.085:1
-against the tile's 1.78:1, so it is 53px short top and bottom; that gap alone is
-filled from a blurred, darkened copy of the frame, which at 53px out of 720 is
-not something you notice:
+720 wide is a downscale from 870, so the picture stays sharper than any box the
+page will ever give it.
 
-    [0:v]setsar=1,hqdn3d=2:1.5:4:4,split=2[fg][bs];
-    [bs]scale=1280:720:force_original_aspect_ratio=increase:flags=fast_bilinear,
-        crop=1280:720,gblur=sigma=26,eq=brightness=-0.22:saturation=0.90:contrast=0.92[bg];
-    [bg][fg]overlay=0:(H-h)/2:shortest=1,fps=30,format=yuv420p[v]
+**Shot landscape** (`reel-2-v10.mp4`, from a 1280x614 podcast edit): the same
+thing with the scale dropped, since it is already at a sensible size. It keeps
+its 2.085:1 exactly — there are no 53px blurred bands top and bottom to make it
+16:9 any more, because it does not have to be 16:9:
 
-## Placing the window
+    [0:v]setsar=1,hqdn3d=2:1.5:4:4,fps=30,format=yuv420p[v]
 
-`crop`'s `<offset>` is the only real judgement in the whole recipe, and centring
-is almost always wrong. On the first clip the frame holds, top to bottom: the
-speaker's head (source y 65-630), the burned-in caption line (650-760, varying by
-a few tens of pixels with the line), the client's logo (890-1130) and a banner
-(1110-1300). A 489-tall window cannot hold the head and the caption at once —
-they span 700 together.
+`hqdn3d` is there because that source is already lossy at about 750kbps, and a
+re-encode otherwise spends real bits preserving its own compression artefacts.
 
-**The caption wins.** It is the client's own edit and the reason the reel is on
-this page; a clip of a man talking with the words stripped off is not a portfolio
-piece. So the window sits at **y=300**: the lowest offset that still clears the
-lowest caption in the clip. Above it a caption gets cut. Below it the framing
-loses more of the face and buys nothing, because the caption is already whole.
-
-Do not take this from one frame. Sample across the clip — captions are not all
-the same height, and the shot that opens the file is often the tightest one:
-
-    for T in 4.2 8.6 11.3 14.45 17.8 20.4 23.2; do
-      ffmpeg -ss $T -i source.mp4 -frames:v 1 -vf "crop=870:489:0:300,scale=300:-1" p-$T.png
-    done
+Whatever you encode, put its width over its height in the tile's `data-ratio`.
 
 ### The watermark
 
@@ -116,28 +125,21 @@ cropped out at the source, not worked around in the player.**
 
 ### The third tile
 
-`reel-3` is a YouTube Short and is not ours to re-encode, so it is an embed — and
-it is therefore the one tile that **cannot** be cropped to fill. An iframe's
-picture cannot be windowed from outside it. So its poster carries a blurred 16:9
-fill baked into the image and `main.js` lays the iframe over that, held at the
-Short's own 9:16 down the middle at full tile height.
+`reel-3` is a YouTube Short and is not ours to re-encode. It used to be the tile
+with the blurred sides, because an iframe's picture cannot be cropped from
+outside it and there was genuinely nothing to be done about it. The player fixed
+that for free: the embed gets a 9:16 box and fills it, with no black bars of its
+own.
 
-The alternative is worse: let the embed span the whole 16:9 box and YouTube
-pillarboxes the Short in flat black.
+Only its thumbnail is ours, cropped 16:9 out of the 432x768 poster to hold the
+face and both caption lines:
 
-**Get the source file and this goes away.** Drop a self-hosted mp4 in here, swap
-`data-embed` for `data-video` on the tile, and it takes the same crop-to-fill as
-the two beside it — at which point the poster below is a plain first-frame grab
-like the other two.
+    ffmpeg -i poster-9x16.webp \
+      -vf "crop=432:243:0:205,scale=640:360:flags=lanczos" \
+      -c:v libwebp -quality 70 -compression_level 6 out-poster.webp
 
-Until then, the blurred poster is built from the 9:16 one:
-
-    ffmpeg -i poster-9x16.webp -filter_complex "
-      [0:v]scale=-2:432:flags=lanczos,setsar=1,split=2[fg][bs];
-      [bs]scale=768:432:force_original_aspect_ratio=increase,crop=768:432,
-          gblur=sigma=20,eq=brightness=-0.22:saturation=0.90:contrast=0.92[bg];
-      [bg][fg]overlay=(W-w)/2:0[v]" -map "[v]" -frames:v 1 \
-      -c:v libwebp -quality 64 -compression_level 6 out-poster.webp
+If a self-hosted file for it ever arrives, drop it in, swap `data-embed` for
+`data-video`, set `data-ratio`, and it behaves exactly like the other two.
 
 ## 30fps, not 60
 
@@ -151,7 +153,7 @@ is in the filter chain above; leave it there.
 Both files keep their audio (AAC 96k), and both measure about -18.6 dB mean, so
 they are level with each other. Pressing play is a user gesture, so the clip is
 allowed its sound and starts unmuted; if a browser refuses anyway the script
-retries muted rather than leaving a dead tile.
+retries muted rather than leaving a dead player.
 
 Neither audio track comes from its own video source, so **both are muxed and
 both can drift if you are careless**:
@@ -170,9 +172,10 @@ Check any new clip before shipping it:
 
     ffmpeg -i clip.mp4 -map 0:a -af volumedetect -f null /dev/null
 
-A reel that the visitor pressed is **paused** when it scrolls out of view and is
-not resumed on the way back — a clip that starts talking again on its own is
-worse than one that waits.
+A clip is **torn down when the player is closed** — paused, its source dropped,
+`load()` called, the element removed. Pausing alone is not enough: a paused
+`<video>` keeps its decoder and its buffer, so without that the clip goes on
+running behind the page after someone has closed it.
 
 ## Keep them small, and always faststart
 
@@ -182,13 +185,13 @@ tile is pressed, so they cost nothing on load.
 
 If a re-encode comes out heavy, raise the CRF before you touch the resolution —
 a source that is already lossy (the 1280x614 podcast is ~750kbps) spends real
-bits preserving its own compression artefacts, and `hqdn3d=2:1.5:4:4` ahead of
-the split takes most of that back for nothing visible.
+bits preserving its own compression artefacts, and `hqdn3d=2:1.5:4:4` in front of
+the encoder takes most of that back for nothing visible.
 
 ## Filenames carry a version
 
 `/assets/clips` is served `immutable` for a year (see `vercel.json`) and these
 files carry no content hash, so a re-encode **must** land under a new name
-(`-v9` -> `-v10`) and the reference in `index.html` must move with it. Overwriting
+(`-v10` -> `-v11`) and the reference in `index.html` must move with it. Overwriting
 a name in place means every browser that already holds the old copy keeps showing
 it, effectively for ever.
