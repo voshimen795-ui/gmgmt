@@ -164,10 +164,16 @@ those attributes and the interaction follows.
 3. **Clients** — the account names on an infinite roll, faded at both edges and paused on
    hover. Swap a name for an `<img>` when a client sends a logo file; the row does not care
    which it is holding.
-4. **Work** — two 9:16 tiles beside a panel carrying the offer: how a month runs, what is
+4. **Work** — three 9:16 tiles above a panel carrying the offer: how a month runs, what is
    included, and the CTA. The Facebook tile plays a self-hosted clip from
-   `/assets/clips/` inline; the YouTube tile loads and plays itself when it scrolls into
-   view. The panel stretches to the tiles' height so no column leaves a hole.
+   `/assets/clips/` inline; the middle tile loads a Google Drive preview on press; the
+   YouTube tile loads and plays itself when it scrolls into view.
+
+   The Drive tile needs the file shared as **Anyone with the link** — without that, pressing
+   it shows Google's request-access screen. Give it the same treatment as the others by
+   putting the file at `/assets/clips/reel-2.mp4` (re-encoded with the command below) and
+   adding `data-video="/assets/clips/reel-2.mp4"` to the figure: it then plays inline, muted
+   and looping, with no third party involved.
 5. **Results** — a bento grid: BKH and the Pivot Point chart across the top, then Houdini,
    the link-in-bio revenue and PAC-Hub. Every figure counts up on arrival, and the shares
    (99.7% non-follower reach, 92% US audience) grow as bars.
