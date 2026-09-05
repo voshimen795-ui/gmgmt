@@ -147,7 +147,11 @@
     }());
 
     window.setTimeout(function () {
-      chars.forEach(function (c) { c.el.textContent = c.glyph; });
+      chars.forEach(function (c) {
+        c.el.textContent = c.glyph;
+        c.el.style.willChange = 'auto';
+      });
+      headline.classList.add('is-done');
     }, LAST + 600);
   }
 
@@ -313,6 +317,28 @@
     return video;
   }
 
+  /* A video element keeps its decoder running even when it is nowhere near
+     the viewport, which on a phone means two or three decoders working for
+     the life of the visit. Every clip mounted here is watched, and paused
+     the moment it leaves.                                                */
+  var watchPlayback = (function () {
+    if (!hasIO) return function () {};
+
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        var video = entry.target;
+        if (entry.isIntersecting) {
+          var playing = video.play();
+          if (playing && playing.catch) playing.catch(function () {});
+        } else if (!video.paused) {
+          video.pause();
+        }
+      });
+    }, { rootMargin: '25% 0px' });
+
+    return function (video) { observer.observe(video); };
+  }());
+
   /* Mounts the first source in a comma separated list that actually plays.
      Each source gets one try: a file that 404s or will not decode hands
      over to the next, and onFail runs once the list is spent.          */
@@ -361,6 +387,7 @@
       el.addEventListener('loadeddata', function () {
         var playing = el.play();
         if (playing && playing.catch) playing.catch(function () {});
+        watchPlayback(el);
         if (onPlay) onPlay(el);
       });
 
@@ -484,7 +511,10 @@
     /* Autoloading tiles wait for the page to finish loading, so the embed
        never competes with the hero's own paint, and they stay click-to-play
        on a connection the browser has flagged as metered.                 */
-    if (reel.hasAttribute('data-autoload') && hasIO && !(navigator.connection || {}).saveData) {
+    var roomForEmbed = window.matchMedia('(min-width: 900px)').matches;
+
+    if (reel.hasAttribute('data-autoload') && hasIO && roomForEmbed &&
+        !(navigator.connection || {}).saveData) {
       var autoObserver = new IntersectionObserver(function (entries, obs) {
         entries.forEach(function (entry) {
           if (!entry.isIntersecting) return;
@@ -956,8 +986,14 @@
       frame = requestAnimationFrame(draw);
     }
 
+    var seeded = false;
+
     function start() {
       if (frame !== null || document.hidden) return;
+      /* the section is skipped until it is near the viewport, so measuring it
+         at load would size the canvas from an estimate rather than the box */
+      if (!seeded) { seed(); seeded = true; }
+      if (!specks.length) return;
       frame = requestAnimationFrame(draw);
       motes.classList.add('is-on');
     }
@@ -967,8 +1003,6 @@
       cancelAnimationFrame(frame);
       frame = null;
     }
-
-    seed();
 
     if (hasIO) {
       new IntersectionObserver(function (entries) {
@@ -986,6 +1020,7 @@
 
     var resizeWait = null;
     window.addEventListener('resize', function () {
+      if (!seeded) return;
       window.clearTimeout(resizeWait);
       resizeWait = window.setTimeout(seed, 200);
     }, { passive: true });
