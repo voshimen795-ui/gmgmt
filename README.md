@@ -188,6 +188,14 @@ ffmpeg -i source.mp4 -filter_complex "\
    putting the file at `/assets/clips/reel-2.mp4` (re-encoded with the command below) and
    adding `data-video="/assets/clips/reel-2.mp4"` to the figure: it then plays inline, muted
    and looping, with no third party involved.
+4b. **Before and after** — each screenshot sits in a `.shot` frame: it uncovers itself from
+   the bottom as it arrives, lifts under the pointer with the image scaling inside the clip,
+   a light travels its border (a conic gradient turned by an `@property` angle) and one sheen
+   sweeps across the glass. Behind the cards, a canvas drifts gold motes upward — drawn only
+   while the section is on screen and the tab is visible, at device pixel ratio 1 on phones,
+   and not at all under reduced motion, where the frames also drop their clip and both
+   pseudo-elements.
+
 5. **Results** — a bento grid: BKH and the Pivot Point chart across the top, then Houdini,
    the link-in-bio revenue and PAC-Hub. Every figure counts up on arrival, and the shares
    (99.7% non-follower reach, 92% US audience) grow as bars.

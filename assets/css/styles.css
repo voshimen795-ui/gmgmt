@@ -932,9 +932,26 @@ html:not(.js) .meter__track span { width: calc(var(--pct) * 1%); }
 /* 10b. Before and after ----------------------------------------------------- */
 
 .ba {
+  position: relative;
+  isolation: isolate;
   border-bottom: var(--hairline);
   background: color-mix(in srgb, var(--surface) 30%, transparent);
 }
+
+/* gold motes drifting behind the proof, drawn only while the section is
+   on screen and never under reduced motion */
+.motes {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1200ms var(--ease);
+}
+.motes.is-on { opacity: 1; }
+.ba .shell { position: relative; z-index: 1; }
 .ba .section-head { max-width: 60ch; }
 
 .ba__grid {
@@ -944,6 +961,7 @@ html:not(.js) .meter__track span { width: calc(var(--pct) * 1%); }
 }
 
 .ba__card {
+  position: relative;
   display: flex;
   flex-direction: column;
   padding: var(--sp-32) var(--sp-24);
@@ -957,6 +975,22 @@ html:not(.js) .meter__track span { width: calc(var(--pct) * 1%); }
   transition: border-color 320ms var(--ease), transform 420ms var(--ease-out),
               box-shadow 420ms var(--ease-out);
 }
+/* a gold seam along the top edge, brighter when the card is under the pointer */
+.ba__card::after {
+  content: "";
+  position: absolute;
+  left: var(--sp-24);
+  right: var(--sp-24);
+  top: -1px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent,
+              color-mix(in srgb, var(--gold) 65%, transparent), transparent);
+  opacity: 0.5;
+  transition: opacity 420ms var(--ease);
+  pointer-events: none;
+}
+.ba__card:hover::after { opacity: 1; }
+
 .ba__card:hover {
   border-color: color-mix(in srgb, var(--gold) 40%, var(--line));
   transform: translateY(-3px);
@@ -1025,22 +1059,89 @@ html:not(.js) .meter__track span { width: calc(var(--pct) * 1%); }
 .ba__pair figure { display: grid; grid-template-rows: 1fr auto; min-width: 0; }
 /* both panels are cropped to the same square around the date and the figure,
    so the two sides read at one glance */
-.ba__pair img {
-  width: 100%;
+/* the frame: it clips, it lights up, and the sheen runs across it */
+.shot {
+  position: relative;
+  display: block;
   height: 100%;
-  object-fit: contain;
+  overflow: hidden;
   border: var(--hairline);
   border-radius: var(--radius-sm);
   background: #fff;
-  transition: border-color 300ms var(--ease), box-shadow 420ms var(--ease-out),
-              transform 420ms var(--ease-out);
+  isolation: isolate;
+  transition: border-color 320ms var(--ease), box-shadow 520ms var(--ease-out),
+              transform 520ms var(--ease-out);
 }
-.ba__pair figure:hover img {
+.shot img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: transform 900ms var(--ease-out), filter 520ms var(--ease);
+}
+.ba__pair--stack .shot img { height: auto; object-fit: fill; }
+
+.ba__pair figure:hover .shot {
+  transform: translateY(-4px);
   border-color: color-mix(in srgb, var(--gold) 55%, var(--line));
-  box-shadow: 0 18px 40px color-mix(in srgb, var(--ink) 75%, transparent), var(--neon-soft);
-  transform: translateY(-2px);
+  box-shadow: 0 22px 50px color-mix(in srgb, var(--ink) 78%, transparent), var(--neon-soft);
 }
-.ba__pair--stack img { height: auto; object-fit: fill; }
+.ba__pair figure:hover .shot img { transform: scale(1.045); filter: saturate(1.06); }
+
+/* a gold light travelling the border, only while the pointer is on it */
+@property --ang { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
+
+.shot::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: 2;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(from var(--ang),
+              transparent 0 62%,
+              color-mix(in srgb, var(--gold) 85%, transparent) 76%,
+              var(--gold-lift) 82%,
+              transparent 94%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 320ms var(--ease);
+  pointer-events: none;
+}
+.ba__pair figure:hover .shot::before {
+  opacity: 1;
+  animation: shot-ring 2.6s linear infinite;
+}
+@keyframes shot-ring { to { --ang: 360deg; } }
+
+/* and a single sheen sweeping across the glass */
+.shot::after {
+  content: "";
+  position: absolute;
+  top: -20%;
+  bottom: -20%;
+  left: 0;
+  width: 45%;
+  z-index: 1;
+  background: linear-gradient(100deg,
+              transparent,
+              color-mix(in srgb, #fff 42%, transparent) 45%,
+              color-mix(in srgb, var(--gold-lift) 30%, transparent) 60%,
+              transparent);
+  transform: translateX(-160%) skewX(-14deg);
+  opacity: 0;
+  pointer-events: none;
+}
+.ba__pair figure:hover .shot::after {
+  animation: shot-sheen 1100ms var(--ease-out) forwards;
+}
+@keyframes shot-sheen {
+  0%   { opacity: 0; transform: translateX(-160%) skewX(-14deg); }
+  12%  { opacity: 1; }
+  100% { opacity: 0; transform: translateX(320%) skewX(-14deg); }
+}
 .ba__pair figcaption { text-align: center; font-variant-numeric: tabular-nums; }
 .ba__pair .is-after { color: var(--gold-lift); }
 
@@ -1719,6 +1820,22 @@ a.contact__value:hover { color: var(--gold-lift); }
 }
 .js [data-reveal="rise"].is-in { opacity: 1; transform: none; }
 
+/* a screenshot arrives by uncovering itself from the bottom up */
+.js [data-reveal="shot"] {
+  opacity: 0;
+  transform: translateY(18px) scale(0.98);
+  clip-path: inset(14% 0 0 0 round 10px);
+  transition: opacity 900ms var(--ease-out),
+              transform 1100ms var(--ease-out),
+              clip-path 1100ms var(--ease-out);
+  transition-delay: var(--delay, 0ms);
+}
+.js [data-reveal="shot"].is-in {
+  opacity: 1;
+  transform: none;
+  clip-path: inset(0 0 0 0 round 10px);
+}
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
 
@@ -1738,6 +1855,10 @@ a.contact__value:hover { color: var(--gold-lift); }
   }
 
   .js [data-reveal] { opacity: 1; transform: none; }
+  .js [data-reveal="shot"] { clip-path: none; }
+  .shot::before, .shot::after { display: none; }
+  .ba__pair figure:hover .shot img { transform: none; }
+  .motes { display: none; }
   .cursor { display: none; }
   .reel__frame:hover { transform: none; }
   .reels.is-focused .reel:not(.is-active) .reel__frame { opacity: 1; filter: none; transform: none; }

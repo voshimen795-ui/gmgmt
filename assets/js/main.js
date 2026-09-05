@@ -12,6 +12,7 @@
    8. Booking — inline scheduler or built-in calendar
    9. Contact actions and phone bar
   10. Lead form
+  11. Motes behind the before and after cards
    ========================================================================== */
 
 (function () {
@@ -887,6 +888,107 @@
         say('WhatsApp is open with the message ready to send.', 'ok');
       });
     }
+  }
+
+
+  /* 11. Motes --------------------------------------------------------------
+     A drift of gold specks behind the before and after cards. It runs only
+     while the section is on screen and the tab is visible, stops dead under
+     reduced motion, and keeps its count down on small screens.           */
+
+  var motes = document.querySelector('[data-motes]');
+
+  if (motes && !reduceMotion && motes.getContext) {
+    var ctx = motes.getContext('2d');
+    var host = motes.parentNode;
+    var specks = [];
+    var frame = null;
+    /* motes are soft specks, so they gain nothing from a retina buffer and
+       a phone gains a lot from not clearing four times the pixels */
+    var dpr = window.innerWidth < 900 ? 1 : Math.min(window.devicePixelRatio || 1, 1.5);
+    var w = 0;
+    var h = 0;
+
+    function seed() {
+      var box = host.getBoundingClientRect();
+      w = Math.max(1, Math.round(box.width));
+      h = Math.max(1, Math.round(box.height));
+
+      motes.width = Math.round(w * dpr);
+      motes.height = Math.round(h * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      var count = Math.round(Math.min(46, Math.max(16, w / 34)));
+      specks = [];
+
+      for (var i = 0; i < count; i += 1) {
+        specks.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          r: 0.6 + Math.random() * 1.6,
+          rise: 0.10 + Math.random() * 0.28,
+          sway: 0.4 + Math.random() * 1.1,
+          phase: Math.random() * Math.PI * 2,
+          alpha: 0.06 + Math.random() * 0.20
+        });
+      }
+    }
+
+    function draw(now) {
+      ctx.clearRect(0, 0, w, h);
+
+      for (var i = 0; i < specks.length; i += 1) {
+        var s = specks[i];
+        s.y -= s.rise;
+        if (s.y < -8) {
+          s.y = h + 8;
+          s.x = Math.random() * w;
+        }
+
+        var x = s.x + Math.sin(now / 2600 + s.phase) * s.sway * 6;
+
+        ctx.beginPath();
+        ctx.arc(x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(201, 162, 39, ' + s.alpha.toFixed(3) + ')';
+        ctx.fill();
+      }
+
+      frame = requestAnimationFrame(draw);
+    }
+
+    function start() {
+      if (frame !== null || document.hidden) return;
+      frame = requestAnimationFrame(draw);
+      motes.classList.add('is-on');
+    }
+
+    function stop() {
+      if (frame === null) return;
+      cancelAnimationFrame(frame);
+      frame = null;
+    }
+
+    seed();
+
+    if (hasIO) {
+      new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) start(); else stop();
+        });
+      }, { rootMargin: '10% 0px' }).observe(host);
+    } else {
+      start();
+    }
+
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) stop(); else start();
+    });
+
+    var resizeWait = null;
+    window.addEventListener('resize', function () {
+      window.clearTimeout(resizeWait);
+      resizeWait = window.setTimeout(seed, 200);
+    }, { passive: true });
   }
 
   /* 9. Contact actions and phone bar ---------------------------------------- */
