@@ -319,7 +319,12 @@
   /* A video element keeps its decoder running even when it is nowhere near
      the viewport, which on a phone means two or three decoders working for
      the life of the visit. Every clip mounted here is watched, and paused
-     the moment it leaves.                                                */
+     the moment it leaves.
+
+     Silent decoration (the hero film) is resumed when it comes back. A reel
+     the visitor pressed is not: it carries sound, and a clip that starts
+     talking again on its own because the page scrolled past it is the kind
+     of thing people close a tab over. Pass `resume` to opt in.           */
   var watchPlayback = (function () {
     if (!hasIO) return function () {};
 
@@ -327,6 +332,7 @@
       entries.forEach(function (entry) {
         var video = entry.target;
         if (entry.isIntersecting) {
+          if (video.dataset.resume !== 'yes' || !video.paused) return;
           var playing = video.play();
           if (playing && playing.catch) playing.catch(function () {});
         } else if (!video.paused) {
@@ -335,7 +341,10 @@
       });
     }, { rootMargin: '25% 0px' });
 
-    return function (video) { observer.observe(video); };
+    return function (video, resume) {
+      if (resume) video.dataset.resume = 'yes';
+      observer.observe(video);
+    };
   }());
 
   /* Mounts the first source in a comma separated list that actually plays.
@@ -386,7 +395,7 @@
       el.addEventListener('loadeddata', function () {
         var playing = el.play();
         if (playing && playing.catch) playing.catch(function () {});
-        watchPlayback(el);
+        watchPlayback(el, true);
         if (onPlay) onPlay(el);
       });
 
@@ -413,11 +422,14 @@
       );
     };
 
-    /* A phone should never spend its data and its battery on decoration.
-       The film is desktop-only, and skipped on a connection the browser
-       has flagged as slow or metered. */
+    /* The film runs on phones too — it is the first thing the page says, and
+       a hero that only exists on a desktop is a hero half the visitors never
+       see. What it still refuses is a connection the browser has flagged as
+       metered or slow, and a visitor who has asked for less motion. It is
+       also fetched only once the page is idle, so it never competes with the
+       text and the type for the opening second. */
     var link = navigator.connection || {};
-    var wideEnough = window.matchMedia('(min-width: 900px)').matches;
+    var motionWanted = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var goodLine = !link.saveData && !/^[23]g$/.test(link.effectiveType || '');
 
     var whenIdle = function () {
@@ -428,7 +440,7 @@
       }
     };
 
-    if (wideEnough && goodLine) {
+    if (motionWanted && goodLine) {
       if (document.readyState === 'complete') whenIdle();
       else window.addEventListener('load', whenIdle);
     }
@@ -474,6 +486,13 @@
         video.preload = 'auto';
         video.setAttribute('playsinline', '');
 
+        /* Pressing play is a user gesture, so the clip is allowed its sound
+           and gets it. If a browser refuses the unmuted start anyway, it is
+           retried muted rather than left as a still frame — a silent clip
+           beats a dead tile, and the controls are right there. */
+        video.muted = false;
+        video.volume = 1;
+
         if (startAt > 0) {
           video.addEventListener('loadedmetadata', function () {
             try { if (video.currentTime < startAt) video.currentTime = startAt; } catch (e) {}
@@ -493,7 +512,13 @@
 
         reel.insertBefore(video, frame);
         var playing = video.play();
-        if (playing && playing.catch) playing.catch(function () {});
+        if (playing && playing.catch) {
+          playing.catch(function () {
+            video.muted = true;
+            var muted = video.play();
+            if (muted && muted.catch) muted.catch(function () {});
+          });
+        }
         return;
       }
 

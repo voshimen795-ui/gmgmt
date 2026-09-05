@@ -50,16 +50,19 @@ Where it came from:
 - **The fonts carry only the glyphs this page uses** — 102 of them. 120KB of woff2 became
   63KB. They are no longer preloaded either: preloading raced them against the stylesheet on
   a narrow pipe, and `font-display: swap` paints the text immediately regardless.
-- **The tile thumbnails are WebP at 900px** rather than 1280px JPEG: 75KB became 32KB for
-  three of them.
+- **The tile thumbnails are WebP at 540x960** rather than JPEG: 83KB for all three, and
+  each one is a frame of the clip it fronts, taken at that clip's own start offset, so the
+  picture does not change at the moment of pressing.
 - **No third party is asked for a thumbnail.** The YouTube tile used to pull its poster from
   i.ytimg.com, which answers with a grey placeholder rather than a 404 when a Short has no
   thumbnail in the size asked for. Its poster is drawn locally instead, in the page's own
   fonts and colours, and the page now requests nothing from any other host on arrival.
-- **The hero film is desktop-only.** It is also skipped when the browser reports a metered
-  or slow connection, and it starts on an idle callback after the load event. A phone never
-  spends anything on it. To put it back everywhere, drop the `wideEnough && goodLine` test
-  in section 5 of `main.js`.
+- **The hero film runs everywhere, phones included** — it is the first thing the page says,
+  and a hero only desktops see is a hero half the visitors never get. It is still skipped
+  when the browser reports a metered or slow connection or the visitor has asked for less
+  motion, and it starts on an idle callback after the load event, so it never competes with
+  the text and the type for the opening second. The test is `motionWanted && goodLine` in
+  section 5 of `main.js`.
 - **`vercel.json`** gives the fonts a year of immutable caching and everything else ten
   minutes with revalidation. It briefly gave *everything* under `/assets` the year, which
   was a mistake: the filenames do not carry a content hash, so a browser that cached a clip
@@ -85,7 +88,8 @@ A phone pays for things a laptop gives away. The page also holds to these:
   loads no video file and no third-party player. On arrival: zero video elements, zero
   iframes.
 - **No decoder runs off screen.** A player mounted by a press is watched and paused the
-  moment it leaves the viewport, and resumed when it returns.
+  moment it leaves the viewport. The silent hero film is resumed when it returns; a reel
+  the visitor pressed is not, because it carries sound.
 - **No filter on the hero film.** A CSS filter over a full-screen video is recomposited every
   frame; the look lives in the scrim instead.
 - **No blend mode, no animated blur, no backdrop blur on phones.** The grain is plain
@@ -95,6 +99,22 @@ A phone pays for things a laptop gives away. The page also holds to these:
 - **No permanent promotion.** The headline drops `will-change` from all 57 glyphs once they
   have landed.
 - **No motes on phones**, and none anywhere under reduced motion.
+
+### Old phones
+
+`color-mix()` landed in Safari 16.2. An iPhone left on iOS 15 does not have it, and an
+engine that cannot parse a value throws the whole declaration away — which for this page
+meant every border, scrim and tint disappearing at once, not degrading. So each of the 46
+declarations that uses it is written twice: the flat `rgba()` the mix evaluates to, then
+the mix itself. Old engines keep the first and skip the second; new ones take the second.
+The two glow shadows are the exception. A custom property's value is not checked when it
+is declared, so a plain duplicate never loses the cascade there — those two sit behind an
+`@supports (color: color-mix(...))` block instead.
+
+Rendered side by side with every `color-mix()` stripped out, the two versions differ by a
+mean of 0.4/255 across the full 8423px page — the counters landing on different frames.
+Same treatment for `100svh` (a plain `vh` line first, Safari 15.4) and `backdrop-filter`
+(`-webkit-` prefixed first).
 
 Measured on a 6x throttled CPU at 390px, scrolling the whole page: 41fps with six or seven
 long tasks and 355-460ms blocked at the start of that work; 58fps with no long tasks and
@@ -190,14 +210,18 @@ or on a connection flagged `saveData`, and if no source plays the element is rem
 the drifting light field carries the hero on its own. Keep the file short and small — it
 is background, not content; ten seconds at a few hundred KB is plenty.
 
-**Reel clips.** The Facebook tile plays `/assets/clips/facebook-reel.mp4` (702x1280, 2.7MB,
-no audio track since it plays muted) and shows `reel-poster.jpg` until it arrives. Re-encode
-anything new the same way:
+**Reel clips.** Every clip is 720x1280 with its audio kept, so it fills a 9:16 tile corner
+to corner and talks when someone presses it. `assets/clips/README.md` carries the full
+recipe, including how a landscape source is panned per shot to reach that shape. The short
+version:
 
 ```
-ffmpeg -i source.mp4 -vf "scale=-2:1280" -c:v libx264 -preset slow -crf 28 \
-       -pix_fmt yuv420p -an -movflags +faststart out.mp4
+ffmpeg -i source.mp4 -vf "scale=-2:1280,crop=720:1280" -c:v libx264 -preset slow -crf 28 \
+       -pix_fmt yuv420p -c:a aac -b:a 96k -movflags +faststart out.mp4
 ```
+
+Filenames carry a version (`-v4`). `/assets` is cached and these files have no content hash,
+so a re-encode under an old name keeps showing the old cut on a phone that already has it.
 
 A tile plays a self-hosted file inline, muted and looping, as soon as it
 scrolls into view — add `data-video="/assets/clips/whatever.mp4"` to the
@@ -238,12 +262,15 @@ those attributes and the interaction follows.
 3. **Clients** — the account names on an infinite roll, faded at both edges and paused on
    hover. Swap a name for an `<img>` when a client sends a logo file; the row does not care
    which it is holding.
-4. **Work** — three 16:9 tiles above a panel carrying the offer. Each tile is a thumbnail
-   until it is pressed: the poster is painted twice, blurred to fill the frame and contained
-   on top, so a vertical clip and a landscape one sit in the same box with nothing cropped.
-   Pressing mounts the real player — the file with its own controls and sound, or YouTube's
-   embed for the one that lives there. Nothing is decoded and no third party is contacted
-   until someone presses play.
+4. **Work** — three 9:16 tiles above a panel carrying the offer. Every clip is encoded to
+   that shape, so each poster fills its tile edge to edge the way the YouTube short does:
+   no bars, no blurred filler, no picture floating in the middle of a box it does not fit.
+   Each tile is a thumbnail until it is pressed; pressing mounts the real player over it —
+   the file with its own controls and its sound, or YouTube's embed for the one that lives
+   there. A reel that has been pressed pauses when it scrolls out of view and is not resumed
+   on the way back, because a clip that starts talking again on its own is worse than one
+   that waits. Nothing is decoded and no third party is contacted until someone presses
+   play.
 
    Both self-hosted clips are encoded 1280x720 with the frame set on a blurred, darkened
    copy of itself, so the playing video looks like its own thumbnail rather than snapping to

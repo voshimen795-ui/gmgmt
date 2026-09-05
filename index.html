@@ -118,13 +118,26 @@
   --hairline: 1px solid var(--line);
 
   /* neon */
-  --neon-soft: 0 0 24px color-mix(in srgb, var(--gold) 30%, transparent);
-  --neon: 0 0 20px color-mix(in srgb, var(--gold) 45%, transparent),
-          0 0 56px color-mix(in srgb, var(--gold) 18%, transparent);
+  --neon-soft: 0 0 24px rgba(201, 162, 39, 0.3);
+  --neon: 0 0 20px rgba(201, 162, 39, 0.45),
+          0 0 56px rgba(201, 162, 39, 0.18);
 
   /* motion */
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* The two glow shadows are literals above, because a custom property's value
+   is not checked when it is declared — an engine without color-mix() would
+   accept the mixed version and then fail on use, so a plain duplicate never
+   wins the way it does for a normal property. Guarded, they keep following
+   --gold everywhere the feature exists. */
+@supports (color: color-mix(in srgb, red 50%, blue)) {
+  :root {
+    --neon-soft: 0 0 24px color-mix(in srgb, var(--gold) 30%, transparent);
+    --neon: 0 0 20px color-mix(in srgb, var(--gold) 45%, transparent),
+            0 0 56px color-mix(in srgb, var(--gold) 18%, transparent);
+  }
 }
 
 /* 3. Reset + base --------------------------------------------------------- */
@@ -274,11 +287,13 @@ section { padding-block: var(--section-y); }
   position: sticky;
   top: 0;
   z-index: 20;
+  background: rgba(7, 10, 18, 0.94);
   background: color-mix(in srgb, var(--ink) 94%, transparent);
   border-bottom: 1px solid transparent;
   transition: background-color 300ms var(--ease), border-color 300ms var(--ease);
 }
 .site-header.is-stuck {
+  background: rgba(7, 10, 18, 0.94);
   background: color-mix(in srgb, var(--ink) 94%, transparent);
   border-bottom-color: var(--line);
 }
@@ -353,7 +368,9 @@ section { padding-block: var(--section-y); }
 
 @media (min-width: 900px) {
   .site-header {
+    background: rgba(7, 10, 18, 0.8);
     background: color-mix(in srgb, var(--ink) 80%, transparent);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
     backdrop-filter: blur(14px) saturate(140%);
   }
   .site-header__inner { grid-template-columns: 1fr auto 1fr; }
@@ -387,6 +404,9 @@ section { padding-block: var(--section-y); }
 .hero__field {
   inset: -25%;
   background:
+    radial-gradient(34% 40% at 50% 22%, rgba(201, 162, 39, 0.24), transparent 70%),
+    radial-gradient(40% 44% at 22% 72%, rgba(242, 241, 236, 0.07), transparent 72%);
+  background:
     radial-gradient(34% 40% at 50% 22%, color-mix(in srgb, var(--gold) 24%, transparent), transparent 70%),
     radial-gradient(40% 44% at 22% 72%, color-mix(in srgb, var(--paper) 7%, transparent), transparent 72%);
   filter: blur(40px);
@@ -404,10 +424,19 @@ section { padding-block: var(--section-y); }
   inset: 0;
   background:
     radial-gradient(120% 90% at 50% 30%, transparent 8%, var(--ink) 80%),
+    linear-gradient(to bottom, rgba(7, 10, 18, 0.45), var(--ink) 92%);
+  background:
+    radial-gradient(120% 90% at 50% 30%, transparent 8%, var(--ink) 80%),
     linear-gradient(to bottom, color-mix(in srgb, var(--ink) 45%, transparent), var(--ink) 92%);
 }
 
 .hero__media.has-video .hero__scrim {
+  background:
+    linear-gradient(to bottom,
+      rgba(7, 10, 18, 0.88) 0%,
+      rgba(7, 10, 18, 0.62) 22%,
+      rgba(7, 10, 18, 0.72) 62%,
+      var(--ink) 100%);
   background:
     linear-gradient(to bottom,
       color-mix(in srgb, var(--ink) 88%, transparent) 0%,
@@ -418,6 +447,16 @@ section { padding-block: var(--section-y); }
 
 @media (min-width: 980px) {
   .hero__media.has-video .hero__scrim {
+    background:
+      radial-gradient(60% 54% at 50% 50%,
+        rgba(7, 10, 18, 0.84) 0%,
+        rgba(7, 10, 18, 0.62) 58%,
+        transparent 100%),
+      linear-gradient(to bottom,
+        rgba(7, 10, 18, 0.6) 0%,
+        rgba(7, 10, 18, 0.2) 22%,
+        rgba(7, 10, 18, 0.3) 68%,
+        var(--ink) 100%);
     background:
       radial-gradient(60% 54% at 50% 50%,
         color-mix(in srgb, var(--ink) 84%, transparent) 0%,
@@ -444,12 +483,17 @@ section { padding-block: var(--section-y); }
 /* the film underneath can land on a bright frame at any moment, so the
    copy carries its own shadow rather than trusting the scrim alone */
 .hero__media.has-video ~ .hero__inner .hero__copy {
+  text-shadow: 0 1px 2px rgba(7, 10, 18, 0.55),
+               0 2px 28px rgba(7, 10, 18, 0.7);
   text-shadow: 0 1px 2px color-mix(in srgb, var(--ink) 55%, transparent),
                0 2px 28px color-mix(in srgb, var(--ink) 70%, transparent);
 }
 .hero__media.has-video ~ .hero__inner .btn--ghost {
+  border-color: rgba(242, 241, 236, 0.3);
   border-color: color-mix(in srgb, var(--paper) 30%, transparent);
+  background: rgba(7, 10, 18, 0.42);
   background: color-mix(in srgb, var(--ink) 42%, transparent);
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   text-shadow: none;
 }
@@ -538,7 +582,8 @@ section { padding-block: var(--section-y); }
 }
 
 @media (min-width: 980px) {
-  .hero { min-height: calc(100svh - 68px); padding-block: var(--sp-64); }
+  .hero { min-height: calc(100vh - 68px); min-height: calc(100svh - 68px);
+          padding-block: var(--sp-64); }
 }
 
 /* 8. Client roll ------------------------------------------------------------ */
@@ -572,6 +617,7 @@ section { padding-block: var(--section-y); }
   letter-spacing: 0.02em;
   text-transform: uppercase;
   white-space: nowrap;
+  color: rgba(242, 241, 236, 0.78);
   color: color-mix(in srgb, var(--paper) 78%, transparent);
 }
 .marquee__set i {
@@ -595,14 +641,19 @@ section { padding-block: var(--section-y); }
   margin-inline: auto;
 }
 
-.reel { position: relative; width: 100%; max-width: 520px; margin-inline: auto; }
+.reel {
+  position: relative;
+  width: 100%;
+  max-width: min(320px, 78vw);
+  margin-inline: auto;
+}
 
 /* the tile is one box: the player is laid over the thumbnail rather than
    inserted above it, so pressing never adds a second frame to the page */
 
-/* the thumbnail. It is the poster twice over: once blurred to fill the
-   frame, once contained on top, so a tall clip and a wide one both sit in
-   the same landscape box with nothing cropped and no empty bars. */
+/* the thumbnail. Every clip is encoded 9:16, so the poster fills the tile
+   edge to edge the way the YouTube short does — no bars, no blurred filler,
+   no picture floating in the middle of a box it does not fit. */
 .reel__frame {
   position: relative;
   display: flex;
@@ -610,18 +661,21 @@ section { padding-block: var(--section-y); }
   justify-content: space-between;
   align-items: flex-start;
   width: 100%;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 9 / 16;
   padding: var(--sp-16);
+  border: 1px solid rgb(68, 66, 50);
   border: 1px solid color-mix(in srgb, var(--gold) 22%, var(--line));
   border-radius: var(--radius);
   overflow: hidden;
   background:
-    linear-gradient(color-mix(in srgb, var(--ink) 30%, transparent),
-                    color-mix(in srgb, var(--ink) 30%, transparent)),
-    var(--poster) center / contain no-repeat,
+    linear-gradient(rgba(7, 10, 18, 0.22),
+                    rgba(7, 10, 18, 0.22)),
     var(--poster) center / cover no-repeat,
-    var(--poster-alt, none) center / contain no-repeat,
-    var(--poster-alt, none) center / cover no-repeat,
+    var(--surface-lift);
+  background:
+    linear-gradient(color-mix(in srgb, var(--ink) 22%, transparent),
+                    color-mix(in srgb, var(--ink) 22%, transparent)),
+    var(--poster) center / cover no-repeat,
     var(--surface-lift);
   color: var(--paper);
   font: inherit;
@@ -635,7 +689,10 @@ section { padding-block: var(--section-y); }
   position: absolute;
   inset: 0;
   z-index: 0;
+  -webkit-backdrop-filter: blur(0px);
   backdrop-filter: blur(0px);
+  background: radial-gradient(60% 60% at 50% 50%, transparent,
+              rgba(7, 10, 18, 0.42));
   background: radial-gradient(60% 60% at 50% 50%, transparent,
               color-mix(in srgb, var(--ink) 42%, transparent));
   pointer-events: none;
@@ -643,6 +700,7 @@ section { padding-block: var(--section-y); }
 .reel__frame:hover, .reel__frame:focus-visible {
   transform: translateY(-3px);
   border-color: var(--gold);
+  box-shadow: 0 22px 50px rgba(7, 10, 18, 0.8), var(--neon);
   box-shadow: 0 22px 50px color-mix(in srgb, var(--ink) 80%, transparent), var(--neon);
 }
 
@@ -651,6 +709,7 @@ section { padding-block: var(--section-y); }
   z-index: 1;
   padding: 5px var(--sp-8);
   border-radius: 999px;
+  background: rgba(7, 10, 18, 0.7);
   background: color-mix(in srgb, var(--ink) 70%, transparent);
   font-size: var(--t-label);
   font-weight: 500;
@@ -671,6 +730,7 @@ section { padding-block: var(--section-y); }
   padding: 18px 16px 18px 21px;
   border-radius: 999px;
   background: var(--gold);
+  box-shadow: 0 10px 30px rgba(7, 10, 18, 0.6), var(--neon-soft);
   box-shadow: 0 10px 30px color-mix(in srgb, var(--ink) 60%, transparent), var(--neon-soft);
   transition: transform 320ms var(--ease-out), background-color 240ms var(--ease);
   box-sizing: content-box;
@@ -681,12 +741,17 @@ section { padding-block: var(--section-y); }
   background: var(--gold-lift);
 }
 
+/* the player sits exactly where the thumbnail was. The clips are cut to the
+   tile's own 9:16, so `cover` crops nothing — it only guards against a
+   rounding gap at the edges. */
 .reel__player {
   position: absolute;
   inset: 0;
   z-index: 2;
   width: 100%;
   height: 100%;
+  object-fit: cover;
+  border: 1px solid rgb(107, 94, 47);
   border: 1px solid color-mix(in srgb, var(--gold) 45%, var(--line));
   border-radius: var(--radius);
   background: #000;
@@ -775,10 +840,21 @@ section { padding-block: var(--section-y); }
   .playbook { max-width: none; padding: var(--sp-32); }
 }
 
-/* three landscape tiles across, the offer panel on the row beneath */
+/* the three tiles side by side from the first width that fits them. They are
+   9:16, so the column is capped rather than stretched — three full-height
+   phone screens across a desktop is more wall than showcase. */
+@media (min-width: 660px) {
+  .reels {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    max-width: 900px;
+    gap: var(--sp-16);
+  }
+  .reels .reel { max-width: 300px; }
+}
+
 @media (min-width: 1000px) {
-  .reels { grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: none; gap: var(--sp-24); }
-  .reels .reel { max-width: none; }
+  .reels { max-width: none; gap: var(--sp-24); }
+  .reels .reel { max-width: 320px; }
   .playbook { grid-column: 1 / -1; }
 }
 
@@ -810,14 +886,18 @@ section { padding-block: var(--section-y); }
   position: absolute;
   inset: -40% 20% 60%;
   background: radial-gradient(50% 60% at 50% 50%,
+              rgba(201, 162, 39, 0.22), transparent 70%);
+  background: radial-gradient(50% 60% at 50% 50%,
               color-mix(in srgb, var(--gold) 22%, transparent), transparent 70%);
   opacity: 0;
   transition: opacity 420ms var(--ease);
   pointer-events: none;
 }
 .bento__card:hover {
+  border-color: rgb(107, 94, 47);
   border-color: color-mix(in srgb, var(--gold) 45%, var(--line));
   transform: translateY(-4px);
+  box-shadow: 0 24px 60px rgba(7, 10, 18, 0.7), var(--neon-soft);
   box-shadow: 0 24px 60px color-mix(in srgb, var(--ink) 70%, transparent), var(--neon-soft);
 }
 .bento__card:hover::before { opacity: 1; }
@@ -939,6 +1019,7 @@ html:not(.js) .meter__track span { width: calc(var(--pct) * 1%); }
   position: relative;
   isolation: isolate;
   border-bottom: var(--hairline);
+  background: rgba(16, 22, 35, 0.3);
   background: color-mix(in srgb, var(--surface) 30%, transparent);
 }
 
@@ -989,6 +1070,8 @@ html:not(.js) .meter__track span { width: calc(var(--pct) * 1%); }
   top: -1px;
   height: 1px;
   background: linear-gradient(90deg, transparent,
+              rgba(201, 162, 39, 0.65), transparent);
+  background: linear-gradient(90deg, transparent,
               color-mix(in srgb, var(--gold) 65%, transparent), transparent);
   opacity: 0.5;
   transition: opacity 420ms var(--ease);
@@ -997,8 +1080,10 @@ html:not(.js) .meter__track span { width: calc(var(--pct) * 1%); }
 .ba__card:hover::after { opacity: 1; }
 
 .ba__card:hover {
+  border-color: rgb(98, 88, 47);
   border-color: color-mix(in srgb, var(--gold) 40%, var(--line));
   transform: translateY(-3px);
+  box-shadow: 0 24px 60px rgba(7, 10, 18, 0.7), var(--neon-soft);
   box-shadow: 0 24px 60px color-mix(in srgb, var(--ink) 70%, transparent), var(--neon-soft);
 }
 
@@ -1037,7 +1122,8 @@ html:not(.js) .meter__track span { width: calc(var(--pct) * 1%); }
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
-.ba__chip--after { border-color: color-mix(in srgb, var(--gold) 45%, var(--line)); }
+.ba__chip--after { border-color: rgb(107, 94, 47);
+ border-color: color-mix(in srgb, var(--gold) 45%, var(--line)); }
 .ba__chip--after b { color: var(--gold-lift); }
 .ba__arrow { color: var(--grey); }
 
@@ -1087,7 +1173,9 @@ html:not(.js) .meter__track span { width: calc(var(--pct) * 1%); }
 
 .ba__pair figure:hover .shot {
   transform: translateY(-4px);
+  border-color: rgb(124, 107, 45);
   border-color: color-mix(in srgb, var(--gold) 55%, var(--line));
+  box-shadow: 0 22px 50px rgba(7, 10, 18, 0.78), var(--neon-soft);
   box-shadow: 0 22px 50px color-mix(in srgb, var(--ink) 78%, transparent), var(--neon-soft);
 }
 .ba__pair figure:hover .shot img { transform: scale(1.045); filter: saturate(1.06); }
@@ -1102,6 +1190,11 @@ html:not(.js) .meter__track span { width: calc(var(--pct) * 1%); }
   z-index: 2;
   border-radius: inherit;
   padding: 1px;
+  background: conic-gradient(from var(--ang),
+              transparent 0 62%,
+              rgba(201, 162, 39, 0.85) 76%,
+              var(--gold-lift) 82%,
+              transparent 94%);
   background: conic-gradient(from var(--ang),
               transparent 0 62%,
               color-mix(in srgb, var(--gold) 85%, transparent) 76%,
@@ -1130,6 +1223,11 @@ html:not(.js) .meter__track span { width: calc(var(--pct) * 1%); }
   left: 0;
   width: 45%;
   z-index: 1;
+  background: linear-gradient(100deg,
+              transparent,
+              rgba(255, 255, 255, 0.42) 45%,
+              rgba(228, 194, 92, 0.3) 60%,
+              transparent);
   background: linear-gradient(100deg,
               transparent,
               color-mix(in srgb, #fff 42%, transparent) 45%,
@@ -1195,6 +1293,7 @@ html:not(.js) .meter__track span { width: calc(var(--pct) * 1%); }
   height: 100%;
   width: 0;
   border-radius: 999px;
+  background: rgba(126, 135, 148, 0.55);
   background: color-mix(in srgb, var(--grey) 55%, transparent);
   transition: width 1100ms var(--ease-out);
 }
@@ -1237,7 +1336,8 @@ html:not(.js) .swing__track > span { width: calc(var(--w) * 1%); }
   font-variant-numeric: tabular-nums;
 }
 .chart__line { fill: none; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
-.chart__line--views { stroke: var(--gold); filter: drop-shadow(0 0 6px color-mix(in srgb, var(--gold) 55%, transparent)); }
+.chart__line--views { stroke: var(--gold); filter: drop-shadow(0 0 6px rgba(201, 162, 39, 0.55));
+ filter: drop-shadow(0 0 6px color-mix(in srgb, var(--gold) 55%, transparent)); }
 .chart__line--reach { stroke: var(--grey); stroke-width: 2; }
 
 .dot { fill: var(--ink); stroke-width: 3; }
@@ -1271,6 +1371,7 @@ html:not(.js) .swing__track > span { width: calc(var(--w) * 1%); }
 
 .voices {
   border-bottom: var(--hairline);
+  background: rgba(16, 22, 35, 0.3);
   background: color-mix(in srgb, var(--surface) 30%, transparent);
 }
 .voices__grid {
@@ -1295,6 +1396,7 @@ html:not(.js) .swing__track > span { width: calc(var(--w) * 1%); }
   transition: border-color 320ms var(--ease), box-shadow 420ms var(--ease-out);
 }
 .voice:hover {
+  border-color: rgb(98, 88, 47);
   border-color: color-mix(in srgb, var(--gold) 40%, var(--line));
   box-shadow: var(--neon-soft);
 }
@@ -1370,9 +1472,13 @@ html:not(.js) .swing__track > span { width: calc(var(--w) * 1%); }
   max-width: 880px;
   margin-inline: auto;
   padding: var(--sp-32) var(--sp-24);
+  border: 1px solid rgb(98, 88, 47);
   border: 1px solid color-mix(in srgb, var(--gold) 40%, var(--line));
   border-radius: var(--radius);
   background: linear-gradient(180deg, var(--surface), var(--ink));
+  box-shadow: 0 0 0 1px rgba(201, 162, 39, 0.1),
+              0 32px 80px rgba(7, 10, 18, 0.8),
+              var(--neon-soft);
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--gold) 10%, transparent),
               0 32px 80px color-mix(in srgb, var(--ink) 80%, transparent),
               var(--neon-soft);
@@ -1437,6 +1543,7 @@ html:not(.js) .swing__track > span { width: calc(var(--w) * 1%); }
   place-items: center;
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
+  background: rgba(22, 30, 46, 0.7);
   background: color-mix(in srgb, var(--surface-lift) 70%, transparent);
   color: var(--paper);
   font-family: var(--font-body);
@@ -1447,7 +1554,8 @@ html:not(.js) .swing__track > span { width: calc(var(--w) * 1%); }
               color 200ms var(--ease), box-shadow 260ms var(--ease);
 }
 .calendar__day:hover { border-color: var(--gold); }
-.calendar__day[disabled] { background: transparent; color: color-mix(in srgb, var(--grey) 55%, transparent); cursor: default; }
+.calendar__day[disabled] { background: transparent; color: rgba(126, 135, 148, 0.55);
+ color: color-mix(in srgb, var(--grey) 55%, transparent); cursor: default; }
 .calendar__day.is-empty { background: none; border: 0; pointer-events: none; }
 .calendar__day.is-today { border-color: var(--line); color: var(--gold); }
 .calendar__day.is-picked {
@@ -1526,6 +1634,7 @@ html:not(.js) .swing__track > span { width: calc(var(--w) * 1%); }
   gap: var(--sp-8);
   margin-inline: auto;
   padding: var(--sp-8) var(--sp-16);
+  border: 1px solid rgb(107, 94, 47);
   border: 1px solid color-mix(in srgb, var(--gold) 45%, var(--line));
   border-radius: 999px;
   font-size: var(--t-label);
@@ -1579,6 +1688,7 @@ html:not(.js) .swing__track > span { width: calc(var(--w) * 1%); }
   min-height: 48px;
   border: var(--hairline);
   border-radius: var(--radius-sm);
+  background: rgba(22, 30, 46, 0.7);
   background: color-mix(in srgb, var(--surface-lift) 70%, transparent);
   color: var(--paper);
   font-family: var(--font-body);
@@ -1680,7 +1790,9 @@ a.contact__value:hover { color: var(--gold-lift); }
   gap: var(--sp-8);
   padding: var(--sp-8) var(--sp-16);
   padding-bottom: calc(var(--sp-8) + env(safe-area-inset-bottom, 0px));
+  background: rgba(7, 10, 18, 0.92);
   background: color-mix(in srgb, var(--ink) 92%, transparent);
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   border-top: var(--hairline);
   transform: translateY(110%);
@@ -1749,9 +1861,12 @@ a.contact__value:hover { color: var(--gold-lift); }
   50%      { transform: translate3d(3%, -3%, 0) scale(1.1); }
 }
 @keyframes pulse {
-  0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--gold) 55%, transparent); }
-  70%  { box-shadow: 0 0 0 8px color-mix(in srgb, var(--gold) 0%, transparent); }
-  100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--gold) 0%, transparent); }
+  0%   { box-shadow: 0 0 0 0 rgba(201, 162, 39, 0.55);
+ box-shadow: 0 0 0 0 color-mix(in srgb, var(--gold) 55%, transparent); }
+  70%  { box-shadow: 0 0 0 8px rgba(0, 0, 0, 0);
+ box-shadow: 0 0 0 8px color-mix(in srgb, var(--gold) 0%, transparent); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+ box-shadow: 0 0 0 0 color-mix(in srgb, var(--gold) 0%, transparent); }
 }
 @keyframes ch-in { from { opacity: 0; transform: translateY(0.5em); } to { opacity: 1; transform: none; } }
 
@@ -2124,9 +2239,9 @@ a.contact__value:hover { color: var(--gold-lift); }
 
       <div class="reels" data-reels>
 
-        <figure class="reel" data-reel data-start="1"
-                data-video="/assets/clips/facebook-reel-v2.mp4"
-                style="--poster: url(/assets/clips/reel-poster-v2.webp)">
+        <figure class="reel" data-reel data-start="1.7"
+                data-video="/assets/clips/reel-1-v4.mp4"
+                style="--poster: url(/assets/clips/reel-1-poster-v4.webp)">
           <button class="reel__frame" type="button" data-reel-btn>
             <span class="reel__platform">Devito &amp; Jenne</span>
             <span class="reel__play" aria-hidden="true">
@@ -2137,8 +2252,8 @@ a.contact__value:hover { color: var(--gold-lift); }
         </figure>
 
         <figure class="reel" data-reel
-                data-video="/assets/clips/reel-2-v3.mp4"
-                style="--poster: url(/assets/clips/reel-2-poster-v3.webp)">
+                data-video="/assets/clips/reel-2-v4.mp4"
+                style="--poster: url(/assets/clips/reel-2-poster-v4.webp)">
           <button class="reel__frame" type="button" data-reel-btn>
             <span class="reel__platform">Short-form</span>
             <span class="reel__play" aria-hidden="true">
@@ -2151,7 +2266,7 @@ a.contact__value:hover { color: var(--gold-lift); }
         <figure class="reel" data-reel
                 data-embed="https://www.youtube-nocookie.com/embed/WZF_Tt_xNAQ?autoplay=1&loop=1&playlist=WZF_Tt_xNAQ&rel=0&playsinline=1&modestbranding=1"
                 data-embed-title="YouTube Short from a G Management client account"
-                style="--poster: url(/assets/clips/short-poster-v2.webp)">
+                style="--poster: url(/assets/clips/reel-3-poster-v4.webp)">
           <button class="reel__frame" type="button" data-reel-btn>
             <span class="reel__platform">YouTube</span>
             <span class="reel__play" aria-hidden="true">
