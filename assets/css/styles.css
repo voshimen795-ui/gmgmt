@@ -561,7 +561,10 @@ section { padding-block: var(--section-y); }
   margin-inline: auto;
 }
 
-.reel { position: relative; width: 100%; max-width: 520px; }
+.reel { position: relative; width: 100%; max-width: 520px; margin-inline: auto; }
+
+/* the tile is one box: the player is laid over the thumbnail rather than
+   inserted above it, so pressing never adds a second frame to the page */
 
 /* the thumbnail. It is the poster twice over: once blurred to fill the
    frame, once contained on top, so a tall clip and a wide one both sit in
@@ -583,6 +586,8 @@ section { padding-block: var(--section-y); }
                     color-mix(in srgb, var(--ink) 30%, transparent)),
     var(--poster) center / contain no-repeat,
     var(--poster) center / cover no-repeat,
+    var(--poster-alt, none) center / contain no-repeat,
+    var(--poster-alt, none) center / cover no-repeat,
     var(--surface-lift);
   color: var(--paper);
   font: inherit;
@@ -643,13 +648,17 @@ section { padding-block: var(--section-y); }
 }
 
 .reel__player {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
   width: 100%;
-  aspect-ratio: 16 / 9;
+  height: 100%;
   border: 1px solid color-mix(in srgb, var(--gold) 45%, var(--line));
   border-radius: var(--radius);
   background: #000;
   box-shadow: var(--neon-soft);
 }
+.reel.is-playing .reel__frame { pointer-events: none; }
 
 .reel__caption {
   margin-top: var(--sp-16);
@@ -729,14 +738,14 @@ section { padding-block: var(--section-y); }
 }
 
 @media (min-width: 720px) {
-  .reels { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-32); }
-  .reels .reel { max-width: none; }
-  .playbook { grid-column: 1 / -1; max-width: none; padding: var(--sp-32); }
+  .playbook { max-width: none; padding: var(--sp-32); }
 }
 
 /* three landscape tiles across, the offer panel on the row beneath */
 @media (min-width: 1000px) {
-  .reels { grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: none; }
+  .reels { grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: none; gap: var(--sp-24); }
+  .reels .reel { max-width: none; }
+  .playbook { grid-column: 1 / -1; }
 }
 
 /* 10. Results — bento grid -------------------------------------------------- */
