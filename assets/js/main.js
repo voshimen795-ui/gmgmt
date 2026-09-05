@@ -321,6 +321,23 @@
     if (current) moveMarker(current);
   });
 
+  /* 4b. Idle decoration ----------------------------------------------------
+     The client roll is a 28s linear transform that never stops. Composited or
+     not, it keeps the compositor producing frames for the whole visit, most
+     of it while the row is nowhere near the screen. It is paused whenever it
+     is out of view — the only thing on the page that loops forever. */
+
+  if (hasIO) {
+    var marquee = document.querySelector('[data-marquee]');
+    if (marquee) {
+      new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          entry.target.classList.toggle('is-idle', !entry.isIntersecting);
+        });
+      }, { rootMargin: '10% 0px' }).observe(marquee);
+    }
+  }
+
   /* 5. Hero background video ----------------------------------------------- */
 
   function makeVideo(className, src) {

@@ -6,9 +6,10 @@ Self-hosted video for the three tiles in the Work section.
 
 Every tile is **9:16** and every clip is encoded **720x1280**, so the video
 fills the tile corner to corner — the same way the YouTube short in the third
-tile fills its frame. No letterboxing, no blurred filler, no picture floating
-in the middle of a box it does not fit. A tile that shows a small picture
-surrounded by blur reads as a cut-up clip, which is what this replaces.
+tile fills its frame. **No letterboxing and no blurred filler, on any of them.**
+A picture floating in the middle of a box it does not fit does not read as a
+video; it reads as a video that has been cut up. Whatever the source shape,
+the clip is made to fill.
 
 The poster is a frame of the finished file taken at the clip's own start
 offset, so the picture does not change at the moment of pressing. It is a real
@@ -35,33 +36,34 @@ nothing at all is cropped:
       -map "[v]" -map 0:a -c:v libx264 -profile:v main -level 3.1 -preset slow \
       -crf 28 -g 48 -c:a aac -b:a 96k -ac 2 -movflags +faststart out.mp4
 
-**Landscape** (`reel-2-v6.mp4`, from a 3840x2160 podcast edit): the bottom
-320px is the watermark. A 1035x1840 window out of what is left is exactly 9:16
-and fills the tile with no filler at all — but it is only 27% of the frame
-width, which is a close-up of one head and loses the room. So the window is
-**1600 wide** instead: 42% of the frame, enough to read the set and the second
-person, scaled to 720x828 and floated on a blurred copy that fills the rest of
-the 720x1280.
+**Landscape** (`reel-2-v8.mp4`, from a 3840x2160 podcast edit): this one has
+to be cropped, because a 9:16 tile fed from a 2.09:1 source either crops or
+does not fill, and it has to fill — a picture floating between blurred bands
+does not read as a video, it reads as a video that has been cut up.
 
-That is the trade, and it cannot be avoided: a 9:16 tile fed from a 2.09:1
-source either crops hard or does not fill. The blur only runs above and below,
-where it reads as the picture continuing, rather than either side of a narrow
-strip, where it reads as a clip that has been cut up.
-
-Because the source is a cut edit and not one locked-off shot, that window
-**pans per shot**. Cuts were found with ffmpeg's `scene` filter and each of
-the 23 shots was given its own `x`, so the window sits on whoever is talking
-instead of staying still and losing them. The `x` only changes on a cut, so
-the move is invisible.
+The trick is not to throw away the bottom of the frame. The `clideo.com`
+watermark burned into the export sits only in the bottom-right corner, in a
+box measured at roughly **x 2770-3730, y 1870-2040**. Anything to the left of
+x=2770 is clean picture all the way down. So instead of dropping the bottom
+320 rows and cropping 1035x1840 out of what is left — 27% of the frame width —
+the window keeps the **full 2160 rows** and is 1215 wide, and is simply never
+allowed past x=1555 so the watermark stays outside it:
 
     ffmpeg -i source.mp4 -filter_complex "
-      [0:v]crop=3840:1840:0:0,crop=w=1600:h=1840:x='<per-shot expr>':y=0,
-      setsar=1,split=2[fg][bg];
-      [bg]scale=720:1280:force_original_aspect_ratio=increase,crop=720:1280,
-      gblur=sigma=30,eq=brightness=-0.10:saturation=0.8[back];
-      [fg]scale=720:828[front];
-      [back][front]overlay=0:(H-h)/2,format=yuv420p[v]" \
+      [0:v]crop=w=1215:h=2160:x='<per-shot expr, clamped to 0..1555>':y=0,
+      setsar=1,scale=720:1280,format=yuv420p[v]" \
       -map "[v]" -map 0:a ... same codec flags ...
+
+That is 17% more picture across and 17% more down than the version that was
+too tight, and it fills the tile with nothing added. Two short B-roll shots
+whose subject sits far right get clamped and lose their ideal framing; they
+are under a second between them.
+
+Because the source is a cut edit and not one locked-off shot, the window
+**pans per shot**. Cuts were found with ffmpeg's `scene` filter and each of
+the 23 shots was given its own `x`, so it sits on whoever is talking instead
+of staying still and losing them. The `x` only changes on a cut, so the move
+is invisible.
 
 A window that narrow cannot hold both the speaker on the left of the frame
 and the burned-in caption text on the right. The speaker wins.
@@ -114,6 +116,6 @@ when a tile is pressed, so they cost nothing on load.
 ## Filenames carry a version
 
 `/assets` is served with a long cache life and these files carry no content
-hash, so a re-encode **must** land under a new name (`-v6` -> `-v7`) and the
+hash, so a re-encode **must** land under a new name (`-v7` -> `-v8`) and the
 reference in `index.html` must move with it. Overwriting a name in place means
 phones that already hold the old copy keep showing it, possibly for weeks.

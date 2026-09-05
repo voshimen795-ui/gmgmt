@@ -1908,6 +1908,8 @@ a.contact__value:hover { color: var(--gold-lift); }
 .js .hero__dot { animation: pulse 2600ms var(--ease) 1600ms infinite; }
 .js .marquee__track { animation: marquee 28s linear infinite; }
 .marquee:hover .marquee__track { animation-play-state: paused; }
+/* and paused outright while the row is off screen — see section 4b in main.js */
+.marquee__track.is-idle { animation-play-state: paused; }
 
 /* headline: the per-line reveal steps aside once characters take over */
 .js [data-scramble].is-split .line > span { animation: none; opacity: 1; transform: none; }
@@ -2172,7 +2174,7 @@ a.contact__value:hover { color: var(--gold-lift); }
          cannot decode the hosted file gets this instead of nothing. Replace
          the second entry to change what that fallback is. -->
     <div class="hero__media" data-hero-media aria-hidden="true"
-         data-video="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260808_112712_da9d53df-6d27-4b12-bdf6-aa9dc2622bdf.mp4, /assets/hero-loop-v1.mp4">
+         data-video="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260808_112712_da9d53df-6d27-4b12-bdf6-aa9dc2622bdf.mp4, /assets/hero-loop-v2.mp4">
       <span class="hero__field"></span>
       <span class="hero__grain"></span>
       <span class="hero__scrim"></span>
@@ -2268,7 +2270,7 @@ a.contact__value:hover { color: var(--gold-lift); }
                 data-poster="/assets/clips/reel-1-poster-v7.webp">
           <button class="reel__frame" type="button" data-reel-btn>
             <img class="reel__thumb" src="/assets/clips/reel-1-poster-v7.webp" alt=""
-                 width="432" height="768" loading="lazy" decoding="async">
+                 width="432" height="768" loading="lazy" decoding="async" fetchpriority="low">
             <span class="reel__platform">Devito &amp; Jenne</span>
             <span class="reel__play" aria-hidden="true">
               <svg viewBox="0 0 14 16" width="13" height="15" focusable="false"><path d="M0 0 L14 8 L0 16 Z" fill="currentColor"/></svg>
@@ -2278,11 +2280,11 @@ a.contact__value:hover { color: var(--gold-lift); }
         </figure>
 
         <figure class="reel" data-reel
-                data-video="/assets/clips/reel-2-v6.mp4"
-                data-poster="/assets/clips/reel-2-poster-v6.webp">
+                data-video="/assets/clips/reel-2-v8.mp4"
+                data-poster="/assets/clips/reel-2-poster-v8.webp">
           <button class="reel__frame" type="button" data-reel-btn>
-            <img class="reel__thumb" src="/assets/clips/reel-2-poster-v6.webp" alt=""
-                 width="432" height="768" loading="lazy" decoding="async">
+            <img class="reel__thumb" src="/assets/clips/reel-2-poster-v8.webp" alt=""
+                 width="432" height="768" loading="lazy" decoding="async" fetchpriority="low">
             <span class="reel__platform">Short-form</span>
             <span class="reel__play" aria-hidden="true">
               <svg viewBox="0 0 14 16" width="13" height="15" focusable="false"><path d="M0 0 L14 8 L0 16 Z" fill="currentColor"/></svg>
@@ -2297,7 +2299,7 @@ a.contact__value:hover { color: var(--gold-lift); }
                 data-poster="/assets/clips/reel-3-poster-v5.webp">
           <button class="reel__frame" type="button" data-reel-btn>
             <img class="reel__thumb" src="/assets/clips/reel-3-poster-v5.webp" alt=""
-                 width="432" height="768" loading="lazy" decoding="async">
+                 width="432" height="768" loading="lazy" decoding="async" fetchpriority="low">
             <span class="reel__platform">YouTube</span>
             <span class="reel__play" aria-hidden="true">
               <svg viewBox="0 0 14 16" width="13" height="15" focusable="false"><path d="M0 0 L14 8 L0 16 Z" fill="currentColor"/></svg>
