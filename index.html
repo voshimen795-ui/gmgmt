@@ -304,7 +304,7 @@
     <div class="shell">
       <header class="section-head" data-reveal="rise">
         <h2 class="section-title" id="work-title">The work<span class="dot">.</span></h2>
-        <p class="section-lead">Three client cuts, playing here.</p>
+        <p class="section-lead">Client cuts, playing here.</p>
       </header>
 
       <div class="reels" data-reels>
@@ -329,15 +329,18 @@
           </figcaption>
         </figure>
 
-        <!-- Google Drive preview, click to play. Drop the file at
-             /assets/clips/reel-2.mp4 and add data-video to it, and this tile
-             behaves like the one beside it: inline, muted, looping. -->
+        <!-- Plays inline, muted and looping. Pressing it opens the full cut on
+             Drive. The source was 4K landscape with a compressor watermark in
+             the corner: cropped off, then set on a blurred copy of itself so
+             the tile matches the 9:16 either side of it. -->
         <figure class="reel" data-reel data-cursor-view
+                data-video="/assets/clips/reel-2.mp4"
+                style="--poster: url(/assets/clips/reel-2-poster.jpg)"
                 data-embed="https://drive.google.com/file/d/1vTCakuzgUv3CNQg-at4bpt4Kd4LSdHjJ/preview"
                 data-embed-title="Client reel from a G Management account">
           <button class="reel__frame" type="button" data-reel-btn>
             <span class="reel__ghost" aria-hidden="true">Reel</span>
-            <span class="reel__platform">Client reel</span>
+            <span class="reel__platform">Short-form</span>
             <span class="reel__badge" aria-hidden="true">
               <svg viewBox="0 0 12 14" width="10" height="12" focusable="false"><path d="M0 0 L12 7 L0 14 Z" fill="currentColor"/></svg>Watch
             </span>
