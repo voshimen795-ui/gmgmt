@@ -306,19 +306,22 @@ soft, blocky, and a much larger decode than the picture that survives. `hero-loo
 seconds under a megabyte is plenty.
 
 **Reel clips.** Every clip is 1280x720 at 30fps with its audio kept, so it fills a 16:9 tile
-corner to corner and talks when someone presses it. Nothing is ever cropped to get there: a
-vertical source goes in whole at full height with a blurred, darkened copy of its own frame
-either side. `assets/clips/README.md` carries the full recipe — the filter graph, where each
-clip's audio comes from, and why the head of a file gets cut rather than seeked past. The
-short version:
+corner to corner **with real picture** — no black bars and no blurred filler, because a
+blurred band reads as a video that did not fit, which is the thing it was meant to hide.
+
+A landscape source goes in at its native width. A vertical one is cropped to the widest 16:9
+window its frame can give (870x489 out of 870x1588), and *where that window sits* is the
+whole decision — on the first clip it is the lowest offset that still clears the burned-in
+captions, because those are the client's edit and the reason the reel is on the page.
+`assets/clips/README.md` carries the full recipe: the filter graph, how the offset is
+chosen and checked, where each clip's audio comes from, and why the head of a file gets cut
+rather than seeked past. The short version:
 
 ```
 ffmpeg -ss <cut> -i source.mp4 -filter_complex "
-  [0:v]scale=-2:720:flags=lanczos,setsar=1,split=2[fg][bs];
-  [bs]scale=1280:720:force_original_aspect_ratio=increase,crop=1280:720,
-      gblur=sigma=32,eq=brightness=-0.22:saturation=0.90:contrast=0.92[bg];
-  [bg][fg]overlay=(W-w)/2:0,fps=30,format=yuv420p[v]" -map "[v]" -map 0:a \
-  -c:v libx264 -preset slow -crf 24 -g 60 -c:a aac -b:a 96k -movflags +faststart out.mp4
+  [0:v]crop=870:489:0:<offset>,scale=1280:720:flags=lanczos,setsar=1,fps=30,format=yuv420p[v]" \
+  -map "[v]" -map 0:a -c:v libx264 -preset slow -crf 25 -g 60 \
+  -c:a aac -b:a 96k -movflags +faststart out.mp4
 ```
 
 30fps, not the 60 the sources were shot at: talking heads gain nothing from it and it halves
@@ -372,12 +375,13 @@ those attributes and the interaction follows.
    screenshots, and each one gets the full width of its column. One column below 900px and
    three above it — never two, because two leaves the third tile orphaned beside a gap.
 
-   Every clip fills its tile corner to corner. The two we host are encoded 1280x720; where
-   a source was shot vertical the frame goes in whole, uncropped, at full tile height, and
-   the space either side is a blurred, darkened copy of the same frame — nothing cut off, no
-   black bars, box full, which is what YouTube does with a vertical upload. The third is a
-   YouTube Short and not ours to re-encode, so its poster carries the identical blurred fill
-   and the iframe is laid over it at the Short's own 9:16 down the middle at full height.
+   Every clip fills its tile corner to corner with real picture. The two we host are encoded
+   1280x720: the landscape one at its native width, the vertical one cropped to the widest
+   16:9 window its frame allows, placed to keep the burned-in captions. The third is a
+   YouTube Short and not ours to re-encode — an iframe's picture cannot be windowed from
+   outside it — so that one tile keeps a blurred fill in its poster with the embed laid over
+   it at the Short's own 9:16. Give it a self-hosted file and it takes the same crop as the
+   other two.
 
    Each tile is a thumbnail until it is pressed; pressing mounts the real player over it —
    the file with its own controls and its sound, or YouTube's embed for the one that lives
