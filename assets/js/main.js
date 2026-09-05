@@ -413,8 +413,13 @@
       );
     };
 
-    /* Nothing about the page waits on this film, so it is fetched once the
-       page has finished loading and the main thread has a spare moment. */
+    /* A phone should never spend its data and its battery on decoration.
+       The film is desktop-only, and skipped on a connection the browser
+       has flagged as slow or metered. */
+    var link = navigator.connection || {};
+    var wideEnough = window.matchMedia('(min-width: 900px)').matches;
+    var goodLine = !link.saveData && !/^[23]g$/.test(link.effectiveType || '');
+
     var whenIdle = function () {
       if (window.requestIdleCallback) {
         window.requestIdleCallback(startHeroFilm, { timeout: 2500 });
@@ -423,8 +428,10 @@
       }
     };
 
-    if (document.readyState === 'complete') whenIdle();
-    else window.addEventListener('load', whenIdle);
+    if (wideEnough && goodLine) {
+      if (document.readyState === 'complete') whenIdle();
+      else window.addEventListener('load', whenIdle);
+    }
   }
 
   /* 6. Reels ---------------------------------------------------------------

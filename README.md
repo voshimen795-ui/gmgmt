@@ -5,9 +5,8 @@ Miami run by Manny Garcia. Static HTML, CSS and JavaScript. No build step, no fr
 no dependencies.
 
 ```
-index.html                  the page
-assets/css/styles.css       tokens + all styling, organised by section
-assets/js/main.js           counters, chart, scrub, video players, form
+index.html                  the page, with all styling inline in its <style>
+assets/js/main.js           counters, chart, reels, booking, form, motes
 assets/fonts/               self-hosted variable fonts (Archivo, Instrument Sans)
 assets/og.png               link-preview image (1200×630)
 favicon.svg
@@ -32,7 +31,43 @@ root (gmgmt.co). Nothing needs compiling.
 
 ## What was done for speed
 
-A phone pays for things a laptop gives away. The page holds to these:
+Measured on a 1.6Mbps line with 150ms latency and a 6x throttled CPU at 390px, which is a
+harsher phone than most visitors will have:
+
+| | before | after |
+|---|---|---|
+| First contentful paint | 916ms | **~500ms** |
+| Transferred | 221KB | **114KB** |
+| Frames while scrolling | 41fps, 6-7 long tasks | 58fps, none |
+
+Where it came from:
+
+- **The stylesheet is in the document.** It was a separate file, so nothing could paint
+  until a second round trip finished. Inlining it took first paint from 916ms to 476ms in a
+  three-way test against the alternatives. There is no `assets/css/` any more: the styles
+  live in the `<style>` block at the top of `index.html`, which is also why there is still
+  no build step.
+- **The fonts carry only the glyphs this page uses** — 102 of them. 120KB of woff2 became
+  63KB. They are no longer preloaded either: preloading raced them against the stylesheet on
+  a narrow pipe, and `font-display: swap` paints the text immediately regardless.
+- **The tile thumbnails are WebP at 900px** rather than 1280px JPEG: 75KB became 22KB.
+- **The hero film is desktop-only.** It is also skipped when the browser reports a metered
+  or slow connection, and it starts on an idle callback after the load event. A phone never
+  spends anything on it. To put it back everywhere, drop the `wideEnough && goodLine` test
+  in section 5 of `main.js`.
+- **`vercel.json`** gives everything under `/assets` a year of immutable caching.
+
+**If the copy changes, re-subset the fonts.** The subset covers printable ASCII plus the
+punctuation the page uses. A character outside that set will silently fall back to Helvetica
+for that glyph. Regenerate from the originals with:
+
+```
+pyftsubset archivo-latin-var.woff2 --text-file=glyphs.txt --flavor=woff2 \
+  --layout-features='kern,liga,calt,ccmp,locl,rlig' --no-hinting --desubroutinize \
+  --output-file=archivo-latin-var.woff2
+```
+
+A phone pays for things a laptop gives away. The page also holds to these:
 
 - **The hero film waits.** It is fetched after the load event, on an idle callback, so it
   never competes with first paint. Its host is preconnected in the head.
