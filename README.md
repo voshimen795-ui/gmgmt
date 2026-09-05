@@ -164,14 +164,30 @@ A phone pays for things a laptop gives away. The page also holds to these:
 - **No decoder runs off screen.** A player mounted by a press is watched and paused the
   moment it leaves the viewport. The silent hero film is resumed when it returns; a reel
   the visitor pressed is not, because it carries sound.
-- **No filter on the hero film.** A CSS filter over a full-screen video is recomposited every
-  frame; the look lives in the scrim instead.
-- **No blend mode, no animated blur, no backdrop blur on phones.** The grain is plain
-  opacity, the drifting light field animates only on a desktop pointer, and the sticky
-  header uses a solid ground below 900px.
+- **No filter on the hero film, and none over it.** A CSS filter over a full-screen video is
+  recomposited every frame; the look lives in the scrim instead.
+- **No backdrop filter anywhere on the page.** A `backdrop-filter` re-reads and re-blurs
+  everything behind it every time that backdrop changes — which over a playing video is
+  every frame, and under a fixed bar is every scrolled frame. Three of them were on this
+  page: the sticky header above 900px, the ghost button in the hero, and the phone action
+  bar. All three sat over near-black already, so the glass was blurring something nobody
+  could see through. They are flat translucent ink now and look the same.
+- **No animated blur.** The hero's light field spans 150% of the viewport and used to carry
+  a 40px blur while a 32-second `drift` animation scaled it, directly over the film — a
+  full-screen blur re-rasterised on every frame, for the whole visit, gated to desktops with
+  a mouse. Both are gone; wider gradient stops give the same light with no filter at all.
+- **No blend mode, and the grain is plain opacity.**
 - **No 100vmax inset shadow.** The poster dimming is a gradient layer.
-- **No permanent promotion.** The headline drops `will-change` from all 57 glyphs once they
-  have landed.
+- **No promotion the compositor did not ask for.** The headline's 57 glyphs animate opacity
+  and transform, which is promoted while the animation runs and dropped when it ends. They
+  used to also carry `will-change`, which asks for 57 layers at once in the same second the
+  hero film is being fetched, and bought nothing.
+- **Both faces are preloaded.** They are set above the fold and the stylesheet is inline, so
+  the browser would otherwise only discover them after parsing all of it — and the headline
+  animation waits on `document.fonts.ready`, so this is the gate on when the hero settles.
+- **Versioned files are cached for a year.** `/assets/clips` and the hero loop carry a
+  version in the name, so they are served `immutable`. `main.js` does not, so it stays on a
+  ten-minute cache and a deploy still reaches people.
 - **No motes on phones**, and none anywhere under reduced motion.
 
 ### Old phones
@@ -281,21 +297,36 @@ Drop a file at that path (or list several, comma separated — `.mp4` and `.webm
 recognised) and it plays behind the hero, muted, looping, cropped to cover, under a scrim
 that keeps the type at full contrast. Nothing is requested under `prefers-reduced-motion`
 or on a connection flagged `saveData`, and if no source plays the element is removed and
-the drifting light field carries the hero on its own. Keep the file short and small — it
-is background, not content; ten seconds at a few hundred KB is plenty.
+the light field carries the hero on its own.
 
-**Reel clips.** Every clip is 720x1280 with its audio kept, so it fills a 9:16 tile corner
-to corner and talks when someone presses it. `assets/clips/README.md` carries the full
-recipe, including how a landscape source is panned per shot to reach that shape. The short
-version:
+**Give it a landscape file.** The hero paints it `object-fit: cover` across the viewport, so
+a portrait file on a 1920px desktop is scaled about 3.5x and most of it is thrown away —
+soft, blocky, and a much larger decode than the picture that survives. `hero-loop-v3.mp4` is
+1280x720 for that reason. Keep it short and small; it is background, not content, and ten
+seconds under a megabyte is plenty.
+
+**Reel clips.** Every clip is 1280x720 at 30fps with its audio kept, so it fills a 16:9 tile
+corner to corner and talks when someone presses it. Nothing is ever cropped to get there: a
+vertical source goes in whole at full height with a blurred, darkened copy of its own frame
+either side. `assets/clips/README.md` carries the full recipe — the filter graph, where each
+clip's audio comes from, and why the head of a file gets cut rather than seeked past. The
+short version:
 
 ```
-ffmpeg -i source.mp4 -vf "scale=-2:1280,crop=720:1280" -c:v libx264 -preset slow -crf 28 \
-       -pix_fmt yuv420p -c:a aac -b:a 96k -movflags +faststart out.mp4
+ffmpeg -ss <cut> -i source.mp4 -filter_complex "
+  [0:v]scale=-2:720:flags=lanczos,setsar=1,split=2[fg][bs];
+  [bs]scale=1280:720:force_original_aspect_ratio=increase,crop=1280:720,
+      gblur=sigma=32,eq=brightness=-0.22:saturation=0.90:contrast=0.92[bg];
+  [bg][fg]overlay=(W-w)/2:0,fps=30,format=yuv420p[v]" -map "[v]" -map 0:a \
+  -c:v libx264 -preset slow -crf 24 -g 60 -c:a aac -b:a 96k -movflags +faststart out.mp4
 ```
 
-Filenames carry a version (`-v4`). `/assets` is cached and these files have no content hash,
-so a re-encode under an old name keeps showing the old cut on a phone that already has it.
+30fps, not the 60 the sources were shot at: talking heads gain nothing from it and it halves
+what a phone has to decode to keep up, which is most of what "the video stutters" is.
+
+Filenames carry a version (`-v9`). `/assets/clips` is served `immutable` for a year and these
+files have no content hash, so a re-encode under an old name keeps showing the old cut on a
+phone that already has it.
 
 A tile plays a self-hosted file inline, muted and looping, as soon as it
 scrolls into view — add `data-video="/assets/clips/whatever.mp4"` to the
@@ -336,9 +367,18 @@ those attributes and the interaction follows.
 3. **Clients** — the account names on an infinite roll, faded at both edges and paused on
    hover. Swap a name for an `<img>` when a client sends a logo file; the row does not care
    which it is holding.
-4. **Work** — three 9:16 tiles above a panel carrying the offer. Every clip is encoded to
-   that shape, so each poster fills its tile edge to edge the way the YouTube short does:
-   no bars, no blurred filler, no picture floating in the middle of a box it does not fit.
+4. **Work** — three 16:9 tiles in one row above a panel carrying the offer. Landscape is
+   the shape a video player is, so the tiles read as three videos rather than three phone
+   screenshots, and each one gets the full width of its column. One column below 900px and
+   three above it — never two, because two leaves the third tile orphaned beside a gap.
+
+   Every clip fills its tile corner to corner. The two we host are encoded 1280x720; where
+   a source was shot vertical the frame goes in whole, uncropped, at full tile height, and
+   the space either side is a blurred, darkened copy of the same frame — nothing cut off, no
+   black bars, box full, which is what YouTube does with a vertical upload. The third is a
+   YouTube Short and not ours to re-encode, so its poster carries the identical blurred fill
+   and the iframe is laid over it at the Short's own 9:16 down the middle at full height.
+
    Each tile is a thumbnail until it is pressed; pressing mounts the real player over it —
    the file with its own controls and its sound, or YouTube's embed for the one that lives
    there. A reel that has been pressed pauses when it scrolls out of view and is not resumed
@@ -346,9 +386,9 @@ those attributes and the interaction follows.
    that waits. Nothing is decoded and no third party is contacted until someone presses
    play.
 
-   Both self-hosted clips are encoded 1280x720 with the frame set on a blurred, darkened
-   copy of itself, so the playing video looks like its own thumbnail rather than snapping to
-   letterbox the moment it starts.
+   There is no `data-start`. A clip whose source opens on junk is **cut in the encode**, not
+   seeked past at play time: a browser paints frame zero while it seeks and drops the poster
+   the moment playback is asked for, so a seek shows the junk anyway, every single press.
 
 4b. **Before and after** — each screenshot sits in a `.shot` frame: it uncovers itself from
    the bottom as it arrives, lifts under the pointer with the image scaling inside the clip,
