@@ -67,11 +67,11 @@ Where it came from:
   glyphs took 120KB of woff2 to 63KB; trimming the axes took it to 43KB. They are not
   preloaded: preloading raced them against the stylesheet on a narrow pipe, and
   `font-display: swap` paints the text immediately regardless.
-- **The tile thumbnails are lazy WebP at 432x768** — 60KB for all three, and each one is a
-  frame of the clip it fronts, taken at that clip's own start offset, so the picture does
-  not change at the moment of pressing. They are real `<img loading="lazy">` elements, not
-  CSS backgrounds: a background image is fetched as soon as its element is laid out no
-  matter where on the page it sits, and these tiles are a long way down.
+- **The tile thumbnails are lazy WebP at 768x432** — 36KB for all three, each cropped 16:9
+  from a moment in the clip it fronts where that crop falls well. They are real
+  `<img loading="lazy">` elements, not CSS backgrounds: a background image is fetched as
+  soon as its element is laid out no matter where on the page it sits, and these tiles are
+  a long way down.
 - **The proof screenshots are WebP.** The same four dashboards were 197KB as JPEG and are
   85KB as WebP, with the small type in them unchanged. They are lazy too, and carry their
   intrinsic size so nothing shifts when they arrive.
@@ -108,22 +108,25 @@ Where it came from:
   request on a phone should not cost the hero its film for the rest of the visit.
 
 - **The hero has a local film behind the hosted one.** `data-video` is a list and the first
-  source to produce a frame wins, so the hosted cut still leads; `/assets/hero-loop-v1.mp4`
+  source to produce a frame wins, so the hosted cut still leads; `/assets/hero-loop-v3.mp4`
   sits behind it so the section is never empty on a device that cannot reach or cannot
-  decode the hosted file. It is 795KB, 720x1280, and ping-ponged — played forward then
-  backward — so it loops with no seam. Replace that second entry to change the fallback.
+  decode the hosted file. It is 777KB and **1280x720** — landscape, because the hero paints
+  it `object-fit: cover` across the viewport and the 540x960 portrait file it replaced was
+  being scaled about 3.5x on a desktop with most of it thrown away. Replace that second
+  entry to change the fallback.
 
 - **A source that hangs is dropped, not waited on.** A file too heavy for the device never
   errors: it simply never arrives, and the section stays empty for the whole visit while
   the phone keeps pulling at it. So while there is still something to fall back to, each
   source gets six seconds to produce a first frame and is abandoned if it misses. The last
   source in the list has nowhere to go and is left alone to take as long as it needs.
-- **`vercel.json`** gives the fonts a year of immutable caching and everything else ten
-  minutes with revalidation. It briefly gave *everything* under `/assets` the year, which
-  was a mistake: the filenames do not carry a content hash, so a browser that cached a clip
-  under that header would keep serving it for a year no matter what was deployed. Media
-  filenames now end in `-v2`; bump that suffix whenever a file's contents change and the
-  old copy can never be served in its place.
+- **`vercel.json`** gives a year of immutable caching to the things whose filenames carry a
+  version — the fonts, `/assets/clips`, the hero loop — and ten minutes with revalidation to
+  everything else. The split matters in both directions. It briefly gave *everything* under
+  `/assets` the year, which was a mistake, because `main.js` has no version in its name and
+  a deploy would not have reached anyone holding a cached copy. And ten minutes for a 4MB
+  clip is a re-download nobody needs. Bump the version suffix whenever a versioned file's
+  contents change, and the old copy can never be served in its place.
 
 **If the copy changes, re-subset the fonts.** The subset covers printable ASCII plus the
 punctuation the page uses. A character outside that set will silently fall back to Helvetica
@@ -305,40 +308,34 @@ soft, blocky, and a much larger decode than the picture that survives. `hero-loo
 1280x720 for that reason. Keep it short and small; it is background, not content, and ten
 seconds under a megabyte is plenty.
 
-**Reel clips.** Every clip is 1280x720 at 30fps with its audio kept, so it fills a 16:9 tile
-corner to corner **with real picture** — no black bars and no blurred filler, because a
-blurred band reads as a video that did not fit, which is the thing it was meant to hide.
-
-A landscape source goes in at its native width. A vertical one is cropped to the widest 16:9
-window its frame can give (870x489 out of 870x1588), and *where that window sits* is the
-whole decision — on the first clip it is the lowest offset that still clears the burned-in
-captions, because those are the client's edit and the reason the reel is on the page.
-`assets/clips/README.md` carries the full recipe: the filter graph, how the offset is
-chosen and checked, where each clip's audio comes from, and why the head of a file gets cut
-rather than seeked past. The short version:
+**Reel clips.** Each clip is encoded at **its own** aspect ratio, whole, at 30fps
+with its audio kept — no crop, no blurred band, nothing added and nothing taken
+away — and the player gives it a box that matches. `assets/clips/README.md`
+carries the full recipe: why the tile and the clip are different shapes, how a
+thumbnail moment is chosen, where each clip's audio comes from, and why the head
+of a file gets cut rather than seeked past. The short version:
 
 ```
 ffmpeg -ss <cut> -i source.mp4 -filter_complex "
-  [0:v]crop=870:489:0:<offset>,scale=1280:720:flags=lanczos,setsar=1,fps=30,format=yuv420p[v]" \
-  -map "[v]" -map 0:a -c:v libx264 -preset slow -crf 25 -g 60 \
+  [0:v]scale=720:-2:flags=lanczos,setsar=1,fps=30,format=yuv420p[v]" \
+  -map "[v]" -map 0:a -c:v libx264 -preset slow -crf 26 -g 60 \
   -c:a aac -b:a 96k -movflags +faststart out.mp4
 ```
 
-30fps, not the 60 the sources were shot at: talking heads gain nothing from it and it halves
-what a phone has to decode to keep up, which is most of what "the video stutters" is.
+30fps, not the 60 the sources were shot at: talking heads gain nothing from it and
+it halves what a phone has to decode to keep up, which is most of what "the video
+stutters" is. Put the result's width over its height in the tile's `data-ratio`,
+so the player opens the right shape before any media has arrived.
 
-Filenames carry a version (`-v9`). `/assets/clips` is served `immutable` for a year and these
-files have no content hash, so a re-encode under an old name keeps showing the old cut on a
-phone that already has it.
+Filenames carry a version (`-v11`). `/assets/clips` is served `immutable` for a year
+and these files have no content hash, so a re-encode under an old name keeps showing
+the old cut on a phone that already has it.
 
-A tile plays a self-hosted file inline, muted and looping, as soon as it
-scrolls into view — add `data-video="/assets/clips/whatever.mp4"` to the
-`<figure class="reel">`. Several files can be listed comma separated and the first one
-that plays wins; if none do, the tile stays a poster frame and its platform embed loads on
-press. See `assets/clips/README.md`.
-The clip is only created on first hover, plays muted and looping, and is dropped if the
-file is missing. Tiles keep working without a clip: they stay poster frames that load the
-real post when pressed.
+A tile is a still until it is pressed. Add `data-video="/assets/clips/whatever.mp4"`
+and `data-ratio="<width over height>"` to the `<figure class="reel">`, and a press opens
+that file over the page with its own controls and its sound. A tile with `data-embed`
+instead opens the platform's player the same way. Either way nothing is fetched and no
+third party is contacted until someone presses. See `assets/clips/README.md`.
 
 **The client videos.** Each tile stores its own embed URL:
 
@@ -370,29 +367,32 @@ those attributes and the interaction follows.
 3. **Clients** — the account names on an infinite roll, faded at both edges and paused on
    hover. Swap a name for an `<img>` when a client sends a logo file; the row does not care
    which it is holding.
-4. **Work** — three 16:9 tiles in one row above a panel carrying the offer. Landscape is
-   the shape a video player is, so the tiles read as three videos rather than three phone
-   screenshots, and each one gets the full width of its column. One column below 900px and
-   three above it — never two, because two leaves the third tile orphaned beside a gap.
+4. **Work** — three 16:9 tiles in one row above a panel carrying the offer.
+   Landscape is the shape a video player is, so the tiles read as three videos
+   rather than three phone screenshots, and each gets the full width of its column.
+   One column below 900px and three above it — never two, because two leaves the
+   third tile orphaned beside a gap.
 
-   Every clip fills its tile corner to corner with real picture. The two we host are encoded
-   1280x720: the landscape one at its native width, the vertical one cropped to the widest
-   16:9 window its frame allows, placed to keep the burned-in captions. The third is a
-   YouTube Short and not ours to re-encode — an iframe's picture cannot be windowed from
-   outside it — so that one tile keeps a blurred fill in its poster with the embed laid over
-   it at the Short's own 9:16. Give it a self-hosted file and it takes the same crop as the
-   other two.
+   **The tile is 16:9. The clips are not.** Two of the three were shot vertical as
+   9:16 close-ups, and a 16:9 window out of a 870x1588 frame is a third of its
+   height — in the first clip, narrower than the speaker's head. Playing that
+   inside the tile leaves only a cut-off head or two thirds of blurred filler, and
+   both were tried. So the tile is a thumbnail: a still, cropped 16:9 from a
+   moment where the crop falls well, which a still allows and 700 moving frames do
+   not. Pressing it opens the clip over the page at its own shape, whole. The row
+   keeps three uniform landscape tiles with no blur and no dead space, and no clip
+   is ever cut. It is also what frees the YouTube Short, which as an embed could
+   not be cropped at all and now simply opens 9:16 with no black bars.
 
-   Each tile is a thumbnail until it is pressed; pressing mounts the real player over it —
-   the file with its own controls and its sound, or YouTube's embed for the one that lives
-   there. A reel that has been pressed pauses when it scrolls out of view and is not resumed
-   on the way back, because a clip that starts talking again on its own is worse than one
-   that waits. Nothing is decoded and no third party is contacted until someone presses
-   play.
+   Nothing is fetched, decoded or contacted for a visitor who never presses play,
+   and closing the player tears the clip down — paused, source dropped, `load()`
+   called, element removed — because a paused `<video>` keeps its decoder and its
+   buffer and would go on running behind the page.
 
-   There is no `data-start`. A clip whose source opens on junk is **cut in the encode**, not
-   seeked past at play time: a browser paints frame zero while it seeks and drops the poster
-   the moment playback is asked for, so a seek shows the junk anyway, every single press.
+   There is no `data-start`. A clip whose source opens on junk is **cut in the
+   encode**, not seeked past at play time: a browser paints frame zero while it
+   seeks and drops the poster the moment playback is asked for, so a seek shows
+   the junk anyway, every single press.
 
 4b. **Before and after** — each screenshot sits in a `.shot` frame: it uncovers itself from
    the bottom as it arrives, lifts under the pointer with the image scaling inside the clip,

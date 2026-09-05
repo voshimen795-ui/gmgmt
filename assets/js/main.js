@@ -7,7 +7,7 @@
    3. Reveal on view (rows, meters, chart)
    4. Header — progress, stuck state, sliding nav marker
    5. Hero background video
-   6. Reels — thumbnail until pressed
+   6. Reels — thumbnail until pressed, clip opens over the page
    8. Booking — inline scheduler or built-in calendar
    9. Contact actions and phone bar
   10. Lead form
@@ -541,10 +541,145 @@
   }
 
   /* 6. Reels ---------------------------------------------------------------
-     Every tile is a thumbnail until it is pressed. Nothing is decoded, no
-     third party is contacted and no bytes are spent on a visitor who never
-     presses play. Pressing mounts the real thing: the file in a player with
-     its own controls, or the platform's embed where the video lives there. */
+     Every tile is a thumbnail and nothing else. No file is fetched, nothing is
+     decoded and no third party is contacted for a visitor who never presses
+     play. Pressing opens the clip over the page, at the clip's own shape.
+
+     It plays over the page rather than inside the tile because two of these
+     three were shot vertical. A 16:9 tile is a third of a 9:16 frame's height,
+     and in the first clip the speaker's head is taller than the widest 16:9
+     window that frame can give — so playing it in the tile means cutting his
+     head off or packing the sides with blur, and neither is a video anyone
+     wants to watch. Out here the row keeps three uniform landscape tiles with
+     no blur and no dead space, and the clip is never cut.
+
+     It is also what frees the YouTube Short. An embed cannot be cropped from
+     outside the iframe at all; in here it just opens 9:16 with no black bars. */
+
+  var lightbox = null;
+  var lightboxStage = null;
+  var lightboxClose = null;
+  var lightboxReturn = null;
+
+  function emptyStage() {
+    if (!lightboxStage) return;
+    var media = lightboxStage.firstChild;
+
+    /* A paused <video> keeps its decoder and its buffer. Dropping the source
+       and calling load() is what actually lets go of both — without it, closing
+       the player leaves it running behind the page. */
+    while (media) {
+      if (media.tagName === 'VIDEO') {
+        try {
+          media.pause();
+          media.removeAttribute('src');
+          media.load();
+        } catch (e) { /* nothing to do */ }
+      }
+      lightboxStage.removeChild(media);
+      media = lightboxStage.firstChild;
+    }
+  }
+
+  function closeLightbox() {
+    if (!lightbox || lightbox.hidden) return;
+    lightbox.classList.remove('is-open');
+    document.body.classList.remove('has-lightbox');
+
+    /* the media goes now, so the sound stops with the press rather than with
+       the transition; the box itself waits for the fade to finish */
+    emptyStage();
+
+    var hide = function () { lightbox.hidden = true; };
+    if (reduceMotion) hide(); else window.setTimeout(hide, 240);
+
+    if (lightboxReturn && lightboxReturn.focus) lightboxReturn.focus();
+    lightboxReturn = null;
+  }
+
+  function onLightboxKey(event) {
+    if (!lightbox || lightbox.hidden) return;
+
+    if (event.key === 'Escape' || event.keyCode === 27) {
+      closeLightbox();
+      return;
+    }
+
+    if (event.key !== 'Tab' && event.keyCode !== 9) return;
+
+    /* Focus stays in the dialog. The only reliable stops are the close button
+       and the player itself, so the cycle is short and written out rather than
+       queried — a <video controls> exposes its buttons to the tab order inside
+       a shadow tree the page cannot see into. */
+    var media = lightboxStage.firstChild;
+    var stops = media && media.tagName === 'VIDEO' ? [lightboxClose, media] : [lightboxClose];
+    var at = stops.indexOf(document.activeElement);
+    var next = event.shiftKey ? at - 1 : at + 1;
+
+    if (at === -1 || next < 0 || next >= stops.length) {
+      event.preventDefault();
+      stops[event.shiftKey ? stops.length - 1 : 0].focus();
+    }
+  }
+
+  function buildLightbox() {
+    if (lightbox) return;
+
+    lightbox = document.createElement('div');
+    lightbox.className = 'lightbox';
+    lightbox.hidden = true;
+    lightbox.setAttribute('role', 'dialog');
+    lightbox.setAttribute('aria-modal', 'true');
+    lightbox.setAttribute('aria-label', 'Video player');
+
+    lightboxStage = document.createElement('div');
+    lightboxStage.className = 'lightbox__stage';
+
+    lightboxClose = document.createElement('button');
+    lightboxClose.type = 'button';
+    lightboxClose.className = 'lightbox__close';
+    lightboxClose.setAttribute('aria-label', 'Close the player');
+    lightboxClose.innerHTML =
+      '<svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false">' +
+      '<path d="M1 1 L15 15 M15 1 L1 15" stroke="currentColor" stroke-width="1.8" fill="none"/></svg>';
+
+    lightbox.appendChild(lightboxStage);
+    lightbox.appendChild(lightboxClose);
+    document.body.appendChild(lightbox);
+
+    lightboxClose.addEventListener('click', closeLightbox);
+    /* the backdrop is the box itself: a press that lands on the stage or the
+       player must not close it */
+    lightbox.addEventListener('click', function (event) {
+      if (event.target === lightbox) closeLightbox();
+    });
+    document.addEventListener('keydown', onLightboxKey);
+  }
+
+  /* The ratio is written on the tile so the stage is the right shape before a
+     single byte of media has arrived — otherwise the box opens at some default
+     and jumps once the file describes itself. A <video> then corrects it from
+     the real frame, which costs nothing and covers a re-encode that changed
+     shape without the markup being updated. */
+  function shapeStage(ratio) {
+    lightboxStage.style.setProperty('--ar', ratio);
+  }
+
+  function openLightbox(media, ratio, returnTo) {
+    buildLightbox();
+    emptyStage();
+    shapeStage(ratio);
+    lightboxStage.appendChild(media);
+
+    lightboxReturn = returnTo;
+    lightbox.hidden = false;
+    document.body.classList.add('has-lightbox');
+
+    /* one frame between unhiding and the class, or the transition has nothing
+       to move from */
+    window.requestAnimationFrame(function () { lightbox.classList.add('is-open'); });
+    lightboxClose.focus();
+  }
 
   Array.prototype.forEach.call(document.querySelectorAll('[data-reel]'), function (reel) {
     var frame = reel.querySelector('[data-reel-btn]');
@@ -552,7 +687,7 @@
 
     var file = reel.getAttribute('data-video');
     var embed = reel.getAttribute('data-embed');
-    var mounted = false;
+    var ratio = parseFloat(reel.getAttribute('data-ratio')) || 16 / 9;
 
     /* There used to be a `data-start` here, and the first tile carried
        `data-start="1.7"` because its file opened on 1.7 seconds of the screen
@@ -563,26 +698,14 @@
        the error card for an instant every single time.
 
        A head you have to skip is a head that should not be in the file. It is
-       cut in the encode now: `reel-1-v10.mp4` opens on the first frame of the
+       cut in the encode now: `reel-1-v11.mp4` opens on the first frame of the
        actual clip, and there is nothing left to seek past. If a future clip
        arrives with junk at the front, trim it with ffmpeg rather than putting
        the offset back — see assets/clips/README.md. */
 
-    /* the thumbnail the tile is painted with, handed to the player so the
-       picture never changes at the moment of pressing */
-    function posterUrl() {
-      return reel.getAttribute('data-poster') || '';
-    }
-
-    function mount() {
-      if (mounted) return;
-      mounted = true;
-      reel.classList.add('is-playing');
-
+    function open() {
       if (file) {
         var video = document.createElement('video');
-        video.className = 'reel__player';
-        video.poster = posterUrl();
         video.src = file;
         video.controls = true;
         video.autoplay = true;
@@ -593,22 +716,18 @@
         /* Pressing play is a user gesture, so the clip is allowed its sound
            and gets it. If a browser refuses the unmuted start anyway, it is
            retried muted rather than left as a still frame — a silent clip
-           beats a dead tile, and the controls are right there. */
+           beats a dead player, and the controls are right there. */
         video.muted = false;
         video.volume = 1;
 
-        video.addEventListener('loadeddata', function () {
-          reel.classList.add('is-loaded');
-          watchPlayback(video);
+        video.addEventListener('loadedmetadata', function () {
+          if (video.videoWidth && video.videoHeight) {
+            shapeStage(video.videoWidth / video.videoHeight);
+          }
         });
 
-        video.addEventListener('error', function () {
-          reel.classList.remove('is-playing');
-          mounted = false;
-          if (video.parentNode) video.parentNode.removeChild(video);
-        }, true);
+        openLightbox(video, ratio, frame);
 
-        reel.insertBefore(video, frame);
         var playing = video.play();
         if (playing && playing.catch) {
           playing.catch(function () {
@@ -623,19 +742,15 @@
       if (!embed) return;
 
       var player = document.createElement('iframe');
-      player.className = 'reel__player';
       player.src = embed;
       player.title = reel.getAttribute('data-embed-title') || 'Video player';
       player.setAttribute('allow', 'autoplay; encrypted-media; picture-in-picture; fullscreen');
       player.setAttribute('allowfullscreen', '');
       player.setAttribute('frameborder', '0');
-      player.addEventListener('load', function () {
-        reel.classList.add('is-loaded');
-      });
-      reel.insertBefore(player, frame);
+      openLightbox(player, ratio, frame);
     }
 
-    frame.addEventListener('click', mount);
+    frame.addEventListener('click', open);
   });
 
   /* 8. Booking -------------------------------------------------------------
