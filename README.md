@@ -32,13 +32,27 @@ root (gmgmt.co). Nothing needs compiling.
 ## What was done for speed
 
 Measured on a 1.6Mbps line with 150ms latency and a 6x throttled CPU at 390px, which is a
-harsher phone than most visitors will have:
+harsher phone than most visitors will have.
 
-| | before | after |
+The first pass was about first paint, and took it from 916ms to under 500ms by putting the
+stylesheet in the document. The second was about weight and main-thread time. Both columns
+below are six runs of the same page under the same throttle:
+
+| | before the second pass | after |
 |---|---|---|
-| First contentful paint | 916ms | **~500ms** |
-| Transferred | 221KB | **114KB** |
-| Frames while scrolling | 41fps, 6-7 long tasks | 58fps, none |
+| Load event | 1757ms | **1383ms** |
+| Bytes on arrival, uncompressed | 287KB | **221KB** |
+| Bytes for the whole page, scrolled | 485KB | **334KB** |
+| Blocked on the main thread | 443ms | **349ms** |
+| First contentful paint | 548ms | 582ms |
+
+First paint did not improve and is fractionally worse: the document grew by the fallback
+declarations and the comments explaining them. That is the trade, and it is a fair one —
+first paint was already the fastest thing about the page, and the 150KB and 94ms are not.
+
+Over brotli, which is what Vercel actually sends, arrival is about 129KB: 18KB of document,
+10KB of script, 43KB of fonts and up to 60KB of thumbnails — and the thumbnails are lazy,
+so a visitor who never reaches the Work section pays for two of the three at most.
 
 Where it came from:
 
@@ -47,19 +61,38 @@ Where it came from:
   three-way test against the alternatives. There is no `assets/css/` any more: the styles
   live in the `<style>` block at the top of `index.html`, which is also why there is still
   no build step.
-- **The fonts carry only the glyphs this page uses** — 102 of them. 120KB of woff2 became
-  63KB. They are no longer preloaded either: preloading raced them against the stylesheet on
-  a narrow pipe, and `font-display: swap` paints the text immediately regardless.
-- **The tile thumbnails are WebP at 900px** rather than 1280px JPEG: 75KB became 32KB for
-  three of them.
+- **The fonts carry only the glyphs this page uses** — 104 of them — **and only the axis
+  range it asks for.** Archivo is set between 400 and 800 and never narrower than 100%
+  wide, but the family ships 100-900 and 62-125%: all deltas nobody reads. Subsetting the
+  glyphs took 120KB of woff2 to 63KB; trimming the axes took it to 43KB. They are not
+  preloaded: preloading raced them against the stylesheet on a narrow pipe, and
+  `font-display: swap` paints the text immediately regardless.
+- **The tile thumbnails are lazy WebP at 432x768** — 60KB for all three, and each one is a
+  frame of the clip it fronts, taken at that clip's own start offset, so the picture does
+  not change at the moment of pressing. They are real `<img loading="lazy">` elements, not
+  CSS backgrounds: a background image is fetched as soon as its element is laid out no
+  matter where on the page it sits, and these tiles are a long way down.
+- **The proof screenshots are WebP.** The same four dashboards were 197KB as JPEG and are
+  85KB as WebP, with the small type in them unchanged. They are lazy too, and carry their
+  intrinsic size so nothing shifts when they arrive.
+- **The counters format their own numbers.** They used to go through `toLocaleString`,
+  which builds a fresh `Intl.NumberFormat` on every call, once per counter per frame for
+  the length of the count — the single most expensive thing on the main thread during load,
+  and warming ICU for the first call cost more than everything else `main.js` does. The
+  page sets en-US figures with fixed decimals and nothing else, so it groups them itself;
+  checked against Intl over 12,000 values across 0, 1 and 2 decimals, identical every time.
+- **The headline scramble only writes the glyphs that are churning.** It used to rewrite
+  all 57 on every frame for a second and a quarter, including the ones already settled.
 - **No third party is asked for a thumbnail.** The YouTube tile used to pull its poster from
   i.ytimg.com, which answers with a grey placeholder rather than a 404 when a Short has no
   thumbnail in the size asked for. Its poster is drawn locally instead, in the page's own
   fonts and colours, and the page now requests nothing from any other host on arrival.
-- **The hero film is desktop-only.** It is also skipped when the browser reports a metered
-  or slow connection, and it starts on an idle callback after the load event. A phone never
-  spends anything on it. To put it back everywhere, drop the `wideEnough && goodLine` test
-  in section 5 of `main.js`.
+- **The hero film runs everywhere, phones included** — it is the first thing the page says,
+  and a hero only desktops see is a hero half the visitors never get. It is still skipped
+  when the browser reports a metered or slow connection or the visitor has asked for less
+  motion, and it starts on an idle callback after the load event, so it never competes with
+  the text and the type for the opening second. The test is `motionWanted && goodLine` in
+  section 5 of `main.js`.
 - **`vercel.json`** gives the fonts a year of immutable caching and everything else ten
   minutes with revalidation. It briefly gave *everything* under `/assets` the year, which
   was a mistake: the filenames do not carry a content hash, so a browser that cached a clip
@@ -71,11 +104,30 @@ Where it came from:
 punctuation the page uses. A character outside that set will silently fall back to Helvetica
 for that glyph. Regenerate from the originals with:
 
+The axes are pinned to the range the page asks for before the glyphs are cut, because the
+variable deltas are most of the weight — Archivo went 44.7KB to 27.1KB on that step alone:
+
+```python
+from fontTools.ttLib import TTFont
+from fontTools.varLib import instancer
+from fontTools.subset import Subsetter, Options
+
+font = TTFont('archivo-latin-var.woff2'); font.flavor = None
+instancer.instantiateVariableFont(font, {'wght': (400, 600, 800),
+                                         'wdth': (100, 100, 125)}, inplace=True)
+font.save('tmp.ttf')
+
+font = TTFont('tmp.ttf')
+opts = Options(); opts.layout_features = ['kern']; opts.name_IDs = [1, 2, 3, 6]
+sub = Subsetter(options=opts)
+sub.populate(unicodes=[ord(c) for c in open('glyphs.txt').read().strip()])
+sub.subset(font)
+font.flavor = 'woff2'; font.save('archivo-latin-v5.woff2')
 ```
-pyftsubset archivo-latin-var.woff2 --text-file=glyphs.txt --flavor=woff2 \
-  --layout-features='kern,liga,calt,ccmp,locl,rlig' --no-hinting --desubroutinize \
-  --output-file=archivo-latin-var.woff2
-```
+
+Instrument Sans gets the same treatment with `{'wght': (400, 400, 600)}` and no width axis.
+Whatever range is pinned here must match the `font-weight` and `font-stretch` on the
+`@font-face` rule, or the browser will clamp to an axis value the file no longer carries.
 
 A phone pays for things a laptop gives away. The page also holds to these:
 
@@ -85,7 +137,8 @@ A phone pays for things a laptop gives away. The page also holds to these:
   loads no video file and no third-party player. On arrival: zero video elements, zero
   iframes.
 - **No decoder runs off screen.** A player mounted by a press is watched and paused the
-  moment it leaves the viewport, and resumed when it returns.
+  moment it leaves the viewport. The silent hero film is resumed when it returns; a reel
+  the visitor pressed is not, because it carries sound.
 - **No filter on the hero film.** A CSS filter over a full-screen video is recomposited every
   frame; the look lives in the scrim instead.
 - **No blend mode, no animated blur, no backdrop blur on phones.** The grain is plain
@@ -95,6 +148,22 @@ A phone pays for things a laptop gives away. The page also holds to these:
 - **No permanent promotion.** The headline drops `will-change` from all 57 glyphs once they
   have landed.
 - **No motes on phones**, and none anywhere under reduced motion.
+
+### Old phones
+
+`color-mix()` landed in Safari 16.2. An iPhone left on iOS 15 does not have it, and an
+engine that cannot parse a value throws the whole declaration away — which for this page
+meant every border, scrim and tint disappearing at once, not degrading. So each of the 46
+declarations that uses it is written twice: the flat `rgba()` the mix evaluates to, then
+the mix itself. Old engines keep the first and skip the second; new ones take the second.
+The two glow shadows are the exception. A custom property's value is not checked when it
+is declared, so a plain duplicate never loses the cascade there — those two sit behind an
+`@supports (color: color-mix(...))` block instead.
+
+Rendered side by side with every `color-mix()` stripped out, the two versions differ by a
+mean of 0.4/255 across the full 8423px page — the counters landing on different frames.
+Same treatment for `100svh` (a plain `vh` line first, Safari 15.4) and `backdrop-filter`
+(`-webkit-` prefixed first).
 
 Measured on a 6x throttled CPU at 390px, scrolling the whole page: 41fps with six or seven
 long tasks and 355-460ms blocked at the start of that work; 58fps with no long tasks and
@@ -190,14 +259,18 @@ or on a connection flagged `saveData`, and if no source plays the element is rem
 the drifting light field carries the hero on its own. Keep the file short and small — it
 is background, not content; ten seconds at a few hundred KB is plenty.
 
-**Reel clips.** The Facebook tile plays `/assets/clips/facebook-reel.mp4` (702x1280, 2.7MB,
-no audio track since it plays muted) and shows `reel-poster.jpg` until it arrives. Re-encode
-anything new the same way:
+**Reel clips.** Every clip is 720x1280 with its audio kept, so it fills a 9:16 tile corner
+to corner and talks when someone presses it. `assets/clips/README.md` carries the full
+recipe, including how a landscape source is panned per shot to reach that shape. The short
+version:
 
 ```
-ffmpeg -i source.mp4 -vf "scale=-2:1280" -c:v libx264 -preset slow -crf 28 \
-       -pix_fmt yuv420p -an -movflags +faststart out.mp4
+ffmpeg -i source.mp4 -vf "scale=-2:1280,crop=720:1280" -c:v libx264 -preset slow -crf 28 \
+       -pix_fmt yuv420p -c:a aac -b:a 96k -movflags +faststart out.mp4
 ```
+
+Filenames carry a version (`-v4`). `/assets` is cached and these files have no content hash,
+so a re-encode under an old name keeps showing the old cut on a phone that already has it.
 
 A tile plays a self-hosted file inline, muted and looping, as soon as it
 scrolls into view — add `data-video="/assets/clips/whatever.mp4"` to the
@@ -238,12 +311,15 @@ those attributes and the interaction follows.
 3. **Clients** — the account names on an infinite roll, faded at both edges and paused on
    hover. Swap a name for an `<img>` when a client sends a logo file; the row does not care
    which it is holding.
-4. **Work** — three 16:9 tiles above a panel carrying the offer. Each tile is a thumbnail
-   until it is pressed: the poster is painted twice, blurred to fill the frame and contained
-   on top, so a vertical clip and a landscape one sit in the same box with nothing cropped.
-   Pressing mounts the real player — the file with its own controls and sound, or YouTube's
-   embed for the one that lives there. Nothing is decoded and no third party is contacted
-   until someone presses play.
+4. **Work** — three 9:16 tiles above a panel carrying the offer. Every clip is encoded to
+   that shape, so each poster fills its tile edge to edge the way the YouTube short does:
+   no bars, no blurred filler, no picture floating in the middle of a box it does not fit.
+   Each tile is a thumbnail until it is pressed; pressing mounts the real player over it —
+   the file with its own controls and its sound, or YouTube's embed for the one that lives
+   there. A reel that has been pressed pauses when it scrolls out of view and is not resumed
+   on the way back, because a clip that starts talking again on its own is worse than one
+   that waits. Nothing is decoded and no third party is contacted until someone presses
+   play.
 
    Both self-hosted clips are encoded 1280x720 with the frame set on a blurred, darkened
    copy of itself, so the playing video looks like its own thumbnail rather than snapping to
