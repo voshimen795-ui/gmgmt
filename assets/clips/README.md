@@ -11,7 +11,16 @@ in the middle of a box it does not fit. A tile that shows a small picture
 surrounded by blur reads as a cut-up clip, which is what this replaces.
 
 The poster is a frame of the finished file taken at the clip's own start
-offset, so the picture does not change at the moment of pressing.
+offset, so the picture does not change at the moment of pressing. It is a real
+`<img class="reel__thumb" loading="lazy">` in the tile, not a CSS background:
+a background image is fetched as soon as its element is laid out, wherever on
+the page that element sits, and these tiles are a long way below the fold.
+
+    ffmpeg -ss <start> -i out.mp4 -frames:v 1 -vf "scale=432:768:flags=lanczos" \
+      -c:v libwebp -quality 68 -compression_level 6 out-poster.webp
+
+432 wide covers the 320px the tile is ever given, and all three together are
+60KB.
 
 ## Getting a source into that shape
 
@@ -63,6 +72,6 @@ when a tile is pressed, so they cost nothing on load.
 ## Filenames carry a version
 
 `/assets` is served with a long cache life and these files carry no content
-hash, so a re-encode **must** land under a new name (`-v3` -> `-v4`) and the
+hash, so a re-encode **must** land under a new name (`-v4` -> `-v5`) and the
 reference in `index.html` must move with it. Overwriting a name in place means
 phones that already hold the old copy keep showing it, possibly for weeks.

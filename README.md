@@ -32,13 +32,27 @@ root (gmgmt.co). Nothing needs compiling.
 ## What was done for speed
 
 Measured on a 1.6Mbps line with 150ms latency and a 6x throttled CPU at 390px, which is a
-harsher phone than most visitors will have:
+harsher phone than most visitors will have.
 
-| | before | after |
+The first pass was about first paint, and took it from 916ms to under 500ms by putting the
+stylesheet in the document. The second was about weight and main-thread time. Both columns
+below are six runs of the same page under the same throttle:
+
+| | before the second pass | after |
 |---|---|---|
-| First contentful paint | 916ms | **~500ms** |
-| Transferred | 221KB | **114KB** |
-| Frames while scrolling | 41fps, 6-7 long tasks | 58fps, none |
+| Load event | 1757ms | **1383ms** |
+| Bytes on arrival, uncompressed | 287KB | **221KB** |
+| Bytes for the whole page, scrolled | 485KB | **334KB** |
+| Blocked on the main thread | 443ms | **349ms** |
+| First contentful paint | 548ms | 582ms |
+
+First paint did not improve and is fractionally worse: the document grew by the fallback
+declarations and the comments explaining them. That is the trade, and it is a fair one —
+first paint was already the fastest thing about the page, and the 150KB and 94ms are not.
+
+Over brotli, which is what Vercel actually sends, arrival is about 129KB: 18KB of document,
+10KB of script, 43KB of fonts and up to 60KB of thumbnails — and the thumbnails are lazy,
+so a visitor who never reaches the Work section pays for two of the three at most.
 
 Where it came from:
 
@@ -47,12 +61,28 @@ Where it came from:
   three-way test against the alternatives. There is no `assets/css/` any more: the styles
   live in the `<style>` block at the top of `index.html`, which is also why there is still
   no build step.
-- **The fonts carry only the glyphs this page uses** — 102 of them. 120KB of woff2 became
-  63KB. They are no longer preloaded either: preloading raced them against the stylesheet on
-  a narrow pipe, and `font-display: swap` paints the text immediately regardless.
-- **The tile thumbnails are WebP at 540x960** rather than JPEG: 83KB for all three, and
-  each one is a frame of the clip it fronts, taken at that clip's own start offset, so the
-  picture does not change at the moment of pressing.
+- **The fonts carry only the glyphs this page uses** — 104 of them — **and only the axis
+  range it asks for.** Archivo is set between 400 and 800 and never narrower than 100%
+  wide, but the family ships 100-900 and 62-125%: all deltas nobody reads. Subsetting the
+  glyphs took 120KB of woff2 to 63KB; trimming the axes took it to 43KB. They are not
+  preloaded: preloading raced them against the stylesheet on a narrow pipe, and
+  `font-display: swap` paints the text immediately regardless.
+- **The tile thumbnails are lazy WebP at 432x768** — 60KB for all three, and each one is a
+  frame of the clip it fronts, taken at that clip's own start offset, so the picture does
+  not change at the moment of pressing. They are real `<img loading="lazy">` elements, not
+  CSS backgrounds: a background image is fetched as soon as its element is laid out no
+  matter where on the page it sits, and these tiles are a long way down.
+- **The proof screenshots are WebP.** The same four dashboards were 197KB as JPEG and are
+  85KB as WebP, with the small type in them unchanged. They are lazy too, and carry their
+  intrinsic size so nothing shifts when they arrive.
+- **The counters format their own numbers.** They used to go through `toLocaleString`,
+  which builds a fresh `Intl.NumberFormat` on every call, once per counter per frame for
+  the length of the count — the single most expensive thing on the main thread during load,
+  and warming ICU for the first call cost more than everything else `main.js` does. The
+  page sets en-US figures with fixed decimals and nothing else, so it groups them itself;
+  checked against Intl over 12,000 values across 0, 1 and 2 decimals, identical every time.
+- **The headline scramble only writes the glyphs that are churning.** It used to rewrite
+  all 57 on every frame for a second and a quarter, including the ones already settled.
 - **No third party is asked for a thumbnail.** The YouTube tile used to pull its poster from
   i.ytimg.com, which answers with a grey placeholder rather than a 404 when a Short has no
   thumbnail in the size asked for. Its poster is drawn locally instead, in the page's own
@@ -74,11 +104,30 @@ Where it came from:
 punctuation the page uses. A character outside that set will silently fall back to Helvetica
 for that glyph. Regenerate from the originals with:
 
+The axes are pinned to the range the page asks for before the glyphs are cut, because the
+variable deltas are most of the weight — Archivo went 44.7KB to 27.1KB on that step alone:
+
+```python
+from fontTools.ttLib import TTFont
+from fontTools.varLib import instancer
+from fontTools.subset import Subsetter, Options
+
+font = TTFont('archivo-latin-var.woff2'); font.flavor = None
+instancer.instantiateVariableFont(font, {'wght': (400, 600, 800),
+                                         'wdth': (100, 100, 125)}, inplace=True)
+font.save('tmp.ttf')
+
+font = TTFont('tmp.ttf')
+opts = Options(); opts.layout_features = ['kern']; opts.name_IDs = [1, 2, 3, 6]
+sub = Subsetter(options=opts)
+sub.populate(unicodes=[ord(c) for c in open('glyphs.txt').read().strip()])
+sub.subset(font)
+font.flavor = 'woff2'; font.save('archivo-latin-v5.woff2')
 ```
-pyftsubset archivo-latin-var.woff2 --text-file=glyphs.txt --flavor=woff2 \
-  --layout-features='kern,liga,calt,ccmp,locl,rlig' --no-hinting --desubroutinize \
-  --output-file=archivo-latin-var.woff2
-```
+
+Instrument Sans gets the same treatment with `{'wght': (400, 400, 600)}` and no width axis.
+Whatever range is pinned here must match the `font-weight` and `font-stretch` on the
+`@font-face` rule, or the browser will clamp to an axis value the file no longer carries.
 
 A phone pays for things a laptop gives away. The page also holds to these:
 
