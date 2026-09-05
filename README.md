@@ -106,6 +106,18 @@ Where it came from:
 
   Each source also gets one retry, 1.2s later, before the list moves on. A single dropped
   request on a phone should not cost the hero its film for the rest of the visit.
+
+- **The hero has a local film behind the hosted one.** `data-video` is a list and the first
+  source to produce a frame wins, so the hosted cut still leads; `/assets/hero-loop-v1.mp4`
+  sits behind it so the section is never empty on a device that cannot reach or cannot
+  decode the hosted file. It is 795KB, 720x1280, and ping-ponged — played forward then
+  backward — so it loops with no seam. Replace that second entry to change the fallback.
+
+- **A source that hangs is dropped, not waited on.** A file too heavy for the device never
+  errors: it simply never arrives, and the section stays empty for the whole visit while
+  the phone keeps pulling at it. So while there is still something to fall back to, each
+  source gets six seconds to produce a first frame and is abandoned if it misses. The last
+  source in the list has nowhere to go and is left alone to take as long as it needs.
 - **`vercel.json`** gives the fonts a year of immutable caching and everything else ten
   minutes with revalidation. It briefly gave *everything* under `/assets` the year, which
   was a mistake: the filenames do not carry a content hash, so a browser that cached a clip

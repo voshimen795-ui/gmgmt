@@ -430,10 +430,32 @@
         });
       }
 
+      var done = false;
+
+      /* A source that is simply too heavy for the device never errors — it
+         just never arrives, and the section stays empty for the whole visit
+         while the phone keeps pulling at it. So while there is something else
+         to fall back to, a source gets a fixed window to produce its first
+         frame and is dropped if it misses. The last source has nowhere to go,
+         so it is left alone to take as long as it needs. */
+      var giveUp = sources.length
+        ? window.setTimeout(function () {
+            if (done) return;
+            done = true;
+            if (el.parentNode) el.parentNode.removeChild(el);
+            el.removeAttribute('src');
+            el.load();
+            next();
+          }, 6000)
+        : null;
+
       /* loadeddata is the first frame. The hero is shown from here whether or
          not playback is allowed to start, so a browser that refuses autoplay
          leaves a still frame rather than an empty section. */
       el.addEventListener('loadeddata', function () {
+        if (done) return;
+        done = true;
+        window.clearTimeout(giveUp);
         if (onPlay) onPlay(el);
         if (reduceMotion) { el.pause(); return; }
         var playing = el.play();
@@ -442,6 +464,9 @@
       });
 
       el.addEventListener('error', function () {
+        if (done) return;
+        done = true;
+        window.clearTimeout(giveUp);
         if (el.parentNode) el.parentNode.removeChild(el);
         /* One transient failure on a phone should not cost the hero its film
            for the rest of the visit, so each source gets a second attempt
