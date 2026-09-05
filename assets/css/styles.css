@@ -15,7 +15,6 @@
    13. Book — scheduler and calendar
    14. Contact rows + phone action bar
    15. Footer
-   16. Pointer follower
    17. Motion — load, reveal, preferences
    ========================================================================== */
 
@@ -562,121 +561,95 @@ section { padding-block: var(--section-y); }
   margin-inline: auto;
 }
 
-.reel { position: relative; width: 100%; max-width: 300px; }
+.reel { position: relative; width: 100%; max-width: 520px; }
 
+/* the thumbnail. It is the poster twice over: once blurred to fill the
+   frame, once contained on top, so a tall clip and a wide one both sit in
+   the same landscape box with nothing cropped and no empty bars. */
 .reel__frame {
   position: relative;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   align-items: flex-start;
   width: 100%;
-  aspect-ratio: 9 / 16;
+  aspect-ratio: 16 / 9;
   padding: var(--sp-16);
   border: 1px solid color-mix(in srgb, var(--gold) 22%, var(--line));
   border-radius: var(--radius);
   overflow: hidden;
-  background: var(--surface);
+  background:
+    linear-gradient(color-mix(in srgb, var(--ink) 30%, transparent),
+                    color-mix(in srgb, var(--ink) 30%, transparent)),
+    var(--poster) center / contain no-repeat,
+    var(--poster) center / cover no-repeat,
+    var(--surface-lift);
   color: var(--paper);
   font: inherit;
   text-align: left;
-  text-decoration: none;
   cursor: pointer;
   transition: transform 420ms var(--ease-out), border-color 300ms var(--ease),
-              box-shadow 420ms var(--ease-out), opacity 300ms var(--ease),
-              filter 300ms var(--ease);
+              box-shadow 420ms var(--ease-out);
 }
-
-.reel__clip {
+.reel__frame::before {
+  content: "";
   position: absolute;
   inset: 0;
-  width: 100%; height: 100%;
-  object-fit: cover;
-  opacity: 0;
-  transition: opacity 500ms var(--ease);
+  z-index: 0;
+  backdrop-filter: blur(0px);
+  background: radial-gradient(60% 60% at 50% 50%, transparent,
+              color-mix(in srgb, var(--ink) 42%, transparent));
+  pointer-events: none;
+}
+.reel__frame:hover, .reel__frame:focus-visible {
+  transform: translateY(-3px);
+  border-color: var(--gold);
+  box-shadow: 0 22px 50px color-mix(in srgb, var(--ink) 80%, transparent), var(--neon);
+}
+
+.reel__platform {
+  position: relative;
+  z-index: 1;
+  padding: 5px var(--sp-8);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ink) 70%, transparent);
+  font-size: var(--t-label);
+  font-weight: 500;
+  color: var(--paper);
+}
+
+/* the play mark sits dead centre and grows a little under the pointer */
+.reel__play {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  color: var(--ink);
+  pointer-events: none;
+}
+.reel__play svg {
+  padding: 18px 16px 18px 21px;
+  border-radius: 999px;
+  background: var(--gold);
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--ink) 60%, transparent), var(--neon-soft);
+  transition: transform 320ms var(--ease-out), background-color 240ms var(--ease);
+  box-sizing: content-box;
+}
+.reel__frame:hover .reel__play svg,
+.reel__frame:focus-visible .reel__play svg {
+  transform: scale(1.08);
+  background: var(--gold-lift);
 }
 
 .reel__player {
   width: 100%;
-  aspect-ratio: 9 / 16;
+  aspect-ratio: 16 / 9;
   border: 1px solid color-mix(in srgb, var(--gold) 45%, var(--line));
   border-radius: var(--radius);
-  background: var(--surface);
+  background: #000;
   box-shadow: var(--neon-soft);
 }
-
-/* the player sits over its own poster frame until it reports back */
-.reel.is-playing .reel__player {
-  position: absolute;
-  inset: 0;
-  height: 100%;
-  opacity: 0;
-  transition: opacity 320ms var(--ease);
-}
-.reel.is-loaded .reel__player { position: static; height: auto; opacity: 1; }
-.reel.is-live .reel__clip { opacity: 1; }
-
-/* an embed fills the frame and keeps the rounded border */
-.reel.is-playing .reel__frame { cursor: default; }
-.reel.is-playing .reel__ghost,
-.reel.is-playing .reel__badge { opacity: 0; pointer-events: none; }
-.reel.is-playing .reel__platform,
-.reel.is-live .reel__platform {
-  z-index: 2;
-  padding: var(--sp-4) var(--sp-8);
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--ink) 72%, transparent);
-}
-
-.reel__frame { background-size: cover; background-position: center; }
-.reel[style*="--poster"] .reel__frame {
-  background-image:
-    linear-gradient(color-mix(in srgb, var(--ink) 45%, transparent),
-                    color-mix(in srgb, var(--ink) 45%, transparent)),
-    var(--poster);
-}
-.reel[style*="--poster"] .reel__ghost { display: none; }
-
-.reel__ghost {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  font-family: var(--font-display);
-  font-size: clamp(2.5rem, 7vw, 3.75rem);
-  font-weight: 800;
-  font-stretch: 125%;
-  letter-spacing: -0.04em;
-  color: transparent;
-  -webkit-text-stroke: 1px color-mix(in srgb, var(--grey) 42%, transparent);
-  transition: opacity 300ms var(--ease);
-}
-.reel.is-live .reel__ghost { opacity: 0; }
-
-.reel__platform {
-  position: relative;
-  font-size: var(--t-label);
-  font-weight: 500;
-  color: var(--grey);
-}
-
-.reel__badge {
-  position: absolute;
-  left: var(--sp-16);
-  bottom: var(--sp-16);
-  z-index: 2;
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-8);
-  padding: var(--sp-8) var(--sp-16);
-  border-radius: 999px;
-  background: var(--gold);
-  color: var(--ink);
-  font-size: var(--t-label);
-  font-weight: 600;
-  transition: transform 320ms var(--ease-out), background-color 240ms var(--ease),
-              box-shadow 320ms var(--ease), opacity 240ms var(--ease);
-}
-.reel__badge--cta { background: transparent; border: 1px solid var(--gold); color: var(--gold); }
 
 .reel__caption {
   margin-top: var(--sp-16);
@@ -691,23 +664,6 @@ section { padding-block: var(--section-y); }
   text-decoration-color: var(--line);
 }
 .reel__caption a:hover { color: var(--gold-lift); text-decoration-color: var(--gold); }
-
-.reel__frame:hover, .reel__frame:focus-visible {
-  transform: scale(1.05);
-  border-color: var(--gold);
-  box-shadow: 0 24px 60px color-mix(in srgb, var(--ink) 80%, transparent), var(--neon);
-}
-.reel__frame:hover .reel__badge {
-  transform: translateY(-2px);
-  background: var(--gold-lift);
-  box-shadow: var(--neon-soft);
-}
-
-.reels.is-focused .reel:not(.is-active) .reel__frame {
-  opacity: 0.5;
-  filter: blur(2px) saturate(0.7);
-  transform: scale(0.98);
-}
 
 /* the offer panel beside the reel — content, not an empty tile */
 .playbook {
@@ -774,10 +730,11 @@ section { padding-block: var(--section-y); }
 
 @media (min-width: 720px) {
   .reels { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-32); }
+  .reels .reel { max-width: none; }
   .playbook { grid-column: 1 / -1; max-width: none; padding: var(--sp-32); }
 }
 
-/* three tiles across, the offer panel on the row beneath them */
+/* three landscape tiles across, the offer panel on the row beneath */
 @media (min-width: 1000px) {
   .reels { grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: none; }
 }
@@ -1740,45 +1697,6 @@ a.contact__value:hover { color: var(--gold-lift); }
   .site-footer__top { grid-template-columns: 2fr 1fr 1fr; gap: var(--sp-48); }
 }
 
-/* 16. Pointer follower ------------------------------------------------------ */
-
-.cursor {
-  position: fixed;
-  top: 0; left: 0;
-  z-index: 40;
-  display: grid;
-  place-items: center;
-  width: 28px; height: 28px;
-  margin: -14px 0 0 -14px;
-  border-radius: 999px;
-  pointer-events: none;
-  opacity: 0;
-  transform: translate3d(var(--cx, -100px), var(--cy, -100px), 0);
-  transition: opacity 240ms var(--ease), width 320ms var(--ease-out),
-              height 320ms var(--ease-out), background-color 240ms var(--ease),
-              box-shadow 320ms var(--ease);
-}
-.cursor.is-on { opacity: 1; }
-.cursor__ring { position: absolute; inset: 0; border: 1px solid var(--gold); border-radius: 999px; }
-.cursor__label {
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--ink);
-  opacity: 0;
-  transition: opacity 200ms var(--ease);
-}
-.cursor.is-view {
-  width: 84px; height: 84px;
-  background: var(--gold);
-  box-shadow: var(--neon);
-}
-.cursor.is-view .cursor__ring { opacity: 0; }
-.cursor.is-view .cursor__label { opacity: 1; }
-
-@media (pointer: coarse) { .cursor { display: none; } }
-
 /* 17. Motion ---------------------------------------------------------------- */
 
 @keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
@@ -1878,9 +1796,7 @@ a.contact__value:hover { color: var(--gold-lift); }
   .shot::before, .shot::after { display: none; }
   .ba__pair figure:hover .shot img { transform: none; }
   .motes { display: none; }
-  .cursor { display: none; }
   .reel__frame:hover { transform: none; }
-  .reels.is-focused .reel:not(.is-active) .reel__frame { opacity: 1; filter: none; transform: none; }
   [data-chart] .chart__line { stroke-dashoffset: 0; }
   [data-chart] .chart__dots { opacity: 1; }
   .meter__track span { width: calc(var(--pct) * 1%); }
