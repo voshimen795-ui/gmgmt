@@ -172,10 +172,7 @@
     }());
 
     window.setTimeout(function () {
-      chars.forEach(function (c) {
-        c.el.textContent = c.glyph;
-        c.el.style.willChange = 'auto';
-      });
+      chars.forEach(function (c) { c.el.textContent = c.glyph; });
       headline.classList.add('is-done');
     }, LAST + 600);
   }
@@ -555,8 +552,21 @@
 
     var file = reel.getAttribute('data-video');
     var embed = reel.getAttribute('data-embed');
-    var startAt = parseFloat(reel.getAttribute('data-start')) || 0;
     var mounted = false;
+
+    /* There used to be a `data-start` here, and the first tile carried
+       `data-start="1.7"` because its file opened on 1.7 seconds of the screen
+       recording it was captured from: a Facebook "video unavailable" card,
+       then black, then a spinner. Seeking past that at play time never worked
+       — the browser paints frame zero while it seeks, and the poster is
+       swapped out the moment playback is asked for, so pressing play showed
+       the error card for an instant every single time.
+
+       A head you have to skip is a head that should not be in the file. It is
+       cut in the encode now: `reel-1-v9.mp4` opens on the first frame of the
+       actual clip, and there is nothing left to seek past. If a future clip
+       arrives with junk at the front, trim it with ffmpeg rather than putting
+       the offset back — see assets/clips/README.md. */
 
     /* the thumbnail the tile is painted with, handed to the player so the
        picture never changes at the moment of pressing */
@@ -570,11 +580,10 @@
       reel.classList.add('is-playing');
 
       if (file) {
-        var src = startAt > 0 ? file + '#t=' + startAt : file;
         var video = document.createElement('video');
         video.className = 'reel__player';
         video.poster = posterUrl();
-        video.src = src;
+        video.src = file;
         video.controls = true;
         video.autoplay = true;
         video.playsInline = true;
@@ -587,12 +596,6 @@
            beats a dead tile, and the controls are right there. */
         video.muted = false;
         video.volume = 1;
-
-        if (startAt > 0) {
-          video.addEventListener('loadedmetadata', function () {
-            try { if (video.currentTime < startAt) video.currentTime = startAt; } catch (e) {}
-          });
-        }
 
         video.addEventListener('loadeddata', function () {
           reel.classList.add('is-loaded');

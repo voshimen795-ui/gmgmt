@@ -31,6 +31,14 @@
 
 <link rel="preconnect" href="https://d8j0ntlcm91z4.cloudfront.net" crossorigin>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+
+<!-- Both faces are set above the fold, and the stylesheet is inline below, so
+     the browser only discovers them once it has parsed all of it. Naming them
+     here starts both fetches in the first round trip instead — and the
+     headline animation waits on document.fonts.ready, so this is the gate on
+     when the hero finishes settling. -->
+<link rel="preload" href="/assets/fonts/archivo-latin-v5.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/instrument-sans-latin-v5.woff2" as="font" type="font/woff2" crossorigin>
 <style>
 /* =============================================================================
    G Management — one page
@@ -42,7 +50,7 @@
     6. Header
     7. Hero
     8. Marquee
-    9. Work — vertical video grid
+    9. Work — landscape video grid
    10. Results — bento grid, stats, meters
    11. Results — Pivot Point chart
    12. Voices
@@ -371,12 +379,20 @@ section { padding-block: var(--section-y); }
               opacity 200ms var(--ease);
 }
 
+/* The header used to carry `backdrop-filter: blur(14px) saturate(140%)` here,
+   and it is a sticky bar sitting over a full-screen hero film. A backdrop
+   filter has to re-read and re-blur everything behind it every time that
+   backdrop changes — which, over a playing video, is every single frame, for
+   as long as the hero is on screen, on the compositor thread the page also
+   scrolls on. It was desktop-only, which is exactly where the stutter was.
+
+   The bar is over near-black at every scroll position, so the glass was
+   costing a frame budget to blur something nobody could see through. A flat
+   translucent ink reads identically and costs nothing. */
 @media (min-width: 900px) {
   .site-header {
-    background: rgba(7, 10, 18, 0.8);
-    background: color-mix(in srgb, var(--ink) 80%, transparent);
-    -webkit-backdrop-filter: blur(14px) saturate(140%);
-    backdrop-filter: blur(14px) saturate(140%);
+    background: rgba(7, 10, 18, 0.86);
+    background: color-mix(in srgb, var(--ink) 86%, transparent);
   }
   .site-header__inner { grid-template-columns: 1fr auto 1fr; }
   .site-nav { display: flex; }
@@ -406,15 +422,23 @@ section { padding-block: var(--section-y); }
 .hero__media.has-video .hero__video { opacity: 0.72; }
 .hero__media.has-video .hero__field { opacity: 0.35; }
 
+/* This carried `filter: blur(40px)` across a box 150% of the viewport in both
+   directions, and section 17 then animated it. A filtered layer that is being
+   transformed has its blur re-rasterised as it moves, at full viewport size,
+   for the whole 32-second loop — the single most expensive thing the hero was
+   doing, and it was gated to desktops with a mouse.
+
+   Both are gone. The gradients underneath are radial falloffs that were
+   already soft; widening their stops gives the same light with no filter at
+   all, so the layer is now a plain painted background that composites once. */
 .hero__field {
   inset: -25%;
   background:
-    radial-gradient(34% 40% at 50% 22%, rgba(201, 162, 39, 0.24), transparent 70%),
-    radial-gradient(40% 44% at 22% 72%, rgba(242, 241, 236, 0.07), transparent 72%);
+    radial-gradient(42% 50% at 50% 22%, rgba(201, 162, 39, 0.22), transparent 76%),
+    radial-gradient(48% 54% at 22% 72%, rgba(242, 241, 236, 0.065), transparent 78%);
   background:
-    radial-gradient(34% 40% at 50% 22%, color-mix(in srgb, var(--gold) 24%, transparent), transparent 70%),
-    radial-gradient(40% 44% at 22% 72%, color-mix(in srgb, var(--paper) 7%, transparent), transparent 72%);
-  filter: blur(40px);
+    radial-gradient(42% 50% at 50% 22%, color-mix(in srgb, var(--gold) 22%, transparent), transparent 76%),
+    radial-gradient(48% 54% at 22% 72%, color-mix(in srgb, var(--paper) 6.5%, transparent), transparent 78%);
 }
 
 .hero__grain {
@@ -493,13 +517,14 @@ section { padding-block: var(--section-y); }
   text-shadow: 0 1px 2px color-mix(in srgb, var(--ink) 55%, transparent),
                0 2px 28px color-mix(in srgb, var(--ink) 70%, transparent);
 }
+/* Same story as the header, on a smaller box: this button sits over the film,
+   so its backdrop blur was re-running on every decoded frame. The button is
+   opaque enough that the blur behind it was never visible. */
 .hero__media.has-video ~ .hero__inner .btn--ghost {
   border-color: rgba(242, 241, 236, 0.3);
   border-color: color-mix(in srgb, var(--paper) 30%, transparent);
-  background: rgba(7, 10, 18, 0.42);
-  background: color-mix(in srgb, var(--ink) 42%, transparent);
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
+  background: rgba(7, 10, 18, 0.66);
+  background: color-mix(in srgb, var(--ink) 66%, transparent);
   text-shadow: none;
 }
 
@@ -632,25 +657,24 @@ section { padding-block: var(--section-y); }
   box-shadow: 0 0 12px var(--gold);
 }
 
-/* 9. Work — vertical video grid -------------------------------------------- */
+/* 9. Work — landscape video grid -------------------------------------------- */
 
 .work { border-bottom: var(--hairline); }
 
 .reels {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--sp-32);
-  justify-items: center;
+  gap: var(--sp-24);
   align-items: stretch;
-  max-width: 1100px;
+  max-width: 720px;
   margin-inline: auto;
 }
 
+/* A landscape tile has no reason to be capped at a phone's width: it is given
+   the whole column it sits in, so the picture is as large as the row allows. */
 .reel {
   position: relative;
   width: 100%;
-  max-width: min(320px, 78vw);
-  margin-inline: auto;
 }
 
 /* the tile is one box: the player is laid over the thumbnail rather than
@@ -671,9 +695,11 @@ section { padding-block: var(--section-y); }
   border-radius: inherit;
 }
 
-/* Every clip is encoded 9:16, so the poster fills the tile edge to edge the
-   way the YouTube short does — no bars, no blurred filler, no picture
-   floating in the middle of a box it does not fit. */
+/* Every clip is encoded 16:9 — landscape, the shape a video player is, the
+   shape YouTube is — and every clip fills that box corner to corner. Where a
+   source was shot vertical the fill is a blurred, darkened copy of its own
+   frame either side, so the whole picture is visible and nothing is cropped
+   out of it. There are no bars and no box the picture floats inside. */
 .reel__frame {
   position: relative;
   display: flex;
@@ -681,7 +707,7 @@ section { padding-block: var(--section-y); }
   justify-content: space-between;
   align-items: flex-start;
   width: 100%;
-  aspect-ratio: 9 / 16;
+  aspect-ratio: 16 / 9;
   padding: var(--sp-16);
   border: 1px solid rgb(68, 66, 50);
   border: 1px solid color-mix(in srgb, var(--gold) 22%, var(--line));
@@ -758,8 +784,8 @@ section { padding-block: var(--section-y); }
   background: var(--gold-lift);
 }
 
-/* the player sits exactly where the thumbnail was. The clips are cut to the
-   tile's own 9:16, so `cover` crops nothing — it only guards against a
+/* the player sits exactly where the thumbnail was. The clips are encoded at
+   the tile's own 16:9, so `cover` crops nothing — it only guards against a
    rounding gap at the edges. */
 .reel__player {
   position: absolute;
@@ -774,7 +800,30 @@ section { padding-block: var(--section-y); }
   background: #000;
   box-shadow: var(--neon-soft);
 }
+
+/* The YouTube Short is the one clip we cannot re-encode, so it is framed
+   rather than filled: the embed is held at the Short's own 9:16 down the
+   middle of the tile at full height, and the poster's blurred fill — already
+   baked into the image — carries the rest of the box. Same landscape tile,
+   same edge-to-edge picture, no black bars of the player's own. */
+.reel--embed .reel__player {
+  left: 50%;
+  right: auto;
+  width: auto;
+  aspect-ratio: 9 / 16;
+  transform: translateX(-50%);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
 .reel.is-playing .reel__frame { pointer-events: none; }
+/* nothing of the still tile is left over the picture once it is playing —
+   on the embed the thumbnail stays, because it is the blurred fill */
+.reel.is-playing .reel__frame::before,
+.reel.is-playing .reel__platform,
+.reel.is-playing .reel__play { opacity: 0; }
 
 .reel__caption {
   margin-top: var(--sp-16);
@@ -857,26 +906,21 @@ section { padding-block: var(--section-y); }
   .playbook { max-width: none; padding: var(--sp-32); }
 }
 
-/* the three tiles side by side from the first width that fits them. They are
-   9:16, so the column is capped rather than stretched — three full-height
-   phone screens across a desktop is more wall than showcase. */
-@media (min-width: 660px) {
+/* One column or three, never two: a two-column row leaves the third tile
+   orphaned beside a gap, and the three cuts are meant to be read as one row.
+   Below the switch each tile gets the full column, which is the bigger picture
+   anyway — a 16:9 tile across a 360px phone is wider than the 9:16 tile it
+   replaces ever was on a desktop.
+
+   900px is where the header already becomes its desktop self, so the row and
+   the nav arrive together. The offer panel spans the whole row underneath
+   rather than being squeezed in beside a tile. */
+@media (min-width: 900px) {
   .reels {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    max-width: 900px;
-    gap: var(--sp-16);
+    max-width: none;
   }
-  .reels .reel { max-width: 300px; }
-  /* The offer belongs under all three tiles, not squeezed into one column
-     beside them. This has to hold from the width the grid becomes columns —
-     it used to start only at 1000px, which left every tablet width showing
-     the panel as a narrow strip under the first tile. */
   .playbook { grid-column: 1 / -1; }
-}
-
-@media (min-width: 1000px) {
-  .reels { max-width: none; gap: var(--sp-24); }
-  .reels .reel { max-width: 320px; }
 }
 
 /* 10. Results — bento grid -------------------------------------------------- */
@@ -1811,10 +1855,11 @@ a.contact__value:hover { color: var(--gold-lift); }
   gap: var(--sp-8);
   padding: var(--sp-8) var(--sp-16);
   padding-bottom: calc(var(--sp-8) + env(safe-area-inset-bottom, 0px));
-  background: rgba(7, 10, 18, 0.92);
-  background: color-mix(in srgb, var(--ink) 92%, transparent);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
+  /* fixed to the bottom of a scrolling page, so a backdrop filter here meant
+     re-blurring the strip behind it on every scrolled frame — on the phones
+     that can least afford it, and behind a background already 92% opaque */
+  background: rgb(9, 12, 21);
+  background: color-mix(in srgb, var(--ink) 97%, var(--surface));
   border-top: var(--hairline);
   transform: translateY(110%);
   transition: transform 420ms var(--ease-out);
@@ -1877,10 +1922,6 @@ a.contact__value:hover { color: var(--gold-lift); }
 
 @keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
 @keyframes marquee { from { transform: none; } to { transform: translateX(-33.333%); } }
-@keyframes drift {
-  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-  50%      { transform: translate3d(3%, -3%, 0) scale(1.1); }
-}
 @keyframes pulse {
   0%   { box-shadow: 0 0 0 0 rgba(201, 162, 39, 0.55);
  box-shadow: 0 0 0 0 color-mix(in srgb, var(--gold) 55%, transparent); }
@@ -1900,11 +1941,13 @@ a.contact__value:hover { color: var(--gold-lift); }
 .js [data-seq="7"] { animation-delay: 960ms; }
 .js [data-seq="8"] { animation-delay: 420ms; }
 
-/* the drifting light field is a 40px blur across a huge box: animating it
-   repaints that blur every frame, which phones cannot spare */
-@media (min-width: 900px) and (pointer: fine) {
-  .js .hero__field { animation: drift 32s var(--ease) infinite; }
-}
+/* The light field used to drift here, on desktops with a mouse. It is the
+   layer the hero paints its glow with, it spans 150% of the viewport, and it
+   carried a 40px blur — so the drift meant re-rasterising a full-screen blur
+   on every frame, for ever, directly on top of a playing video. That is what
+   made the top of the page stutter on a computer and never on a phone. The
+   blur is gone from section 7 and the drift is gone from here; the hero holds
+   still and the film is what moves. */
 .js .hero__dot { animation: pulse 2600ms var(--ease) 1600ms infinite; }
 .js .marquee__track { animation: marquee 28s linear infinite; }
 .marquee:hover .marquee__track { animation-play-state: paused; }
@@ -1914,17 +1957,20 @@ a.contact__value:hover { color: var(--gold-lift); }
 /* headline: the per-line reveal steps aside once characters take over */
 .js [data-scramble].is-split .line > span { animation: none; opacity: 1; transform: none; }
 .js [data-scramble].is-split .ch { opacity: 0; transform: translateY(0.5em); }
+/* `will-change: transform, opacity` used to sit here, which asks the browser
+   for a composited layer per glyph — around sixty of them, all at once, in the
+   same second the hero film is being fetched and decoded. An opacity and
+   transform animation is promoted by the compositor anyway while it runs, so
+   the hint bought nothing and the layer count cost the opening frames. */
 .js [data-scramble].is-cascading .ch {
-  will-change: transform, opacity;
   animation: ch-in 620ms var(--ease-out) both;
   animation-delay: calc(250ms + var(--n) * 16ms);
 }
 
-/* once every glyph has landed the animation is dropped and, with it, the
-   promotion each one was holding — the letters keep their final state */
+/* once every glyph has landed the animation is dropped and the letters are
+   left as plain painted text */
 .js [data-scramble].is-done .ch {
   animation: none;
-  will-change: auto;
   opacity: 1;
   transform: none;
 }
@@ -2174,7 +2220,7 @@ a.contact__value:hover { color: var(--gold-lift); }
          cannot decode the hosted file gets this instead of nothing. Replace
          the second entry to change what that fallback is. -->
     <div class="hero__media" data-hero-media aria-hidden="true"
-         data-video="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260808_112712_da9d53df-6d27-4b12-bdf6-aa9dc2622bdf.mp4, /assets/hero-loop-v2.mp4">
+         data-video="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260808_112712_da9d53df-6d27-4b12-bdf6-aa9dc2622bdf.mp4, /assets/hero-loop-v3.mp4">
       <span class="hero__field"></span>
       <span class="hero__grain"></span>
       <span class="hero__scrim"></span>
@@ -2265,12 +2311,12 @@ a.contact__value:hover { color: var(--gold-lift); }
 
       <div class="reels" data-reels>
 
-        <figure class="reel" data-reel data-start="1.7"
-                data-video="/assets/clips/reel-1-v7.mp4"
-                data-poster="/assets/clips/reel-1-poster-v7.webp">
+        <figure class="reel" data-reel
+                data-video="/assets/clips/reel-1-v9.mp4"
+                data-poster="/assets/clips/reel-1-poster-v9.webp">
           <button class="reel__frame" type="button" data-reel-btn>
-            <img class="reel__thumb" src="/assets/clips/reel-1-poster-v7.webp" alt=""
-                 width="432" height="768" loading="lazy" decoding="async" fetchpriority="low">
+            <img class="reel__thumb" src="/assets/clips/reel-1-poster-v9.webp" alt=""
+                 width="768" height="432" loading="lazy" decoding="async" fetchpriority="low">
             <span class="reel__platform">Devito &amp; Jenne</span>
             <span class="reel__play" aria-hidden="true">
               <svg viewBox="0 0 14 16" width="13" height="15" focusable="false"><path d="M0 0 L14 8 L0 16 Z" fill="currentColor"/></svg>
@@ -2280,11 +2326,11 @@ a.contact__value:hover { color: var(--gold-lift); }
         </figure>
 
         <figure class="reel" data-reel
-                data-video="/assets/clips/reel-2-v8.mp4"
-                data-poster="/assets/clips/reel-2-poster-v8.webp">
+                data-video="/assets/clips/reel-2-v9.mp4"
+                data-poster="/assets/clips/reel-2-poster-v9.webp">
           <button class="reel__frame" type="button" data-reel-btn>
-            <img class="reel__thumb" src="/assets/clips/reel-2-poster-v8.webp" alt=""
-                 width="432" height="768" loading="lazy" decoding="async" fetchpriority="low">
+            <img class="reel__thumb" src="/assets/clips/reel-2-poster-v9.webp" alt=""
+                 width="768" height="432" loading="lazy" decoding="async" fetchpriority="low">
             <span class="reel__platform">Short-form</span>
             <span class="reel__play" aria-hidden="true">
               <svg viewBox="0 0 14 16" width="13" height="15" focusable="false"><path d="M0 0 L14 8 L0 16 Z" fill="currentColor"/></svg>
@@ -2293,13 +2339,17 @@ a.contact__value:hover { color: var(--gold-lift); }
           </button>
         </figure>
 
-        <figure class="reel" data-reel
+        <!-- The one clip that is not ours to re-encode. Its poster carries the
+             same 16:9 blurred fill the other two are encoded with, and the
+             embed is laid over it at the Short's own 9:16 — so the tile is the
+             same landscape box, filled edge to edge, as the two beside it. -->
+        <figure class="reel reel--embed" data-reel
                 data-embed="https://www.youtube-nocookie.com/embed/WZF_Tt_xNAQ?autoplay=1&loop=1&playlist=WZF_Tt_xNAQ&rel=0&playsinline=1&modestbranding=1"
                 data-embed-title="YouTube Short from a G Management client account"
-                data-poster="/assets/clips/reel-3-poster-v5.webp">
+                data-poster="/assets/clips/reel-3-poster-v6.webp">
           <button class="reel__frame" type="button" data-reel-btn>
-            <img class="reel__thumb" src="/assets/clips/reel-3-poster-v5.webp" alt=""
-                 width="432" height="768" loading="lazy" decoding="async" fetchpriority="low">
+            <img class="reel__thumb" src="/assets/clips/reel-3-poster-v6.webp" alt=""
+                 width="768" height="432" loading="lazy" decoding="async" fetchpriority="low">
             <span class="reel__platform">YouTube</span>
             <span class="reel__play" aria-hidden="true">
               <svg viewBox="0 0 14 16" width="13" height="15" focusable="false"><path d="M0 0 L14 8 L0 16 Z" fill="currentColor"/></svg>
