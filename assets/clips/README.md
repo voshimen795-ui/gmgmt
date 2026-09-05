@@ -2,63 +2,71 @@
 
 Self-hosted video for the three tiles in the Work section.
 
-## The tile is 16:9. The clips are not.
+## Every tile is its clip's own shape
 
-Every tile in the row is **16:9** — landscape, the shape a video player is —
-and its thumbnail fills it corner to corner with real picture. No black bars,
-no blurred filler, no picture floating in a box it does not fit.
+There is no crop anywhere on this page. Not in the tile, not in the thumbnail,
+not in the player. Each tile is given its clip's aspect ratio, its thumbnail is
+that clip's whole frame scaled down, and pressing it opens the clip over the
+page at the same ratio again.
 
-**The thumbnail is the only thing here that is 16:9.** The clips keep their own
-shape and open over the page when a tile is pressed.
+The grid is what makes that possible. The two clips shot vertical take a column
+each; the one shot landscape spans the row beneath them and closes the block
+off:
 
-That split is the whole design, and it exists because of a measurement. Two of
-these three were shot vertical, as 9:16 close-ups. A 16:9 window out of a
-870x1588 frame is 870x489 — the widest one that frame can give, and a third of
-its height. In the first clip **the speaker's head is taller than that window**:
-top of the scalp above it, chin below it, at every offset. So playing it inside
-the tile leaves exactly two options, and both were tried and both are wrong:
+    ┌──────────┐ ┌──────────┐
+    │  9:16    │ │  9:16    │     reel-1 (0.548)   reel-3 (0.5625)
+    │          │ │          │
+    └──────────┘ └──────────┘
+    ┌───────────────────────┐
+    │        2.085:1        │     reel-2
+    └───────────────────────┘
 
-- crop it, and his head is cut off for the whole clip;
-- fill the sides with blur, and two thirds of the tile is filler — which reads
-  as a video that did not fit, the thing the blur was there to hide.
+Three uncropped tiles of two different shapes cannot make a straight row. They
+can make this.
 
-Out of the tile, neither problem exists. The row stays three uniform landscape
-tiles with no blur and no dead space; the clip plays whole. It is also what
-finally frees the YouTube Short: an embed cannot be cropped from outside the
-iframe at all, so it was stuck with blurred sides, and in the player it simply
-opens 9:16 with no black bars.
+**It took three tries to get here, and the two wrong ones are worth keeping in
+mind.** Forcing all three into one 16:9 tile means either cropping the picture
+or packing the sides with blur, and both shipped. The crop is the worse of them:
+a 16:9 window out of a 870x1588 frame is 870x489, the widest that frame can
+give, and in the first clip **the speaker's head is taller than that window** —
+scalp above it, chin below it, at every offset. There is no placement that holds
+his head. The blur is the other: 886 of the tile's 1280 pixels are filler, which
+reads as a video that did not fit, the exact thing the blur was there to hide.
 
-**A still can be chosen where 700 moving frames cannot.** That is why the
-thumbnail crop is free: pick a moment where a 16:9 window falls well — an
-exterior, a wide two-shot, a face with room around it — and crop there. The
-first tile uses the house exterior at 1.0s for exactly this reason; the third
-crops its poster around the face and both caption lines.
+Letting the tile take the clip's shape costs nothing and cuts nothing.
 
-    ffmpeg -ss <good moment> -i out.mp4 -frames:v 1 \
-      -vf "crop=<w>:<h>:<x>:<y>,scale=768:432:flags=lanczos" \
+### `--ar`
+
+Each tile carries its clip's width over its height, inline on the figure:
+
+    <figure class="reel" data-reel style="--ar: 0.548" ...>
+
+Inline, and not a data attribute, because it is **layout**: the tile has to be
+the right shape with scripting off and before a byte of media has been asked
+for. The player reads the same value back off the computed style, so there is
+one number per clip and no second place to keep it in step. A `<video>` also
+corrects it from the real frame on `loadedmetadata`, which covers a re-encode
+that changed shape without the markup being updated.
+
+The two vertical tiles are the one exception, and a deliberate one. 0.548 and
+0.5625 are close but not equal, and at 360px wide that is 17px of difference
+showing as one tile ending lower than the other. They share a 9:16 frame in CSS
+so the row has a straight bottom edge; the 23px that trims off the taller
+thumbnail is 2.6% of a still, and `--ar` is untouched, so the player still opens
+at the clip's real shape.
+
+### The thumbnails
+
+Whole frames, scaled, nothing cropped:
+
+    ffmpeg -i out.mp4 -frames:v 1 -vf "scale=480:-2:flags=lanczos" \
       -c:v libwebp -quality 66 -compression_level 6 out-poster.webp
 
-768 wide covers the ~400px the tile is ever given at 2x, and all three together
-are 36KB. They are real `<img class="reel__thumb" loading="lazy">` elements, not
-CSS backgrounds: a background image is fetched as soon as its element is laid
-out, wherever on the page that element sits, and these tiles are a long way
-below the fold.
-
-The thumbnail no longer has to be the clip's first frame. It used to, so the
-picture would not change at the moment of pressing — but pressing now opens a
-different surface at a different shape, so there is nothing to match.
-
-## data-ratio
-
-Each tile carries its clip's own width/height as a plain number:
-
-    <figure class="reel" data-reel data-ratio="0.548" ...>
-
-The player sizes itself from that, so the box is the right shape before a byte
-of media has arrived instead of opening at some default and jumping. A `<video>`
-corrects it from the real frame on `loadedmetadata`, which covers a re-encode
-that changed shape without the markup being updated — but get it right in the
-markup anyway.
+480 wide covers the 360px a vertical tile is ever given; the landscape one is
+768. All three together are 60KB. They are real `<img class="reel__thumb"
+loading="lazy">` elements, not CSS backgrounds: a background image is fetched as
+soon as its element is laid out, wherever on the page that element sits, and
+these tiles are a long way below the fold.
 
 ## Cut the head off the file, never at play time
 
@@ -67,7 +75,7 @@ recording opens on about a second of a **"Video unavailable"** card, then black,
 then a loading spinner, before the clip itself starts.
 
 That used to be shipped in the file, with `data-start="1.7"` on the tile and a
-seek in `main.js` to skip it. It never worked. A browser paints frame zero while
+seek in the script to skip it. It never worked. A browser paints frame zero while
 it seeks, and the poster is dropped the moment playback is asked for, so every
 single press flashed the error card first — which is exactly what "the first two
 seconds are nothing" means when someone reports it.
@@ -108,7 +116,7 @@ its 2.085:1 exactly — there are no 53px blurred bands top and bottom to make i
 `hqdn3d` is there because that source is already lossy at about 750kbps, and a
 re-encode otherwise spends real bits preserving its own compression artefacts.
 
-Whatever you encode, put its width over its height in the tile's `data-ratio`.
+Whatever you encode, put its width over its height in the tile's `--ar`.
 
 ### The watermark
 
@@ -131,15 +139,13 @@ outside it and there was genuinely nothing to be done about it. The player fixed
 that for free: the embed gets a 9:16 box and fills it, with no black bars of its
 own.
 
-Only its thumbnail is ours, cropped 16:9 out of the 432x768 poster to hold the
-face and both caption lines:
-
-    ffmpeg -i poster-9x16.webp \
-      -vf "crop=432:243:0:205,scale=640:360:flags=lanczos" \
-      -c:v libwebp -quality 70 -compression_level 6 out-poster.webp
+Only its thumbnail is ours — `reel-3-poster-v8.webp`, 432x768, the whole frame
+at the Short's own 9:16, drawn from the clip rather than pulled from
+`i.ytimg.com` (which answers with a grey placeholder rather than a 404 when a
+Short has no thumbnail in the size asked for).
 
 If a self-hosted file for it ever arrives, drop it in, swap `data-embed` for
-`data-video`, set `data-ratio`, and it behaves exactly like the other two.
+`data-video`, set `--ar`, and it behaves exactly like the other two.
 
 ## 30fps, not 60
 

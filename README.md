@@ -6,7 +6,7 @@ no dependencies.
 
 ```
 index.html                  the page, with all styling inline in its <style>
-assets/js/main-v2.js        counters, chart, reels, player, booking, form, motes
+assets/js/main-v3.js        counters, chart, reels, player, booking, form, motes
 assets/fonts/               self-hosted variable fonts (Archivo, Instrument Sans)
 assets/og.png               link-preview image (1200×630)
 favicon.svg
@@ -67,11 +67,10 @@ Where it came from:
   glyphs took 120KB of woff2 to 63KB; trimming the axes took it to 43KB. They are not
   preloaded: preloading raced them against the stylesheet on a narrow pipe, and
   `font-display: swap` paints the text immediately regardless.
-- **The tile thumbnails are lazy WebP at 768x432** — 36KB for all three, each cropped 16:9
-  from a moment in the clip it fronts where that crop falls well. They are real
-  `<img loading="lazy">` elements, not CSS backgrounds: a background image is fetched as
-  soon as its element is laid out no matter where on the page it sits, and these tiles are
-  a long way down.
+- **The tile thumbnails are lazy WebP** — 60KB for all three, each one the whole frame of
+  the clip it fronts, scaled, never cropped. They are real `<img loading="lazy">` elements,
+  not CSS backgrounds: a background image is fetched as soon as its element is laid out no
+  matter where on the page it sits, and these tiles are a long way down.
 - **The proof screenshots are WebP.** The same four dashboards were 197KB as JPEG and are
   85KB as WebP, with the small type in them unchanged. They are lazy too, and carry their
   intrinsic size so nothing shifts when they arrive.
@@ -136,7 +135,7 @@ Where it came from:
   had dropped the rule the old script's markup depended on.
 
   A version in the filename makes it impossible. The document names the exact build it
-  needs, so the two can never be out of step. **Bump `-v2` whenever `main-v2.js` changes**,
+  needs, so the two can never be out of step. **Bump the suffix whenever the script changes**,
   in the same commit as the markup that needs it.
 
 **If the copy changes, re-subset the fonts.** The subset covers printable ASCII plus the
@@ -200,7 +199,7 @@ A phone pays for things a laptop gives away. The page also holds to these:
   the browser would otherwise only discover them after parsing all of it — and the headline
   animation waits on `document.fonts.ready`, so this is the gate on when the hero settles.
 - **Everything with a version in its name is cached for a year.** The fonts, `/assets/clips`,
-  the hero loop and `main-v2.js` are served `immutable`; `index.html` is
+  the hero loop and `main-v3.js` are served `immutable`; `index.html` is
   `max-age=0, must-revalidate`. The script carries a version so it can never be a stale copy
   paired with a fresh document — see the `vercel.json` note above, which is the bug that put
   it there.
@@ -337,7 +336,7 @@ ffmpeg -ss <cut> -i source.mp4 -filter_complex "
 
 30fps, not the 60 the sources were shot at: talking heads gain nothing from it and
 it halves what a phone has to decode to keep up, which is most of what "the video
-stutters" is. Put the result's width over its height in the tile's `data-ratio`,
+stutters" is. Put the result's width over its height in the tile's `--ar`,
 so the player opens the right shape before any media has arrived.
 
 Filenames carry a version (`-v11`). `/assets/clips` is served `immutable` for a year
@@ -345,7 +344,7 @@ and these files have no content hash, so a re-encode under an old name keeps sho
 the old cut on a phone that already has it.
 
 A tile is a still until it is pressed. Add `data-video="/assets/clips/whatever.mp4"`
-and `data-ratio="<width over height>"` to the `<figure class="reel">`, and a press opens
+and `style="--ar: <width over height>"` to the `<figure class="reel">`, and a press opens
 that file over the page with its own controls and its sound. A tile with `data-embed`
 instead opens the platform's player the same way. Either way nothing is fetched and no
 third party is contacted until someone presses. See `assets/clips/README.md`.
@@ -380,32 +379,27 @@ those attributes and the interaction follows.
 3. **Clients** — the account names on an infinite roll, faded at both edges and paused on
    hover. Swap a name for an `<img>` when a client sends a logo file; the row does not care
    which it is holding.
-4. **Work** — three 16:9 tiles in one row above a panel carrying the offer.
-   Landscape is the shape a video player is, so the tiles read as three videos
-   rather than three phone screenshots, and each gets the full width of its column.
-   One column below 900px and three above it — never two, because two leaves the
-   third tile orphaned beside a gap.
+4. **Work** — **every tile is its clip's own shape**, so there is no crop anywhere on
+   the page: not in the tile, not in the thumbnail, not in the player. The two clips shot
+   vertical take a column each; the one shot landscape spans the row beneath them and
+   closes the block off. Three uncropped tiles of two different shapes cannot make a
+   straight row — they can make this.
 
-   **The tile is 16:9. The clips are not.** Two of the three were shot vertical as
-   9:16 close-ups, and a 16:9 window out of a 870x1588 frame is a third of its
-   height — in the first clip, narrower than the speaker's head. Playing that
-   inside the tile leaves only a cut-off head or two thirds of blurred filler, and
-   both were tried. So the tile is a thumbnail: a still, cropped 16:9 from a
-   moment where the crop falls well, which a still allows and 700 moving frames do
-   not. Pressing it opens the clip over the page at its own shape, whole. The row
-   keeps three uniform landscape tiles with no blur and no dead space, and no clip
-   is ever cut. It is also what frees the YouTube Short, which as an embed could
-   not be cropped at all and now simply opens 9:16 with no black bars.
+   It took three tries. Forcing all three into one 16:9 tile means either cropping the
+   picture or packing the sides with blur, and both shipped: a 16:9 window out of a
+   870x1588 frame is 870x489, and in the first clip the speaker's head is taller than that
+   window at every offset, so the crop cut his head off; the blur made two thirds of the
+   tile filler. Letting the tile take the clip's shape costs nothing and cuts nothing.
 
-   Nothing is fetched, decoded or contacted for a visitor who never presses play,
-   and closing the player tears the clip down — paused, source dropped, `load()`
-   called, element removed — because a paused `<video>` keeps its decoder and its
-   buffer and would go on running behind the page.
+   A tile is a still until it is pressed, and pressing opens the clip **over the page** at
+   the same ratio, whole, with its own controls and its sound. Nothing is fetched, decoded
+   or contacted for a visitor who never presses play, and closing tears the clip down —
+   paused, source dropped, `load()` called, element removed — because a paused `<video>`
+   keeps its decoder and its buffer and would go on running behind the page.
 
-   There is no `data-start`. A clip whose source opens on junk is **cut in the
-   encode**, not seeked past at play time: a browser paints frame zero while it
-   seeks and drops the poster the moment playback is asked for, so a seek shows
-   the junk anyway, every single press.
+   There is no `data-start`. A clip whose source opens on junk is **cut in the encode**,
+   not seeked past at play time: a browser paints frame zero while it seeks and drops the
+   poster the moment playback is asked for, so a seek shows the junk anyway, every press.
 
 4b. **Before and after** — each screenshot sits in a `.shot` frame: it uncovers itself from
    the bottom as it arrives, lifts under the pointer with the image scaling inside the clip,

@@ -656,7 +656,7 @@
     document.addEventListener('keydown', onLightboxKey);
   }
 
-  /* The ratio is written on the tile so the stage is the right shape before a
+  /* The stage takes the tile's own ratio, so it is the right shape before a
      single byte of media has arrived — otherwise the box opens at some default
      and jumps once the file describes itself. A <video> then corrects it from
      the real frame, which costs nothing and covers a re-encode that changed
@@ -687,7 +687,12 @@
 
     var file = reel.getAttribute('data-video');
     var embed = reel.getAttribute('data-embed');
-    var ratio = parseFloat(reel.getAttribute('data-ratio')) || 16 / 9;
+
+    /* The clip's shape is read back off the tile rather than kept in a second
+       attribute. The tile is already that shape — `--ar` is what makes it one,
+       inline on the figure so it holds with scripting off — so there is one
+       number per clip and nothing that can fall out of step with itself. */
+    var ratio = parseFloat(window.getComputedStyle(reel).getPropertyValue('--ar')) || 16 / 9;
 
     /* There used to be a `data-start` here, and the first tile carried
        `data-start="1.7"` because its file opened on 1.7 seconds of the screen
