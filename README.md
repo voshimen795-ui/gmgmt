@@ -88,11 +88,24 @@ Where it came from:
   thumbnail in the size asked for. Its poster is drawn locally instead, in the page's own
   fonts and colours, and the page now requests nothing from any other host on arrival.
 - **The hero film runs everywhere, phones included** — it is the first thing the page says,
-  and a hero only desktops see is a hero half the visitors never get. It is still skipped
-  when the browser reports a metered or slow connection or the visitor has asked for less
-  motion, and it starts on an idle callback after the load event, so it never competes with
-  the text and the type for the opening second. The test is `motionWanted && goodLine` in
-  section 5 of `main.js`.
+  and a hero only desktops see is a hero half the visitors never get. It starts on an idle
+  callback after the load event, so it never competes with the text and the type for the
+  opening second.
+
+  It is skipped for exactly one reason now: `saveData`, which is the visitor asking. It
+  used to also be skipped when `navigator.connection.effectiveType` read `2g` or `3g`, and
+  **that is why it did not appear on a real phone.** That value is not the radio: it is the
+  browser's own estimate from measured round-trip time and throughput, and Chrome on
+  Android returns `3g` for an ordinary LTE connection often enough to hide the film from
+  the people it was meant for. A guess that wrong is worse than no guess.
+
+  Reduced motion no longer removes it either — the film mounts and holds on its first
+  frame, so the hero keeps its picture and nothing moves. That needs `autoplay` left off
+  the element, not just an uncalled `play()`: the browser will start an element carrying
+  the attribute however carefully the script avoids it.
+
+  Each source also gets one retry, 1.2s later, before the list moves on. A single dropped
+  request on a phone should not cost the hero its film for the rest of the visit.
 - **`vercel.json`** gives the fonts a year of immutable caching and everything else ten
   minutes with revalidation. It briefly gave *everything* under `/assets` the year, which
   was a mistake: the filenames do not carry a content hash, so a browser that cached a clip

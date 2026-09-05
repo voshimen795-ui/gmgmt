@@ -329,14 +329,21 @@
     video.muted = true;
     video.defaultMuted = true;
     video.loop = true;
-    video.autoplay = true;
+    /* Under reduced motion the film is mounted for its picture and must not
+       start, and the browser will start an element carrying `autoplay` on its
+       own however carefully the script avoids calling play(). */
+    video.autoplay = !reduceMotion;
     video.playsInline = true;
-    video.preload = 'metadata';
+    /* This only ever runs after the load event, on an idle callback, so it is
+       not competing with anything. `metadata` left a phone holding a described
+       file it had not fetched a frame of, and the hero is only shown once the
+       first frame exists — so ask for enough to have one. */
+    video.preload = 'auto';
     video.tabIndex = -1;
     video.setAttribute('playsinline', '');
     video.setAttribute('muted', '');
     video.setAttribute('loop', '');
-    video.setAttribute('autoplay', '');
+    if (!reduceMotion) video.setAttribute('autoplay', '');
     video.setAttribute('aria-hidden', 'true');
     video.src = src;
     return video;
@@ -382,10 +389,15 @@
       .map(function (s) { return s.trim(); })
       .filter(Boolean);
 
-    if (!sources.length || reduceMotion || (navigator.connection || {}).saveData) {
+    /* Data Saver is a choice the visitor made, so it is the one hard stop.
+       Reduced motion is not a reason to show nothing: the film still mounts,
+       it simply never starts, so the hero keeps its picture and holds still. */
+    if (!sources.length || (navigator.connection || {}).saveData) {
       if (onFail) onFail();
       return;
     }
+
+    var attempts = {};
 
     (function next() {
       if (!sources.length) {
@@ -418,15 +430,29 @@
         });
       }
 
+      /* loadeddata is the first frame. The hero is shown from here whether or
+         not playback is allowed to start, so a browser that refuses autoplay
+         leaves a still frame rather than an empty section. */
       el.addEventListener('loadeddata', function () {
+        if (onPlay) onPlay(el);
+        if (reduceMotion) { el.pause(); return; }
         var playing = el.play();
         if (playing && playing.catch) playing.catch(function () {});
         watchPlayback(el, true);
-        if (onPlay) onPlay(el);
       });
 
       el.addEventListener('error', function () {
         if (el.parentNode) el.parentNode.removeChild(el);
+        /* One transient failure on a phone should not cost the hero its film
+           for the rest of the visit, so each source gets a second attempt
+           before the list moves on. The count lives outside next(), or the
+           retry would reset it and loop for ever. */
+        if (!attempts[src]) {
+          attempts[src] = 1;
+          sources.unshift(src);
+          window.setTimeout(next, 1200);
+          return;
+        }
         if (onFail) onFail();
         next();
       }, true);
@@ -448,15 +474,20 @@
       );
     };
 
-    /* The film runs on phones too — it is the first thing the page says, and
-       a hero that only exists on a desktop is a hero half the visitors never
-       see. What it still refuses is a connection the browser has flagged as
-       metered or slow, and a visitor who has asked for less motion. It is
-       also fetched only once the page is idle, so it never competes with the
-       text and the type for the opening second. */
-    var link = navigator.connection || {};
-    var motionWanted = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var goodLine = !link.saveData && !/^[23]g$/.test(link.effectiveType || '');
+    /* The film runs on phones too — it is the first thing the page says, and a
+       hero that only exists on a desktop is a hero half the visitors never
+       see. It is fetched once the page is idle, so it never competes with the
+       text and the type for the opening second.
+
+       It used to be skipped when navigator.connection reported effectiveType
+       "2g" or "3g". That reading is not the radio: it is the browser's own
+       estimate from measured round-trip time and throughput, and Chrome on
+       Android returns "3g" for an ordinary LTE connection often enough that
+       the film simply never appeared on a real phone. A guess that wrong is
+       worse than no guess, so the only thing left that stops the film is
+       saveData — which is the visitor actually asking. That is checked inside
+       mountVideo, along with reduced motion, which now holds the film on its
+       first frame instead of dropping it. */
 
     var whenIdle = function () {
       if (window.requestIdleCallback) {
@@ -466,10 +497,8 @@
       }
     };
 
-    if (motionWanted && goodLine) {
-      if (document.readyState === 'complete') whenIdle();
-      else window.addEventListener('load', whenIdle);
-    }
+    if (document.readyState === 'complete') whenIdle();
+    else window.addEventListener('load', whenIdle);
   }
 
   /* 6. Reels ---------------------------------------------------------------
