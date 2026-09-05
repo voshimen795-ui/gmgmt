@@ -47,14 +47,20 @@
       "email": "manny@gmgmt.co",
       "image": "https://gmgmt.co/assets/og.png",
       "priceRange": "$$",
-      "areaServed": { "@type": "Country", "name": "United States" },
+      "areaServed": {
+        "@type": "Country",
+        "name": "United States"
+      },
       "address": {
         "@type": "PostalAddress",
         "addressLocality": "Miami",
         "addressRegion": "FL",
         "addressCountry": "US"
       },
-      "founder": { "@type": "Person", "name": "Manny Garcia" },
+      "founder": {
+        "@type": "Person",
+        "name": "Manny Garcia"
+      },
       "description": "Social media management for brands and brand deal management for creators: short-form video strategy, editing, daily posting and monthly reporting.",
       "knowsAbout": [
         "Social media management",
@@ -69,9 +75,27 @@
         "@type": "OfferCatalog",
         "name": "Services",
         "itemListElement": [
-          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Social media management for brands" } },
-          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Short-form video production and daily posting" } },
-          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Brand deal management for creators" } }
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "Social media management for brands"
+            }
+          },
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "Short-form video production and daily posting"
+            }
+          },
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "Brand deal management for creators"
+            }
+          }
         ]
       }
     },
@@ -80,8 +104,72 @@
       "@id": "https://gmgmt.co/#website",
       "url": "https://gmgmt.co/",
       "name": "G Management",
-      "publisher": { "@id": "https://gmgmt.co/#business" },
+      "publisher": {
+        "@id": "https://gmgmt.co/#business"
+      },
       "inLanguage": "en-US"
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://gmgmt.co/#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What do you actually run?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The account, end to end. Hooks and angles, the edit, the posting rhythm, and the monthly report. The first week is setup; after that short-form goes out daily."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is this organic, or is it ads?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Almost entirely organic, and the dashboards say so. Pivot Point's 1.2M views came with 0.2% from ads, its two-week figure with 0.1%. One account on this page did run ads alongside: 29.2% of BKH's 5.4M reach was paid. We would rather write that down than have you find it later."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How long before anything moves?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Pivot Point went from 116,498 views in the month before the takeover to 301,828 in the first fortnight after it, and 1,224,413 by the end of the first month. Houdini took two months to show up in orders. Two accounts, not a promise — but that is the shape of it."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do you work with creators as well as brands?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. For brands we run the account. For creators we manage the brand deals: who to take, what to charge, and getting paid."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What do you need from me to start?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Access to the account and whatever footage already exists. The first week is spent going through what has worked on the page before, so nothing gets rebuilt that was already working."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What does it cost?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "It depends on the account, the cadence and whether creators are involved. The fifteen minutes ends with a number, not a proposal to be sent later."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Where are you, and who do you work with?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Miami, Florida, working with brands and creators across the United States. Calls run in Miami time."
+          }
+        }
+      ]
     }
   ]
 }
@@ -186,24 +274,30 @@
     </div>
   </section>
 
-  <!-- ============================================================= MARQUEE -->
-  <div class="marquee" aria-hidden="true">
-    <div class="marquee__track" data-marquee>
-      <div class="marquee__set">
-        <span>Short-form video</span><i></i><span>Brand deals</span><i></i>
-        <span>Daily posting</span><i></i><span>Creator management</span><i></i>
-      </div>
-      <div class="marquee__set">
-        <span>Short-form video</span><i></i><span>Brand deals</span><i></i>
-        <span>Daily posting</span><i></i><span>Creator management</span><i></i>
-      </div>
-      <div class="marquee__set">
-        <span>Short-form video</span><i></i><span>Brand deals</span><i></i>
-        <span>Daily posting</span><i></i><span>Creator management</span><i></i>
+  <!-- ============================================================== CLIENTS -->
+  <section class="roll" aria-labelledby="roll-title">
+    <p class="roll__label" id="roll-title">Accounts we run short-form for</p>
+
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee__track" data-marquee>
+        <div class="marquee__set">
+          <span>BKH Enterprises</span><i></i><span>Pivot Point</span><i></i>
+          <span>Houdini Holsters</span><i></i><span>PAC-Hub</span><i></i>
+        </div>
+        <div class="marquee__set">
+          <span>BKH Enterprises</span><i></i><span>Pivot Point</span><i></i>
+          <span>Houdini Holsters</span><i></i><span>PAC-Hub</span><i></i>
+        </div>
+        <div class="marquee__set">
+          <span>BKH Enterprises</span><i></i><span>Pivot Point</span><i></i>
+          <span>Houdini Holsters</span><i></i><span>PAC-Hub</span><i></i>
+        </div>
       </div>
     </div>
-  </div>
-  <p class="visually-hidden">Services: short-form video, brand deals, daily posting, creator management.</p>
+
+    <p class="visually-hidden">Clients: BKH Enterprises, Pivot Point, Houdini Holsters and
+      PAC-Hub. Services: short-form video, daily posting, brand deals and creator management.</p>
+  </section>
 
   <!-- ================================================================ WORK -->
   <section class="work" id="work" aria-labelledby="work-title">
@@ -218,7 +312,8 @@
         <!-- the file carries a 90 degree rotation, so it displays 870 x 1588
              and sits in the same vertical frame as the tile beside it -->
         <figure class="reel" data-reel data-cursor-view data-start="1"
-                data-video="/assets/clips/screen-recording.mp4"
+                data-video="/assets/clips/facebook-reel.mp4"
+                style="--poster: url(/assets/clips/reel-poster.jpg)"
                 data-embed="https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2Fshare%2Fr%2F1EtnnM8QSx%2F&show_text=false&autoplay=1&width=540"
                 data-embed-title="Facebook video from a G Management client account">
           <button class="reel__frame" type="button" data-reel-btn>
@@ -553,6 +648,64 @@
             expectations.”</p>
           <footer><span class="voice__name">Kevin Hinchy</span><span class="voice__role">CEO, PAC-Hub</span></footer>
         </blockquote>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================= FAQ -->
+  <section class="faq" id="faq" aria-labelledby="faq-title">
+    <div class="shell">
+      <header class="section-head" data-reveal="rise">
+        <h2 class="section-title" id="faq-title">Before you ask<span class="dot">.</span></h2>
+      </header>
+
+      <div class="faq__list">
+        <details class="qa" data-reveal="rise">
+          <summary><span>What do you actually run?</span></summary>
+          <p>The account, end to end. Hooks and angles, the edit, the posting rhythm, and the
+            monthly report. The first week is setup; after that short-form goes out daily.</p>
+        </details>
+
+        <details class="qa" data-reveal="rise">
+          <summary><span>Is this organic, or is it ads?</span></summary>
+          <p>Almost entirely organic, and the dashboards say so. Pivot Point's 1.2M views came
+            with 0.2% from ads, its two-week figure with 0.1%. One account on this page did run
+            ads alongside: 29.2% of BKH's 5.4M reach was paid. We would rather write that down
+            than have you find it later.</p>
+        </details>
+
+        <details class="qa" data-reveal="rise">
+          <summary><span>How long before anything moves?</span></summary>
+          <p>Pivot Point went from 116,498 views in the month before the takeover to 301,828 in
+            the first fortnight after it, and 1,224,413 by the end of the first month. Houdini
+            took two months to show up in orders. Two accounts, not a promise &mdash; but that is
+            the shape of it.</p>
+        </details>
+
+        <details class="qa" data-reveal="rise">
+          <summary><span>Do you work with creators as well as brands?</span></summary>
+          <p>Yes. For brands we run the account. For creators we manage the brand deals: who to
+            take, what to charge, and getting paid.</p>
+        </details>
+
+        <details class="qa" data-reveal="rise">
+          <summary><span>What do you need from me to start?</span></summary>
+          <p>Access to the account and whatever footage already exists. The first week is spent
+            going through what has worked on the page before, so nothing gets rebuilt that was
+            already working.</p>
+        </details>
+
+        <details class="qa" data-reveal="rise">
+          <summary><span>What does it cost?</span></summary>
+          <p>It depends on the account, the cadence and whether creators are involved. The
+            fifteen minutes ends with a number, not a proposal to be sent later.</p>
+        </details>
+
+        <details class="qa" data-reveal="rise">
+          <summary><span>Where are you, and who do you work with?</span></summary>
+          <p>Miami, Florida, working with brands and creators across the United States. Calls
+            run in Miami time.</p>
+        </details>
       </div>
     </div>
   </section>

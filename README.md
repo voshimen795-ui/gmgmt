@@ -116,7 +116,16 @@ or on a connection flagged `saveData`, and if no source plays the element is rem
 the drifting light field carries the hero on its own. Keep the file short and small — it
 is background, not content; ten seconds at a few hundred KB is plenty.
 
-**Reel clips.** A tile plays a self-hosted file inline, muted and looping, as soon as it
+**Reel clips.** The Facebook tile plays `/assets/clips/facebook-reel.mp4` (702x1280, 2.7MB,
+no audio track since it plays muted) and shows `reel-poster.jpg` until it arrives. Re-encode
+anything new the same way:
+
+```
+ffmpeg -i source.mp4 -vf "scale=-2:1280" -c:v libx264 -preset slow -crf 28 \
+       -pix_fmt yuv420p -an -movflags +faststart out.mp4
+```
+
+A tile plays a self-hosted file inline, muted and looping, as soon as it
 scrolls into view — add `data-video="/assets/clips/whatever.mp4"` to the
 `<figure class="reel">`. Several files can be listed comma separated and the first one
 that plays wins; if none do, the tile stays a poster frame and its platform embed loads on
@@ -152,7 +161,9 @@ those attributes and the interaction follows.
    and four figures that count up across a single rule. The film runs muted and looping
    behind it; with a film present the scrim pools under the copy and thins towards the
    edges, and the copy carries its own shadow so a bright frame cannot wash it out.
-3. **Marquee** — an infinite services loop, paused on hover.
+3. **Clients** — the account names on an infinite roll, faded at both edges and paused on
+   hover. Swap a name for an `<img>` when a client sends a logo file; the row does not care
+   which it is holding.
 4. **Work** — two 9:16 tiles beside a panel carrying the offer: how a month runs, what is
    included, and the CTA. The Facebook tile plays a self-hosted clip from
    `/assets/clips/` inline; the YouTube tile loads and plays itself when it scrolls into
@@ -161,6 +172,9 @@ those attributes and the interaction follows.
    the link-in-bio revenue and PAC-Hub. Every figure counts up on arrival, and the shares
    (99.7% non-follower reach, 92% US audience) grow as bars.
 6. **Clients** — two short testimonials, named.
+6b. **FAQ** — seven questions as native `<details>`, so they work with scripting off. The
+   answers are also emitted as `FAQPage` structured data, generated from this markup, so the
+   two can never drift apart. Google can show them under the result.
 7. **Book** — a glowing dark card holding the scheduler.
 8. **Footer** — brand, page links, contact, location.
 
