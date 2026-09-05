@@ -60,7 +60,12 @@ Where it came from:
   or slow connection, and it starts on an idle callback after the load event. A phone never
   spends anything on it. To put it back everywhere, drop the `wideEnough && goodLine` test
   in section 5 of `main.js`.
-- **`vercel.json`** gives everything under `/assets` a year of immutable caching.
+- **`vercel.json`** gives the fonts a year of immutable caching and everything else ten
+  minutes with revalidation. It briefly gave *everything* under `/assets` the year, which
+  was a mistake: the filenames do not carry a content hash, so a browser that cached a clip
+  under that header would keep serving it for a year no matter what was deployed. Media
+  filenames now end in `-v2`; bump that suffix whenever a file's contents change and the
+  old copy can never be served in its place.
 
 **If the copy changes, re-subset the fonts.** The subset covers printable ASCII plus the
 punctuation the page uses. A character outside that set will silently fall back to Helvetica
