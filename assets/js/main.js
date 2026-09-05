@@ -11,6 +11,7 @@
    7. Pointer follower
    8. Booking — inline scheduler or built-in calendar
    9. Contact actions and phone bar
+  10. Lead form
    ========================================================================== */
 
 (function () {
@@ -535,14 +536,38 @@
   var calendar = document.querySelector('[data-calendar]');
   var bookingUrl = bookingSlot ? bookingSlot.getAttribute('data-booking-url') : '';
 
+  /* A scheduler URL is dressed to match the page before it is framed, so
+     Cal.com, Calendly and Google appointment pages all come in dark rather
+     than as a white rectangle. Those schedulers are also what puts a real
+     Google Meet link on the booking, so the Meet line only shows with one. */
+  function dressSchedulerUrl(url) {
+    var join = url.indexOf('?') === -1 ? '?' : '&';
+
+    if (/calendly\.com/i.test(url)) {
+      return url + join + 'hide_gdpr_banner=1&background_color=070A12' +
+             '&text_color=F2F1EC&primary_color=C9A227';
+    }
+    if (/cal\.com/i.test(url)) {
+      return url + join + 'embed=true&theme=dark&layout=month_view';
+    }
+    if (/calendar\.google\.com/i.test(url) && url.indexOf('gv=') === -1) {
+      return url + join + 'gv=true';
+    }
+    return url;
+  }
+
   if (bookingSlot && bookingUrl) {
     var scheduler = document.createElement('iframe');
-    scheduler.src = bookingUrl;
+    scheduler.src = dressSchedulerUrl(bookingUrl);
     scheduler.title = 'Book a call with Manny Garcia';
     scheduler.loading = 'lazy';
     scheduler.setAttribute('frameborder', '0');
+    scheduler.setAttribute('allow', 'camera; microphone; fullscreen; payment');
     bookingSlot.appendChild(scheduler);
     if (calendar) calendar.hidden = true;
+
+    var meetNote = document.querySelector('[data-meet-note]');
+    if (meetNote) meetNote.hidden = false;
   } else if (calendar) {
     buildCalendar(calendar);
   }
@@ -557,6 +582,7 @@
     var next = root.querySelector('[data-cal-next]');
     var bookBtn = root.querySelector('[data-cal-book]');
     var icsBtn = root.querySelector('[data-cal-ics]');
+    var gcalBtn = root.querySelector('[data-cal-gcal]');
 
     var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
                   'July', 'August', 'September', 'October', 'November', 'December'];
@@ -622,6 +648,7 @@
       var ready = Boolean(picked && pickedSlot);
       bookBtn.disabled = !ready;
       icsBtn.disabled = !ready;
+      if (gcalBtn) gcalBtn.disabled = !ready;
 
       summary.textContent = ready
         ? DAYS[picked.getDay()] + ', ' + MONTHS[picked.getMonth()] + ' ' + picked.getDate() +
@@ -706,6 +733,27 @@
             'Name:\nBrand or handle:\nWhat I need:\n');
     });
 
+    /* Google's own event composer. Opened from a Google account with
+       conferencing on, saving the event attaches the Meet link itself. */
+    if (gcalBtn) {
+      gcalBtn.addEventListener('click', function () {
+        if (!picked || !pickedSlot) return;
+        var endMinutes = pickedSlot.m + 15;
+        var endHour = pickedSlot.h + (endMinutes >= 60 ? 1 : 0);
+        var endMin = endMinutes % 60;
+
+        var url = 'https://calendar.google.com/calendar/render?action=TEMPLATE'
+          + '&text=' + encodeURIComponent('Intro call — G Management')
+          + '&dates=' + stamp(picked, pickedSlot.h, pickedSlot.m) + '/' + stamp(picked, endHour, endMin)
+          + '&ctz=America/New_York'
+          + '&add=' + encodeURIComponent('manny@gmgmt.co')
+          + '&details=' + encodeURIComponent('Fifteen minutes with Manny Garcia. manny@gmgmt.co')
+          + '&location=' + encodeURIComponent('Google Meet');
+
+        window.open(url, '_blank', 'noopener');
+      });
+    }
+
     icsBtn.addEventListener('click', function () {
       if (!picked || !pickedSlot) return;
       var endMinutes = pickedSlot.m + 15;
@@ -724,7 +772,7 @@
         'DTEND;TZID=America/New_York:' + stamp(picked, endHour, endMin),
         'SUMMARY:Intro call — G Management',
         'DESCRIPTION:Fifteen minutes with Manny Garcia. manny@gmgmt.co.',
-        'LOCATION:Phone call',
+        'LOCATION:Google Meet',
         'END:VEVENT',
         'END:VCALENDAR'
       ].join('\r\n');
@@ -742,6 +790,103 @@
     render();
     renderSlots();
     renderSummary();
+  }
+
+
+  /* 10. Lead form ----------------------------------------------------------
+     With an endpoint in data-endpoint the form posts straight to it, so the
+     message lands in Manny's inbox without the visitor opening a mail app.
+     Without one it composes the same message as an email, and either way
+     the WhatsApp button hands the whole thing to his phone.               */
+
+  var leadForm = document.querySelector('[data-lead]');
+
+  if (leadForm) {
+    var leadStatus = leadForm.querySelector('[data-lead-status]');
+    var leadSend = leadForm.querySelector('[data-lead-send]');
+    var leadWhats = leadForm.querySelector('[data-lead-whatsapp]');
+    var endpoint = (leadForm.getAttribute('data-endpoint') || '').trim();
+
+    function leadValues() {
+      return {
+        name: (leadForm.elements.name.value || '').trim(),
+        email: (leadForm.elements.email.value || '').trim(),
+        brand: (leadForm.elements.brand.value || '').trim(),
+        message: (leadForm.elements.message.value || '').trim(),
+        trap: (leadForm.elements.botcheck.value || '').trim()
+      };
+    }
+
+    function leadText(v) {
+      return 'New enquiry from gmgmt.co\n\n'
+        + 'Name: ' + v.name + '\n'
+        + 'Email: ' + v.email + '\n'
+        + 'Brand or handle: ' + (v.brand || '—') + '\n\n'
+        + v.message;
+    }
+
+    function say(text, tone) {
+      if (!leadStatus) return;
+      leadStatus.textContent = text;
+      leadStatus.className = 'lead__status' + (tone ? ' is-' + tone : '');
+    }
+
+    function missing(v) {
+      if (!v.name || !v.email || !v.message) {
+        say('Name, email and a line about what you need, then it goes.', 'warn');
+        return true;
+      }
+      return false;
+    }
+
+    leadForm.addEventListener('submit', function (event) {
+      event.preventDefault();
+      var v = leadValues();
+      if (v.trap) return;
+      if (missing(v)) return;
+
+      if (!endpoint) {
+        say('Opening your mail app with the message ready.', 'ok');
+        window.location.href = 'mailto:manny@gmgmt.co'
+          + '?subject=' + encodeURIComponent('New enquiry from gmgmt.co')
+          + '&body=' + encodeURIComponent(leadText(v));
+        return;
+      }
+
+      leadSend.disabled = true;
+      say('Sending…');
+
+      fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({
+          name: v.name,
+          email: v.email,
+          brand: v.brand,
+          message: v.message,
+          subject: 'New enquiry from gmgmt.co',
+          from_name: 'gmgmt.co'
+        })
+      }).then(function (response) {
+        if (!response.ok) throw new Error(String(response.status));
+        leadForm.reset();
+        say('Sent. Manny answers the same day, usually sooner.', 'ok');
+      }).catch(function () {
+        say('That did not send. Use WhatsApp, or write to manny@gmgmt.co.', 'warn');
+      }).then(function () {
+        leadSend.disabled = false;
+      });
+    });
+
+    if (leadWhats) {
+      leadWhats.addEventListener('click', function () {
+        var v = leadValues();
+        if (missing(v)) return;
+        window.open('https://wa.me/17869295735?text=' + encodeURIComponent(leadText(v)),
+                    '_blank', 'noopener');
+        say('WhatsApp is open with the message ready to send.', 'ok');
+      });
+    }
   }
 
   /* 9. Contact actions and phone bar ---------------------------------------- */

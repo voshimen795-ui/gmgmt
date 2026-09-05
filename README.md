@@ -29,6 +29,66 @@ Then open <http://127.0.0.1:8099/>.
 Upload the repository root as-is to any static host. It expects to live at the domain
 root (gmgmt.co). Nothing needs compiling.
 
+
+## Turning on the three things that need an account
+
+Everything below is a one-line edit in `index.html`. Nothing needs a build step, a
+server, or a redeploy beyond pushing the file.
+
+### 1. Real booking, with a Google Meet link on every call
+
+The picker in the page is a fallback: it collects the slot and sends the request. To
+have the meeting created, confirmed and given its own Meet link automatically, put a
+scheduler URL in the booking slot:
+
+```html
+<div class="booker__embed" data-booking data-booking-url="https://cal.com/manny/15min"></div>
+```
+
+Cal.com is free for one person. Sign up, connect the Google account, and on the event
+type set **Location → Google Meet**. Calendly and Google Calendar appointment schedules
+work the same way and are detected too — each is themed to the page automatically
+(dark background, gold accent) rather than dropping in a white box.
+
+With a URL present the built-in picker steps aside and the "on Google Meet" line
+appears in the card header. With none, the picker stays and offers three ways out:
+send the request, open the slot in Google Calendar (saving it there attaches the Meet
+link), or download the `.ics`.
+
+### 2. The lead form reaching an inbox
+
+```html
+<form class="lead" data-lead data-endpoint="https://api.web3forms.com/submit">
+```
+
+Any endpoint that takes a POST and answers JSON works — [Web3Forms](https://web3forms.com)
+(free, no account needed beyond an access key, which goes in a hidden input),
+Formspree, Basin. Left empty, the form composes the same message as an email instead,
+so it is never a dead button. The **Send on WhatsApp** button works either way: it opens
+WhatsApp with the whole message written out, which is the instant notification on the
+phone.
+
+For a genuine push notification the moment a form is sent, point the endpoint at a
+Zapier or Make webhook and have it fan out to email and WhatsApp.
+
+### 3. Google Analytics
+
+```html
+<script data-ga4="G-XXXXXXXXXX">
+```
+
+Put the GA4 measurement ID in that attribute. Empty, and nothing is requested at all —
+no tag, no cookie.
+
+### The link preview
+
+`og:image`, `og:url` and the canonical all point at `https://gmgmt.co/`. Link previews
+(WhatsApp, iMessage, Slack, X) fetch that absolute URL, so the image and description
+only appear once the domain is connected. Sharing a `*.vercel.app` link before then
+shows the title and description but no image. If the site is going to live somewhere
+else, change the four absolute URLs in `<head>` and the two in `sitemap.xml` and
+`robots.txt` to match.
+
 ## Things the client can change without touching code structure
 
 **Booking link.** The contact section has an empty scheduler slot:

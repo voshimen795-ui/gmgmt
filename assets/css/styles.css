@@ -169,6 +169,10 @@ section { padding-block: var(--section-y); }
   text-align: center;
 }
 
+/* the full stop is the brand's smallest gold accent, repeated section to
+   section without adding any furniture to the page */
+.dot { color: var(--gold); }
+
 .section-title {
   font-size: var(--t-h2);
   font-weight: 800;
@@ -277,7 +281,7 @@ section { padding-block: var(--section-y); }
   text-decoration: none;
   letter-spacing: -0.02em;
 }
-.wordmark__g { font-size: 1.25rem; font-weight: 800; font-stretch: 125%; }
+.wordmark__g { font-size: 1.25rem; font-weight: 800; font-stretch: 125%; color: var(--gold); }
 .wordmark__rest {
   font-size: 0.9375rem;
   font-weight: 500;
@@ -1326,9 +1330,128 @@ html:not(.js) .swing__track > span { width: calc(var(--w) * 1%); }
   .calendar__slot-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
+
+/* 13b. Booking — header, steps, lead form ----------------------------------- */
+
+.booker__head {
+  display: grid;
+  gap: var(--sp-8);
+  margin-bottom: var(--sp-32);
+  padding-bottom: var(--sp-24);
+  border-bottom: var(--hairline);
+  text-align: center;
+}
+.booker__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-8);
+  margin-inline: auto;
+  padding: var(--sp-8) var(--sp-16);
+  border: 1px solid color-mix(in srgb, var(--gold) 45%, var(--line));
+  border-radius: 999px;
+  font-size: var(--t-label);
+  font-weight: 600;
+  color: var(--gold-lift);
+}
+.booker__dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 8px var(--gold);
+}
+.booker__meet { color: var(--grey); font-weight: 500; }
+.booker__note {
+  max-width: 54ch;
+  margin-inline: auto;
+  font-size: var(--t-small);
+  color: var(--grey);
+  text-wrap: pretty;
+}
+
+.reach {
+  display: grid;
+  gap: var(--sp-24);
+  max-width: 880px;
+  margin: var(--sp-32) auto 0;
+}
+
+.lead {
+  display: grid;
+  gap: var(--sp-16);
+  padding: var(--sp-32) var(--sp-24);
+  border: var(--hairline);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.lead__title {
+  font-size: var(--t-h3);
+  font-weight: 700;
+  font-stretch: 112%;
+  letter-spacing: -0.02em;
+}
+.lead__note { font-size: var(--t-label); color: var(--grey); margin-top: calc(var(--sp-8) * -1); }
+
+.field { display: grid; gap: 6px; }
+.field label { font-size: var(--t-label); color: var(--grey); }
+.field input,
+.field textarea {
+  width: 100%;
+  padding: var(--sp-8) var(--sp-16);
+  min-height: 48px;
+  border: var(--hairline);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--surface-lift) 70%, transparent);
+  color: var(--paper);
+  font-family: var(--font-body);
+  font-size: var(--t-small);
+  transition: border-color 200ms var(--ease), box-shadow 260ms var(--ease);
+}
+.field textarea { min-height: 96px; resize: vertical; padding-top: var(--sp-16); }
+.field input:focus,
+.field textarea:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: var(--neon-soft);
+}
+.field--trap { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
+.lead__actions { display: flex; flex-wrap: wrap; gap: var(--sp-8); margin-top: var(--sp-8); }
+.lead__actions .btn { flex: 1 1 12rem; }
+
+.lead__status { min-height: 1.4em; font-size: var(--t-label); color: var(--grey); }
+.lead__status.is-ok { color: var(--gold-lift); }
+.lead__status.is-warn { color: var(--paper); }
+
+.reach__side { display: grid; gap: var(--sp-24); align-content: start; }
+
+.booker__steps { display: grid; gap: var(--sp-16); }
+.booker__steps li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: baseline;
+  gap: var(--sp-16);
+  padding-top: var(--sp-16);
+  border-top: var(--hairline);
+  font-size: var(--t-small);
+  color: var(--grey);
+}
+.booker__n {
+  font-family: var(--font-display);
+  font-size: var(--t-small);
+  font-weight: 800;
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (min-width: 860px) {
+  .reach { grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); gap: var(--sp-32); }
+  .lead { padding: var(--sp-32); }
+}
+
 /* 14. Contact rows + phone action bar --------------------------------------- */
 
-.contact { margin-top: var(--sp-32); }
+.contact { margin-top: 0; }
 .contact li {
   display: flex;
   align-items: center;
