@@ -752,6 +752,62 @@ section { padding-block: var(--section-y); }
                     color-mix(in srgb, var(--ink) 42%, transparent));
   pointer-events: none;
 }
+/* The two shapes of work, named. Uppercase Archivo between two gold hairlines
+   that draw outward from the words as the row arrives.
+
+   The whole effect is three transforms and one opacity, all of them composited,
+   and every one of them stops the moment it lands — there is nothing here still
+   running while the page is being read. It rides the reveal observer the rest
+   of the page already uses, so it adds no script at all. */
+.reel-kicker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-16);
+  margin-top: var(--sp-24);
+  font-family: var(--font-display);
+  font-size: var(--t-label);
+  font-weight: 800;
+  font-stretch: 112%;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--paper);
+  text-shadow: 0 0 28px rgba(201, 162, 39, 0.45);
+  text-shadow: 0 0 28px color-mix(in srgb, var(--gold) 45%, transparent);
+}
+/* the first one opens the block, so the section head's own margin is the space
+   above it and it needs none of its own */
+.reels > .reel-kicker:first-child { margin-top: 0; }
+
+/* 24 inside a group, 48 between them: the kickers sit 24 above their own tiles
+   and 48 below the ones before, and the offer panel takes the same 48 so it
+   reads as the next thing rather than the last tile's caption */
+.reels > .playbook { margin-top: var(--sp-24); }
+
+.reel-kicker::before,
+.reel-kicker::after {
+  content: "";
+  flex: 1 1 0;
+  max-width: 108px;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--gold));
+}
+.reel-kicker::after { background: linear-gradient(to left, transparent, var(--gold)); }
+
+/* each rule is anchored at the end that touches the words, so they open away
+   from the label rather than sliding in from the edges of the block */
+.js .reel-kicker::before,
+.js .reel-kicker::after {
+  transform: scaleX(0);
+  transition: transform 900ms var(--ease-out);
+  transition-delay: calc(var(--delay, 0ms) + 180ms);
+}
+.js .reel-kicker::before { transform-origin: right center; }
+.js .reel-kicker::after { transform-origin: left center; }
+.js .reel-kicker.is-in::before,
+.js .reel-kicker.is-in::after { transform: scaleX(1); }
+
 /* The two clips shot vertical are 0.548 and 0.5625 — close, but not the same,
    and at 360px wide that is 17px of difference showing as one tile ending lower
    than the other. They share a 9:16 frame instead, so the row has a straight
@@ -987,7 +1043,7 @@ body.has-lightbox { overflow: hidden; }
    block is a single column of full-width rows however narrow it gets. */
 @media (min-width: 700px) {
   .reels { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .reel--wide, .playbook { grid-column: 1 / -1; }
+  .reel-kicker, .reel--wide, .playbook { grid-column: 1 / -1; }
 }
 
 /* 10. Results — bento grid -------------------------------------------------- */
@@ -2087,6 +2143,7 @@ a.contact__value:hover { color: var(--gold-lift); }
 
   .js [data-reveal] { opacity: 1; transform: none; }
   .js [data-reveal="shot"] { clip-path: none; }
+  .js .reel-kicker::before, .js .reel-kicker::after { transform: none; }
   .shot::before, .shot::after { display: none; }
   .ba__pair figure:hover .shot img { transform: none; }
   .motes { display: none; }
@@ -2378,6 +2435,8 @@ a.contact__value:hover { color: var(--gold-lift); }
 
       <div class="reels" data-reels>
 
+        <h3 class="reel-kicker" data-reveal="rise">Short-form</h3>
+
         <!-- Each tile is given its clip's own shape as `--ar`, so a thumbnail
              is the whole frame and there is nothing to crop out of it anywhere
              on this page. The two clips shot vertical sit side by side; the one
@@ -2419,13 +2478,15 @@ a.contact__value:hover { color: var(--gold-lift); }
           </button>
         </figure>
 
+        <h3 class="reel-kicker" data-reveal="rise">Long-form</h3>
+
         <!-- landscape, so it takes the full width under the two vertical ones -->
         <figure class="reel reel--wide" data-reel style="--ar: 2.085"
                 data-video="/assets/clips/reel-2-v10.mp4">
           <button class="reel__frame" type="button" data-reel-btn>
             <img class="reel__thumb" src="/assets/clips/reel-2-poster-v11.webp" alt=""
                  width="768" height="368" loading="lazy" decoding="async" fetchpriority="low">
-            <span class="reel__platform">Short-form</span>
+            <span class="reel__platform">Podcast</span>
             <span class="reel__play" aria-hidden="true">
               <svg viewBox="0 0 14 16" width="13" height="15" focusable="false"><path d="M0 0 L14 8 L0 16 Z" fill="currentColor"/></svg>
             </span>
