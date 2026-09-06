@@ -1,6 +1,10 @@
 # Reel clips
 
-Self-hosted video for the three tiles in the Work section.
+Video for the three tiles in the Work section.
+
+**Only one clip is hosted here now** — `reel-1-v11.mp4`. The Short is a YouTube
+embed and the Long-form tile is a Vimeo embed of the client's full cut, so both
+of those are a poster and a URL rather than a file.
 
 ## Every tile is its clip's own shape
 
@@ -18,7 +22,7 @@ off:
     │          │ │          │
     └──────────┘ └──────────┘
     ┌───────────────────────┐
-    │        2.085:1        │     reel-2
+    │         16:9          │     reel-2 (1.7778)
     └───────────────────────┘
 
 Three uncropped tiles of two different shapes cannot make a straight row. They
@@ -106,10 +110,12 @@ reads 1588x870 with a -90 rotation, which ffmpeg applies on its own):
 720 wide is a downscale from 870, so the picture stays sharper than any box the
 page will ever give it.
 
-**Shot landscape** (`reel-2-v10.mp4`, from a 1280x614 podcast edit): the same
-thing with the scale dropped, since it is already at a sensible size. It keeps
-its 2.085:1 exactly — there are no 53px blurred bands top and bottom to make it
-16:9 any more, because it does not have to be 16:9:
+**Shot landscape** — there is no longer a file for this. The Long-form tile used
+to carry `reel-2-v10.mp4`, a 33-second 2.085:1 slice of the client's podcast cut,
+and it now points at the whole thing on Vimeo instead. Long-form is the point of
+that tile and a trimmed copy was making the argument with the wrong evidence. If
+a landscape source ever does need hosting here, it goes in at its native size
+with the scale dropped:
 
     [0:v]setsar=1,hqdn3d=2:1.5:4:4,fps=30,format=yuv420p[v]
 
@@ -125,27 +131,37 @@ watermark burned into the bottom-right corner**, and the vertical version that
 shipped before this one had to pan a narrow window around it, shot by shot, to
 keep it out.
 
-That is all gone. The landscape source used here (`1280x614`, 2.085:1) is the
-same edit with the bottom 318 rows of the 3840x2160 original already dropped —
-which is where the watermark lived. Checked across the whole clip, corner
-sampled every four seconds: clean. **Anything new arriving with a watermark gets
-cropped out at the source, not worked around in the player.**
+That is all gone twice over: the vertical crop was replaced by a clean landscape
+source (`1280x614`, the same edit with the bottom 318 rows of the 3840x2160
+original already dropped — which is where the watermark lived, checked across the
+whole clip with the corner sampled every four seconds), and that file has since
+been replaced by the Vimeo embed of the full cut. **Anything new arriving with a
+watermark gets cropped out at the source, not worked around in the player.**
 
-### The third tile
+### The two embeds
 
-`reel-3` is a YouTube Short and is not ours to re-encode. It used to be the tile
-with the blurred sides, because an iframe's picture cannot be cropped from
-outside it and there was genuinely nothing to be done about it. The player fixed
-that for free: the embed gets a 9:16 box and fills it, with no black bars of its
-own.
+Neither the Short nor the Long-form cut is ours to host, so both are a poster and
+an iframe, and both open in the same player the local clip does.
 
-Only its thumbnail is ours — `reel-3-poster-v8.webp`, 432x768, the whole frame
-at the Short's own 9:16, drawn from the clip rather than pulled from
-`i.ytimg.com` (which answers with a grey placeholder rather than a 404 when a
-Short has no thumbnail in the size asked for).
+`reel-3` is a **YouTube** Short. It used to be the tile with blurred sides, since
+an iframe's picture cannot be cropped from outside it and there was genuinely
+nothing to be done; giving the tile the clip's own 9:16 fixed that. Its poster is
+`reel-3-poster-v8.webp`, drawn from the clip rather than pulled from
+`i.ytimg.com` — which answers with a grey placeholder rather than a 404 when a
+Short has no thumbnail in the size asked for.
 
-If a self-hosted file for it ever arrives, drop it in, swap `data-embed` for
-`data-video`, set `--ar`, and it behaves exactly like the other two.
+The Long-form tile is **Vimeo**, and its URL has two parts that are not optional:
+`h=` is the video's privacy hash, and `dnt=1` asks Vimeo not to track. `title`,
+`byline` and `portrait` are off so the player opens on the picture rather than on
+its own furniture. Nothing is requested from either host until a tile is pressed,
+which is also why there is deliberately no preconnect to them.
+
+Its poster, `reel-2-poster-v12.webp`, is a 16:9 frame cut from the old local
+slice of the same footage — Vimeo's own thumbnail could not be reached from the
+machine that built it. It is the same shot, so it is honest, but if you want the
+frame Vimeo itself shows, take it from the oEmbed endpoint and drop it in:
+
+    curl -s "https://vimeo.com/api/oembed.json?url=https%3A%2F%2Fvimeo.com%2F<id>%2F<hash>"
 
 ## 30fps, not 60
 
@@ -156,13 +172,13 @@ is in the filter chain above; leave it there.
 
 ## Sound
 
-Both files keep their audio (AAC 96k), and both measure about -18.6 dB mean, so
-they are level with each other. Pressing play is a user gesture, so the clip is
+The one hosted clip keeps its audio (AAC 96k) at about -18.7 dB mean; the two
+embeds carry their own. Pressing play is a user gesture, so the clip is
 allowed its sound and starts unmuted; if a browser refuses anyway the script
 retries muted rather than leaving a dead player.
 
-Neither audio track comes from its own video source, so **both are muxed and
-both can drift if you are careless**:
+Its audio does not come from its own video source, so it is muxed and it can
+drift if you are careless:
 
 - The first clip's own recording carries a full AAC track that is digital
   silence end to end (`volumedetect` reports mean and max of -91 dB, the noise
@@ -170,9 +186,6 @@ both can drift if you are careless**:
   resolution copy that ran 1.1417s behind, and that offset is already baked into
   `reel-1-v7.mp4` — which is why the encode above takes video from the screen
   recording and audio from `reel-1-v7.mp4`, with **the same `-ss` on both**.
-- The second clip's landscape source has no audio at all. It is taken from
-  `reel-2-v8.mp4`, which is the same edit at the same 33.074708s duration and
-  the same timeline; captions line up frame for frame at 20s.
 
 Check any new clip before shipping it:
 
