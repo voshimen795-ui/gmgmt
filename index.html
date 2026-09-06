@@ -96,7 +96,11 @@
   --line: #1E2735;
   --gold: #C9A227;
   --gold-lift: #E4C25C;
-  --grey: #7E8794;
+  /* Lifted from #7E8794. Against the page's ink that was 5.4:1 and against a
+     card 4.9:1 — enough to pass AA and not enough to read a footnote on a phone
+     in daylight without leaning in. This clears 7:1 on both, so the same grey
+     now carries the small print everywhere instead of only just carrying it. */
+  --grey: #9BA5B4;
   --paper: #F2F1EC;
 
   /* type */
@@ -151,6 +155,20 @@
     --neon-soft: 0 0 24px color-mix(in srgb, var(--gold) 30%, transparent);
     --neon: 0 0 20px color-mix(in srgb, var(--gold) 45%, transparent),
             0 0 56px color-mix(in srgb, var(--gold) 18%, transparent);
+  }
+}
+
+/* On a phone the secondary type runs two points larger. 14 and 13 are
+   comfortable at arm's length on a desktop and are not in one hand on a train,
+   and every place these two tokens are used is exactly the text that was being
+   squinted at: the steps in "How a month runs", the labels under every figure,
+   the chips, the footnotes, the form hints, the FAQ answers. Moving the tokens
+   moves all forty-four of them at once and keeps the ladder intact — there is
+   no second scale to remember. */
+@media (max-width: 699px) {
+  :root {
+    --t-small: 1rem;         /* 14px -> 16px */
+    --t-label: 0.9375rem;    /* 13px -> 15px */
   }
 }
 
@@ -518,15 +536,26 @@ section { padding-block: var(--section-y); }
   text-shadow: 0 1px 2px color-mix(in srgb, var(--ink) 55%, transparent),
                0 2px 28px color-mix(in srgb, var(--ink) 70%, transparent);
 }
-/* Same story as the header, on a smaller box: this button sits over the film,
-   so its backdrop blur was re-running on every decoded frame. The button is
-   opaque enough that the blur behind it was never visible. */
+/* One filled button and one outline, so the eye is told which of the two to
+   press. "Book a call" keeps the solid gold; this one is a ghost in the proper
+   sense — nothing behind it at all, just a gold edge — which is also what fixed
+   the last of the per-frame blurs: it used to carry a backdrop filter over the
+   playing film, re-running on every decoded frame for a pane nobody could see
+   through anyway.
+
+   With no panel behind it the label has to hold its own over whatever frame the
+   film lands on, so it keeps a shadow rather than the background it lost. */
+.hero .btn--ghost {
+  background: transparent;
+  border-color: rgba(201, 162, 39, 0.55);
+  border-color: color-mix(in srgb, var(--gold) 55%, transparent);
+}
+.hero .btn--ghost:hover,
+.hero .btn--ghost:focus-visible { border-color: var(--gold); }
+
 .hero__media.has-video ~ .hero__inner .btn--ghost {
-  border-color: rgba(242, 241, 236, 0.3);
-  border-color: color-mix(in srgb, var(--paper) 30%, transparent);
-  background: rgba(7, 10, 18, 0.66);
-  background: color-mix(in srgb, var(--ink) 66%, transparent);
-  text-shadow: none;
+  text-shadow: 0 1px 14px rgba(7, 10, 18, 0.9);
+  text-shadow: 0 1px 14px color-mix(in srgb, var(--ink) 90%, transparent);
 }
 
 .hero__where {
@@ -924,12 +953,17 @@ section { padding-block: var(--section-y); }
 }
 .lightbox.is-open .lightbox__stage { transform: none; }
 
+/* a dashboard screenshot is white to its own edge, so the stage behind one is
+   white too rather than a black seam at a rounded corner */
+.lightbox__stage:has(> img) { background: #fff; }
+
 /* `contain` is belt and braces: the stage is already the media's own ratio, so
    there is nothing to letterbox — but the initial value of object-fit is
    `fill`, and a stage that is ever a pixel out would stretch the picture
    rather than show it honestly. */
 .lightbox__stage > video,
-.lightbox__stage > iframe {
+.lightbox__stage > iframe,
+.lightbox__stage > img {
   display: block;
   width: 100%;
   height: 100%;
@@ -1346,15 +1380,24 @@ html:not(.js) .meter__track span { width: calc(var(--pct) * 1%); }
 .ba__pair figure { display: grid; grid-template-rows: 1fr auto; min-width: 0; }
 /* both panels are cropped to the same square around the date and the figure,
    so the two sides read at one glance */
-/* the frame: it clips, it lights up, and the sheen runs across it */
+/* the frame: it clips, it lights up, the sheen runs across it — and it is a
+   button, because a dashboard screenshot scaled to a phone is a grey smear of
+   numbers nobody can read. Pressing it opens the real thing full size in the
+   same player the clips use. `--ar` is the screenshot's own shape, so the
+   player opens at it rather than guessing. */
 .shot {
   position: relative;
   display: block;
+  width: 100%;
   height: 100%;
+  padding: 0;
   overflow: hidden;
   border: var(--hairline);
   border-radius: var(--radius-sm);
   background: #fff;
+  color: var(--paper);
+  font: inherit;
+  cursor: pointer;
   isolation: isolate;
   transition: border-color 320ms var(--ease), box-shadow 520ms var(--ease-out),
               transform 520ms var(--ease-out);
@@ -1366,6 +1409,30 @@ html:not(.js) .meter__track span { width: calc(var(--pct) * 1%); }
   transition: transform 900ms var(--ease-out), filter 520ms var(--ease);
 }
 .ba__pair--stack .shot img { height: auto; object-fit: fill; }
+
+/* it has to say so, not just behave so */
+.shot__zoom {
+  position: absolute;
+  right: var(--sp-8);
+  bottom: var(--sp-8);
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(7, 10, 18, 0.82);
+  background: color-mix(in srgb, var(--ink) 82%, transparent);
+  font-family: var(--font-body);
+  font-size: var(--t-label);
+  font-weight: 500;
+  line-height: 1;
+  color: var(--paper);
+  transition: background-color 200ms var(--ease), color 200ms var(--ease);
+  pointer-events: none;
+}
+.shot:hover .shot__zoom,
+.shot:focus-visible .shot__zoom { background: var(--gold); color: var(--ink); }
 
 .ba__pair figure:hover .shot {
   transform: translateY(-4px);
@@ -1518,6 +1585,60 @@ html:not(.js) .swing__track > span { width: calc(var(--w) * 1%); }
   .ba__card { padding: var(--sp-32); }
 }
 
+/* Mobile: the proof, simplified ------------------------------------------- */
+
+@media (max-width: 699px) {
+  /* A bar 3mm long under a number in 13px type is decoration standing where the
+     reading should be. On a phone each metric becomes its own card and says the
+     thing it is there to say: what moved, how far it moved, and the two numbers
+     in full. The bars go, and the multiplier — a footnote off to the right —
+     becomes the headline it always was. Same markup, same figures; only what is
+     shown changes, so there is nothing to keep in step. */
+  .swing { gap: var(--sp-16); margin-top: var(--sp-24); }
+  .swing li {
+    padding: var(--sp-16);
+    border: var(--hairline);
+    border-radius: var(--radius-sm);
+    background: var(--surface-lift);
+  }
+  .swing li + li { padding-top: var(--sp-16); border-top: var(--hairline); }
+
+  .swing__k {
+    display: grid;
+    justify-items: start;
+    gap: var(--sp-4);
+    font-size: var(--t-label);
+  }
+  .swing__k b { font-size: 1.875rem; line-height: 1; }
+
+  /* with the track gone the row is label and value, and the value can finally
+     be the size of a number rather than the size of a caption */
+  .swing__row {
+    grid-template-columns: 4.25rem minmax(0, 1fr);
+    align-items: baseline;
+    gap: var(--sp-8);
+    margin-top: var(--sp-8);
+  }
+  .swing__track { display: none; }
+  .swing__v { min-width: 0; text-align: left; font-size: 1.25rem; }
+  .swing__row--after .swing__v { color: var(--gold-lift); }
+
+  /* The screenshots stop pretending to be readable. They are thumbnails at a
+     size that reads as one — the top of the dashboard, where the date and the
+     headline figure sit — and the badge says where the full one lives. */
+  .ba__pair { margin-top: var(--sp-24); padding-top: var(--sp-24); }
+  .ba__pair .shot { height: 128px; }
+  .ba__pair .shot img,
+  .ba__pair--stack .shot img {
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+  }
+
+  /* the video tiles are not part of this pass and keep the type they had */
+  .reel__platform, .reel__caption { font-size: 0.8125rem; }
+}
+
 /* 11. Results — Pivot Point chart ------------------------------------------- */
 
 .chart { margin-top: var(--sp-24); }
@@ -1621,12 +1742,19 @@ html:not(.js) .swing__track > span { width: calc(var(--w) * 1%); }
 
 .qa { border-bottom: var(--hairline); }
 
+/* The whole row is the control, so the whole row has to look like one: it
+   lights up under the pointer and under a finger, and the tint runs the full
+   width of the question rather than stopping at the text — the negative inline
+   margin pulls it out to the card's own edges. */
 .qa summary {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--sp-16);
   padding-block: var(--sp-24);
+  padding-inline: var(--sp-16);
+  margin-inline: calc(-1 * var(--sp-16));
+  border-radius: var(--radius-sm);
   font-family: var(--font-display);
   font-size: clamp(1.0625rem, 1.6vw, 1.25rem);
   font-weight: 700;
@@ -1634,22 +1762,32 @@ html:not(.js) .swing__track > span { width: calc(var(--w) * 1%); }
   letter-spacing: -0.02em;
   cursor: pointer;
   list-style: none;
-  transition: color 200ms var(--ease);
+  -webkit-tap-highlight-color: transparent;
+  transition: color 200ms var(--ease), background-color 200ms var(--ease);
 }
 .qa summary::-webkit-details-marker { display: none; }
-.qa summary:hover { color: var(--gold-lift); }
+.qa summary:hover,
+.qa summary:focus-visible,
+.qa summary:active {
+  color: var(--gold-lift);
+  background: rgba(242, 241, 236, 0.06);
+  background: color-mix(in srgb, var(--paper) 6%, transparent);
+}
+.qa[open] summary { color: var(--gold-lift); }
 
-/* the marker is drawn rather than typed, so it can turn */
+/* the marker is drawn rather than typed, so it can turn. Half again as large as
+   it was and on the brighter gold, because at 12px in the page's dimmest gold
+   it was a hint that something might open rather than a control. */
 .qa summary::after {
   content: "";
   flex: none;
-  width: 12px; height: 12px;
-  border-right: 2px solid var(--gold);
-  border-bottom: 2px solid var(--gold);
-  transform: rotate(45deg) translate(-2px, -2px);
+  width: 18px; height: 18px;
+  border-right: 3px solid var(--gold-lift);
+  border-bottom: 3px solid var(--gold-lift);
+  transform: rotate(45deg) translate(-3px, -3px);
   transition: transform 320ms var(--ease-out);
 }
-.qa[open] summary::after { transform: rotate(-135deg) translate(-2px, -2px); }
+.qa[open] summary::after { transform: rotate(-135deg) translate(-3px, -3px); }
 
 .qa p {
   max-width: 68ch;
@@ -2611,20 +2749,24 @@ a.contact__value:hover { color: var(--gold-lift); }
 
           <div class="ba__pair ba__pair--stack">
             <figure data-reveal="shot" style="--delay:0ms">
-              <span class="shot">
+              <button class="shot" type="button" data-proof="/assets/proof/houdini-before-v2.webp" style="--ar: 2.439">
                 <img src="/assets/proof/houdini-before-v2.webp" loading="lazy" decoding="async"
                    width="1200" height="492"
                    alt="Shopify dashboard, September 1 to 30, 2024: 77,440 sessions, 1,544 orders, 1.85 per cent conversion rate.">
-              </span>
+                <span class="shot__zoom" aria-hidden="true"><svg viewBox="0 0 14 14" width="11" height="11" focusable="false"><path d="M5 1H1v4M9 13h4V9M1 9v4h4M13 5V1H9" stroke="currentColor" stroke-width="1.6" fill="none"/></svg>Full size</span>
+                <span class="visually-hidden">Open the full screenshot</span>
+              </button>
 
               <figcaption>Before &middot; 1,544 orders at 1.85%</figcaption>
             </figure>
             <figure data-reveal="shot" style="--delay:140ms">
-              <span class="shot">
+              <button class="shot" type="button" data-proof="/assets/proof/houdini-after-v2.webp" style="--ar: 2.2388">
                 <img src="/assets/proof/houdini-after-v2.webp" loading="lazy" decoding="async"
                    width="1200" height="536"
                    alt="Shopify dashboard, November 1 to 30, 2024: 131,814 sessions, 3,272 orders, 2.23 per cent conversion rate.">
-              </span>
+                <span class="shot__zoom" aria-hidden="true"><svg viewBox="0 0 14 14" width="11" height="11" focusable="false"><path d="M5 1H1v4M9 13h4V9M1 9v4h4M13 5V1H9" stroke="currentColor" stroke-width="1.6" fill="none"/></svg>Full size</span>
+                <span class="visually-hidden">Open the full screenshot</span>
+              </button>
 
               <figcaption class="is-after">After &middot; 3,272 orders at 2.23%</figcaption>
             </figure>
@@ -2689,20 +2831,24 @@ a.contact__value:hover { color: var(--gold-lift); }
           </ul>
           <div class="ba__pair">
             <figure data-reveal="shot" style="--delay:0ms">
-              <span class="shot">
+              <button class="shot" type="button" data-proof="/assets/proof/pivot-point-before-v2.webp" style="--ar: 0.9744">
                 <img src="/assets/proof/pivot-point-before-v2.webp" loading="lazy" decoding="async"
                    width="760" height="780"
                    alt="Instagram Views panel, last 30 days, December 22 to January 20: 116,498 views, 48,792 accounts reached, 83.1 per cent non-followers.">
-              </span>
+                <span class="shot__zoom" aria-hidden="true"><svg viewBox="0 0 14 14" width="11" height="11" focusable="false"><path d="M5 1H1v4M9 13h4V9M1 9v4h4M13 5V1H9" stroke="currentColor" stroke-width="1.6" fill="none"/></svg>Full size</span>
+                <span class="visually-hidden">Open the full screenshot</span>
+              </button>
 
               <figcaption>Before &middot; 116,498 views</figcaption>
             </figure>
             <figure data-reveal="shot" style="--delay:140ms">
-              <span class="shot">
+              <button class="shot" type="button" data-proof="/assets/proof/pivot-point-after-v2.webp" style="--ar: 0.9257">
                 <img src="/assets/proof/pivot-point-after-v2.webp" loading="lazy" decoding="async"
                    width="760" height="821"
                    alt="Instagram Views panel, last 30 days, January 22 to February 20: 1,224,413 views, 585,289 accounts reached, up 1,095.3 per cent, 97.7 per cent non-followers.">
-              </span>
+                <span class="shot__zoom" aria-hidden="true"><svg viewBox="0 0 14 14" width="11" height="11" focusable="false"><path d="M5 1H1v4M9 13h4V9M1 9v4h4M13 5V1H9" stroke="currentColor" stroke-width="1.6" fill="none"/></svg>Full size</span>
+                <span class="visually-hidden">Open the full screenshot</span>
+              </button>
 
               <figcaption class="is-after">After &middot; 1,224,413 views</figcaption>
             </figure>
@@ -3049,6 +3195,6 @@ a.contact__value:hover { color: var(--gold-lift); }
   <a class="btn btn--ghost btn--sm" href="mailto:manny@gmgmt.co">Email</a>
 </div>
 
-<script src="/assets/js/main-v4.js" defer></script>
+<script src="/assets/js/main-v5.js" defer></script>
 </body>
 </html>

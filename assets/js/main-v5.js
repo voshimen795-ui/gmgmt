@@ -758,6 +758,31 @@
     frame.addEventListener('click', open);
   });
 
+  /* 7. Proof screenshots ---------------------------------------------------
+     The same player, holding a picture. A Shopify dashboard scaled into a phone
+     is a grey smear of numbers nobody can read, so on the page it is a
+     thumbnail and the real thing opens over it at full size.
+
+     It reuses the reels' player rather than growing a second one: the stage
+     already takes a ratio and centres whatever it is handed, closing already
+     tears the contents down and gives focus back, and Escape, the backdrop and
+     the close button already work. Nothing here but the <img>. */
+
+  Array.prototype.forEach.call(document.querySelectorAll('[data-proof]'), function (button) {
+    button.addEventListener('click', function () {
+      var full = document.createElement('img');
+      var thumb = button.querySelector('img');
+
+      full.src = button.getAttribute('data-proof');
+      /* the alt is already written on the thumbnail and describes the figures in
+         the screenshot, which is exactly what the opened copy needs too */
+      full.alt = thumb ? thumb.alt : '';
+      full.decoding = 'async';
+
+      openLightbox(full, parseFloat(window.getComputedStyle(button).getPropertyValue('--ar')) || 16 / 9, button);
+    });
+  });
+
   /* 8. Booking -------------------------------------------------------------
      With a scheduler URL the real embed takes over. Without one the page
      runs its own picker: pick a weekday, pick a 15-minute slot, then either
