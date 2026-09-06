@@ -6,7 +6,7 @@ no dependencies.
 
 ```
 index.html                  the page, with all styling inline in its <style>
-assets/js/main-v4.js        counters, chart, reels, player, booking, form, motes
+assets/js/main-v5.js        counters, chart, reels, player, booking, form, motes
 assets/fonts/               self-hosted variable fonts (Archivo, Instrument Sans)
 assets/og.png               link-preview image (1200×630)
 favicon.svg
@@ -199,10 +199,18 @@ A phone pays for things a laptop gives away. The page also holds to these:
   the browser would otherwise only discover them after parsing all of it — and the headline
   animation waits on `document.fonts.ready`, so this is the gate on when the hero settles.
 - **Everything with a version in its name is cached for a year.** The fonts, `/assets/clips`,
-  the hero loop and `main-v4.js` are served `immutable`; `index.html` is
+  the hero loop and `main-v5.js` are served `immutable`; `index.html` is
   `max-age=0, must-revalidate`. The script carries a version so it can never be a stale copy
   paired with a fresh document — see the `vercel.json` note above, which is the bug that put
   it there.
+- **The small print is two points larger on a phone, and the grey is brighter everywhere.**
+  `--t-small` and `--t-label` go 14→16 and 13→15 below 700px, which lifts all forty-four
+  places they are used at once — the steps in "How a month runs", every label under a
+  figure, the chips, the footnotes, the form hints, the FAQ answers — without a second scale
+  to remember. The video tiles are pinned back to 13, because they were not part of that
+  pass. `--grey` went from `#7E8794` to `#9BA5B4`: 5.4:1 against the ink and 4.9:1 against a
+  card became **7.95:1 and 7.26:1**, so the same one grey carries the small print everywhere
+  instead of only just carrying it.
 - **No motes on phones**, and none anywhere under reduced motion.
 
 ### Old phones
@@ -410,13 +418,22 @@ those attributes and the interaction follows.
    not seeked past at play time: a browser paints frame zero while it seeks and drops the
    poster the moment playback is asked for, so a seek shows the junk anyway, every press.
 
-4b. **Before and after** — each screenshot sits in a `.shot` frame: it uncovers itself from
-   the bottom as it arrives, lifts under the pointer with the image scaling inside the clip,
-   a light travels its border (a conic gradient turned by an `@property` angle) and one sheen
-   sweeps across the glass. Behind the cards, a canvas drifts gold motes upward — drawn only
-   while the section is on screen and the tab is visible, at device pixel ratio 1 on phones,
-   and not at all under reduced motion, where the frames also drop their clip and both
-   pseudo-elements.
+4b. **Before and after** — each screenshot sits in a `.shot` frame that is a **button**:
+   it uncovers itself from the bottom as it arrives, lifts under the pointer with the image
+   scaling inside the clip, a light travels its border (a conic gradient turned by an
+   `@property` angle), one sheen sweeps across the glass — and pressing it opens the full
+   screenshot over the page in the same player the clips use, at the screenshot's own ratio.
+   A Shopify dashboard scaled into a phone is a grey smear of numbers nobody can read, so on
+   the page it is a thumbnail that says "Full size" and means it.
+
+   On a phone the comparison is simplified: the bars come off and each metric becomes its
+   own card — what moved, how far (the multiplier as the headline it always was), and both
+   numbers at full size. Same markup and same figures; only what is shown changes, so there
+   is nothing to keep in step.
+
+   Behind the cards, a canvas drifts gold motes upward — drawn only while the section is on
+   screen and the tab is visible, at device pixel ratio 1 on phones, and not at all under
+   reduced motion, where the frames also drop their clip and both pseudo-elements.
 
 5. **Results** — a bento grid: BKH and the Pivot Point chart across the top, then Houdini,
    the link-in-bio revenue and PAC-Hub. Every figure counts up on arrival, and the shares
