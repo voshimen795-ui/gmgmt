@@ -681,12 +681,68 @@
     lightboxClose.focus();
   }
 
+  /* Nothing is asked of YouTube or Vimeo until a tile is pressed, which is the
+     right default and is why the page contacts nobody on arrival. It does mean
+     the press pays for the introduction: a DNS lookup, a TCP connection and a
+     TLS handshake before a single byte of player is on the wire. On a phone
+     that is most of the wait before the picture.
+
+     So the handshake moves off the press without the fetch moving with it. A
+     tile warms its origins the first time it is hovered, focused or touched —
+     all of which come before the press, most of them by a good half second —
+     and a visitor who never goes near it still asks those hosts for nothing.
+
+     Deliberately no `crossorigin`: an iframe is a credentialed navigation, and
+     an anonymous preconnect opens a connection in the wrong pool that the
+     iframe then cannot reuse — which would be all of the cost and none of the
+     saving. */
+
+  var warmed = {};
+
+  function warmOrigin(origin) {
+    if (warmed[origin]) return;
+    warmed[origin] = true;
+    var link = document.createElement('link');
+    link.rel = 'preconnect';
+    link.href = origin;
+    document.head.appendChild(link);
+  }
+
+  /* the player's own origin is unavoidable; these are the hosts it goes on to
+     ask for the poster and the video itself, and they cost the same three
+     round trips again if they are met cold */
+  var ALSO_WARM = {
+    'player.vimeo.com': ['https://i.vimeocdn.com', 'https://f.vimeocdn.com'],
+    'www.youtube-nocookie.com': ['https://i.ytimg.com'],
+    'www.youtube.com': ['https://i.ytimg.com']
+  };
+
+  var INTENT = ['pointerenter', 'touchstart', 'focusin'];
+
+  function warmOnIntent(reel, embed) {
+    var host;
+    try { host = new URL(embed, window.location.href).host; } catch (e) { return; }
+
+    var origins = ['https://' + host].concat(ALSO_WARM[host] || []);
+
+    function once() {
+      origins.forEach(warmOrigin);
+      INTENT.forEach(function (type) { reel.removeEventListener(type, once); });
+    }
+
+    INTENT.forEach(function (type) {
+      reel.addEventListener(type, once, { passive: true });
+    });
+  }
+
   Array.prototype.forEach.call(document.querySelectorAll('[data-reel]'), function (reel) {
     var frame = reel.querySelector('[data-reel-btn]');
     if (!frame) return;
 
     var file = reel.getAttribute('data-video');
     var embed = reel.getAttribute('data-embed');
+
+    if (embed) warmOnIntent(reel, embed);
 
     /* The clip's shape is read back off the tile rather than kept in a second
        attribute. The tile is already that shape — `--ar` is what makes it one,
