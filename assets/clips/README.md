@@ -70,7 +70,22 @@ Whole frames, scaled, nothing cropped:
       -c:v libwebp -quality 66 -compression_level 6 out-poster.webp
 
 480 wide covers the 360px a vertical tile is ever given; the landscape one is
-768. All three together are 60KB. They are real `<img class="reel__thumb"
+768. All three together are 60KB.
+
+**Take the frame from a still moment, not just any moment.** These clips animate
+their burned-in captions, and a frame grabbed mid-transition gives you a smeared
+band of yellow where a readable line should be — which is what the first tile
+shipped with until someone looked at it on a phone. Sample a spread and pick one
+where the caption has landed:
+
+    for T in 3.2 4.6 6.1 7.4 10.2 13.1; do
+      ffmpeg -ss $T -i source.mp4 -frames:v 1 -vf "scale=190:-1" tn-$T.png
+    done
+
+Take it from the sharpest source you have rather than from whatever the tile
+happens to be pointing at. `reel-1-poster-v13.webp` comes off the 6.1Mbps screen
+recording, not off the 720-wide encode that used to sit in this directory, and
+certainly not off the embed — which cannot be sampled at all. They are real `<img class="reel__thumb"
 loading="lazy">` elements, not CSS backgrounds: a background image is fetched as
 soon as its element is laid out, wherever on the page that element sits, and
 these tiles are a long way below the fold.
