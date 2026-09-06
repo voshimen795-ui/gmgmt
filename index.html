@@ -2593,9 +2593,15 @@ a.contact__value:hover { color: var(--gold-lift); }
              layout: the tile has to be the right shape with scripting off, and
              before a byte of media has been asked for. The player reads the
              same value back off the computed style, so there is one number per
-             clip and no second place to keep it in step. -->
+             clip and no second place to keep it in step.
+
+             All three are embeds now, and `--ar` is the only thing that knows
+             what shape each one is: an iframe cannot be asked. These two are
+             the clips shot vertical, so they stay at their own ratios however
+             square the provider's copy-paste snippet happens to be. -->
         <figure class="reel" data-reel style="--ar: 0.548"
-                data-video="/assets/clips/reel-1-v11.mp4">
+                data-embed="https://player.vimeo.com/video/1224356165?h=05f5d9138c&amp;autoplay=1&amp;title=0&amp;byline=0&amp;portrait=0&amp;dnt=1"
+                data-embed-title="The Devito &amp; Jenne client reel on Vimeo">
           <button class="reel__frame" type="button" data-reel-btn>
             <img class="reel__thumb" src="/assets/clips/reel-1-poster-v12.webp" alt=""
                  width="480" height="876" loading="lazy" decoding="async" fetchpriority="low">
@@ -2603,7 +2609,7 @@ a.contact__value:hover { color: var(--gold-lift); }
             <span class="reel__play" aria-hidden="true">
               <svg viewBox="0 0 14 16" width="13" height="15" focusable="false"><path d="M0 0 L14 8 L0 16 Z" fill="currentColor"/></svg>
             </span>
-            <span class="visually-hidden">Play the client reel</span>
+            <span class="visually-hidden">Play the client reel on Vimeo</span>
           </button>
         </figure>
 
@@ -3208,6 +3214,6 @@ a.contact__value:hover { color: var(--gold-lift); }
   <a class="btn btn--ghost btn--sm" href="mailto:manny@gmgmt.co">Email</a>
 </div>
 
-<script src="/assets/js/main-v6.js" defer></script>
+<script src="/assets/js/main-v7.js" defer></script>
 </body>
 </html>

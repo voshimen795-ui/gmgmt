@@ -1,10 +1,13 @@
 # Reel clips
 
-Video for the three tiles in the Work section.
+Posters for the three tiles in the Work section.
 
-**Only one clip is hosted here now** — `reel-1-v11.mp4`. The Short is a YouTube
-embed and the Long-form tile is a Vimeo embed of the client's full cut, so both
-of those are a poster and a URL rather than a file.
+**Nothing is hosted here any more.** All three tiles are embeds — two on Vimeo,
+one on YouTube — so each is a poster and a URL. This directory went from 7MB to
+76KB when the last mp4 left it.
+
+The encoding recipes below are kept because they are the argument for why the
+clips look the way they do, and because the next clip may well arrive as a file.
 
 ## Every tile is its clip's own shape
 
@@ -74,23 +77,30 @@ these tiles are a long way below the fold.
 
 ## Cut the head off the file, never at play time
 
-`reel-1-v11.mp4` is made from a screen recording of a Facebook post, and the
-recording opens on about a second of a **"Video unavailable"** card, then black,
-then a loading spinner, before the clip itself starts.
+The first clip is made from a screen recording of a Facebook post, and **the
+recording opens on about a second of a "Video unavailable" card, then black,
+then a loading spinner**, before the clip itself starts.
 
 That used to be shipped in the file, with `data-start="1.7"` on the tile and a
 seek in the script to skip it. It never worked. A browser paints frame zero while
 it seeks, and the poster is dropped the moment playback is asked for, so every
 single press flashed the error card first — which is exactly what "the first two
-seconds are nothing" means when someone reports it.
+seconds are nothing" means when someone reports it. It was cut in the encode
+instead, at 0.95s, the first frame of real picture.
 
-**A head you have to skip is a head that should not be in the file.** Find the
-first frame of real picture, and cut there in the encode:
+**That cut lives in the file, so it only holds for as long as the file does.**
+The tile is a Vimeo embed now, and if what was uploaded there is the raw screen
+recording rather than the trimmed cut, the error card is back and nothing on this
+page can hide it — an iframe's timeline is not ours. Check the opening second of
+the upload; trim it at the source if it is there.
+
+Find the first frame of real picture the same way it was found here:
 
     # sample the opening at 4fps and look at it
     ffmpeg -t 3.6 -i source.mp4 -vf "fps=4,scale=160:-1,tile=7x2" -frames:v 1 head.png
 
-`data-start` no longer exists. Do not put it back.
+`data-start` no longer exists, and would not help an embed even if it did. Do not
+put it back.
 
 ## Getting a source into shape
 
@@ -98,7 +108,7 @@ There is no reshaping any more. Each clip is encoded at its **own** aspect ratio
 whole, and the player gives it a box that matches. No crop, no blurred band,
 nothing added and nothing taken away.
 
-**Shot vertical** (`reel-1-v11.mp4`, from an 870x1588 phone recording — the file
+**Shot vertical** (this was `reel-1-v11.mp4`, from an 870x1588 phone recording — the file
 reads 1588x870 with a -90 rotation, which ffmpeg applies on its own):
 
     ffmpeg -ss <cut> -i source.mp4 -ss <cut> -i audio-source.mp4 -filter_complex "
@@ -138,30 +148,48 @@ whole clip with the corner sampled every four seconds), and that file has since
 been replaced by the Vimeo embed of the full cut. **Anything new arriving with a
 watermark gets cropped out at the source, not worked around in the player.**
 
-### The two embeds
+### All three are embeds
 
-Neither the Short nor the Long-form cut is ours to host, so both are a poster and
-an iframe, and both open in the same player the local clip does.
+None of the three is ours to host any more, so each is a poster and an iframe,
+and all three open in the same player.
 
-`reel-3` is a **YouTube** Short. It used to be the tile with blurred sides, since
-an iframe's picture cannot be cropped from outside it and there was genuinely
-nothing to be done; giving the tile the clip's own 9:16 fixed that. Its poster is
-`reel-3-poster-v8.webp`, drawn from the clip rather than pulled from
-`i.ytimg.com` — which answers with a grey placeholder rather than a 404 when a
-Short has no thumbnail in the size asked for.
+**Vimeo** carries the first tile (`1224356165`) and the Long-form one
+(`1224354817`). Two parts of those URLs are not optional: `h=` is the video's
+privacy hash, without which the player will not load an unlisted video at all,
+and `dnt=1` asks Vimeo not to track. `title`, `byline` and `portrait` are off so
+the player opens on the picture rather than on its own furniture.
 
-The Long-form tile is **Vimeo**, and its URL has two parts that are not optional:
-`h=` is the video's privacy hash, and `dnt=1` asks Vimeo not to track. `title`,
-`byline` and `portrait` are off so the player opens on the picture rather than on
-its own furniture. Nothing is requested from either host until a tile is pressed,
-which is also why there is deliberately no preconnect to them.
+**YouTube** carries the Short (`WZF_Tt_xNAQ`), on `youtube-nocookie`.
 
-Its poster, `reel-2-poster-v12.webp`, is a 16:9 frame cut from the old local
-slice of the same footage — Vimeo's own thumbnail could not be reached from the
-machine that built it. It is the same shot, so it is honest, but if you want the
-frame Vimeo itself shows, take it from the oEmbed endpoint and drop it in:
+An iframe cannot be asked what shape it is, so **`--ar` is the only thing that
+knows**. Both providers hand out a copy-paste snippet sized 640x360 whatever the
+video actually is; ignore it and set the clip's real ratio, or a vertical clip
+will letterbox inside a 16:9 box.
+
+Posters are ours either way. `reel-3-poster-v8.webp` is drawn from the clip
+rather than pulled from `i.ytimg.com`, which answers with a grey placeholder
+rather than a 404 when a Short has no thumbnail in the size asked for.
+`reel-2-poster-v12.webp` is a 16:9 frame cut from the local slice the tile used
+to carry — the same shot, and honest, but Vimeo's own thumbnail would be better
+and could not be reached from the machine that built it:
 
     curl -s "https://vimeo.com/api/oembed.json?url=https%3A%2F%2Fvimeo.com%2F<id>%2F<hash>"
+
+### Warming the connection
+
+Nothing is asked of either provider until a tile is pressed. That is the right
+default — it is why the page contacts nobody on arrival — and it means the press
+pays for the introduction: a DNS lookup, a TCP connection and a TLS handshake
+before a byte of player is on the wire.
+
+So the handshake moves off the press without the fetch moving with it. A tile
+preconnects its origins the first time it is **hovered, focused or touched**, all
+of which come before the press. A visitor who never goes near a tile still asks
+those hosts for nothing.
+
+There is deliberately no `crossorigin` on those links. An iframe is a credentialed
+navigation, and an anonymous preconnect opens a connection in the wrong pool that
+the iframe cannot then reuse — all of the cost and none of the saving.
 
 ## 30fps, not 60
 
@@ -172,29 +200,23 @@ is in the filter chain above; leave it there.
 
 ## Sound
 
-The one hosted clip keeps its audio (AAC 96k) at about -18.7 dB mean; the two
-embeds carry their own. Pressing play is a user gesture, so the clip is
-allowed its sound and starts unmuted; if a browser refuses anyway the script
-retries muted rather than leaving a dead player.
+Every clip carries its own audio now, because every clip is on someone else's
+player. What is worth remembering is why the one we hosted needed care: **its
+audio did not come from its own video**.
 
-Its audio does not come from its own video source, so it is muxed and it can
-drift if you are careless:
+The screen recording's AAC track was digital silence end to end — `volumedetect`
+reported a mean and a max of -91 dB, the noise floor of an empty stream. The
+sound was recovered from a second, quarter-resolution copy that ran **1.1417s
+behind**, an offset measured rather than guessed, and muxed on with the same
+`-ss` applied to both inputs. It landed at about -18.7 dB mean, level with the
+other clip.
 
-- The first clip's own recording carries a full AAC track that is digital
-  silence end to end (`volumedetect` reports mean and max of -91 dB, the noise
-  floor of an empty stream). The sound was recovered from a second, quarter-
-  resolution copy that ran 1.1417s behind, and that offset is already baked into
-  `reel-1-v7.mp4` — which is why the encode above takes video from the screen
-  recording and audio from `reel-1-v7.mp4`, with **the same `-ss` on both**.
-
-Check any new clip before shipping it:
+If the Vimeo upload was made from the silent original rather than from that
+muxed file, it is a silent video. Check before assuming, the same way:
 
     ffmpeg -i clip.mp4 -map 0:a -af volumedetect -f null /dev/null
 
-A clip is **torn down when the player is closed** — paused, its source dropped,
-`load()` called, the element removed. Pausing alone is not enough: a paused
-`<video>` keeps its decoder and its buffer, so without that the clip goes on
-running behind the page after someone has closed it.
+Pressing play is a user gesture, so a clip is allowed its sound and gets it.
 
 ## Keep them small, and always faststart
 

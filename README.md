@@ -6,7 +6,7 @@ no dependencies.
 
 ```
 index.html                  the page, with all styling inline in its <style>
-assets/js/main-v6.js        counters, chart, reels, player, booking, form, motes
+assets/js/main-v7.js        counters, chart, reels, player, booking, form, motes
 assets/fonts/               self-hosted variable fonts (Archivo, Instrument Sans)
 assets/og.png               link-preview image (1200×630)
 favicon.svg
@@ -67,8 +67,9 @@ Where it came from:
   glyphs took 120KB of woff2 to 63KB; trimming the axes took it to 43KB. They are not
   preloaded: preloading raced them against the stylesheet on a narrow pipe, and
   `font-display: swap` paints the text immediately regardless.
-- **The tile thumbnails are lazy WebP** — 60KB for all three, each one the whole frame of
-  the clip it fronts, scaled, never cropped. They are real `<img loading="lazy">` elements,
+- **The tile thumbnails are lazy WebP** — 60KB for all three, and now the whole of
+  `assets/clips`, since every clip moved to a provider. Each is the whole frame of the clip
+  it fronts, scaled, never cropped. They are real `<img loading="lazy">` elements,
   not CSS backgrounds: a background image is fetched as soon as its element is laid out no
   matter where on the page it sits, and these tiles are a long way down.
 - **The proof screenshots are WebP.** The same four dashboards were 197KB as JPEG and are
@@ -199,7 +200,7 @@ A phone pays for things a laptop gives away. The page also holds to these:
   the browser would otherwise only discover them after parsing all of it — and the headline
   animation waits on `document.fonts.ready`, so this is the gate on when the hero settles.
 - **Everything with a version in its name is cached for a year.** The fonts, `/assets/clips`,
-  the hero loop and `main-v6.js` are served `immutable`; `index.html` is
+  the hero loop and `main-v7.js` are served `immutable`; `index.html` is
   `max-age=0, must-revalidate`. The script carries a version so it can never be a stale copy
   paired with a fresh document — see the `vercel.json` note above, which is the bug that put
   it there.
@@ -408,11 +409,19 @@ those attributes and the interaction follows.
    window at every offset, so the crop cut his head off; the blur made two thirds of the
    tile filler. Letting the tile take the clip's shape costs nothing and cuts nothing.
 
-   **Only one of the three is hosted here.** The Short is a YouTube embed and the Long-form
-   tile is a Vimeo embed of the client's full cut — it used to carry a 33-second slice of
-   that cut, which was making the argument for long-form with the wrong evidence. Nothing is
-   requested from either host until a tile is pressed, which is why there is deliberately no
-   preconnect to them.
+   **None of the three is hosted here now** — two on Vimeo, one on YouTube. `assets/clips`
+   holds three posters and nothing else, 76KB where it was 7MB. An iframe cannot be asked
+   what shape it is, so `--ar` is the only thing that knows, and both providers hand out a
+   copy-paste snippet sized 640x360 whatever the video actually is: ignore it, or a vertical
+   clip letterboxes inside a 16:9 box.
+
+   Nothing is requested from either provider until a tile is pressed. **The handshake is
+   moved off that press without the fetch moving with it**: a tile preconnects its origins
+   the first time it is hovered, focused or touched, all of which come before the press, so
+   the DNS lookup, TCP connection and TLS handshake are done by the time the player is asked
+   for. A visitor who never goes near a tile still asks those hosts for nothing. Those links
+   carry no `crossorigin`, deliberately — an iframe is a credentialed navigation, and an
+   anonymous preconnect opens a connection in the wrong pool that the iframe cannot reuse.
 
    A tile is a still until it is pressed, and pressing opens the clip **over the page** at
    the same ratio, whole, with its own controls and its sound. Nothing is fetched, decoded
