@@ -21,7 +21,7 @@ each; the one shot landscape spans the row beneath them and closes the block
 off:
 
     ┌──────────┐ ┌──────────┐
-    │  9:16    │ │  9:16    │     reel-1 (0.548)   reel-3 (0.5625)
+    │  9:16    │ │  9:16    │     reel-1 (0.5625)  reel-3 (0.5625)
     │          │ │          │
     └──────────┘ └──────────┘
     ┌───────────────────────┐
@@ -46,7 +46,7 @@ Letting the tile take the clip's shape costs nothing and cuts nothing.
 
 Each tile carries its clip's width over its height, inline on the figure:
 
-    <figure class="reel" data-reel style="--ar: 0.548" ...>
+    <figure class="reel" data-reel style="--ar: 0.5625" ...>
 
 Inline, and not a data attribute, because it is **layout**: the tile has to be
 the right shape with scripting off and before a byte of media has been asked
@@ -55,12 +55,16 @@ one number per clip and no second place to keep it in step. A `<video>` also
 corrects it from the real frame on `loadedmetadata`, which covers a re-encode
 that changed shape without the markup being updated.
 
-The two vertical tiles are the one exception, and a deliberate one. 0.548 and
-0.5625 are close but not equal, and at 360px wide that is 17px of difference
-showing as one tile ending lower than the other. They share a 9:16 frame in CSS
-so the row has a straight bottom edge; the 23px that trims off the taller
-thumbnail is 2.6% of a still, and `--ar` is untouched, so the player still opens
+The two vertical tiles are held to a shared 9:16 frame in CSS. Both are 9:16
+today so it changes nothing, but it arrived when they were 0.548 and 0.5625 —
+close, and at 360px wide still 17px of one tile ending lower than the other. A
+row wants a straight bottom edge more than it wants two ratios held to the
+pixel, so the guard stays. `--ar` is untouched either way, and the player opens
 at the clip's real shape.
+
+**Getting `--ar` right matters more now that every clip is an embed.** A
+`<video>` corrects it from the real frame on `loadedmetadata`; an iframe cannot
+be asked at all, so whatever is in the markup is what the player believes.
 
 ### The thumbnails
 
