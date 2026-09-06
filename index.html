@@ -845,12 +845,13 @@ section { padding-block: var(--section-y); }
 .js .reel-kicker.is-in::before,
 .js .reel-kicker.is-in::after { transform: scaleX(1); }
 
-/* The two clips shot vertical are 0.548 and 0.5625 — close, but not the same,
-   and at 360px wide that is 17px of difference showing as one tile ending lower
-   than the other. They share a 9:16 frame instead, so the row has a straight
-   bottom edge. The 23px it trims off the taller thumbnail is 2.6% of a still
-   nobody will ever compare against the file. `--ar` is untouched: it is the
-   clip's real shape and the player still opens at it. */
+/* Both clips shot vertical are 9:16, so this line currently changes nothing —
+   it is kept as the guard it was written to be. It arrived when the two were
+   0.548 and 0.5625: close, but at 360px wide that is 17px of one tile ending
+   lower than the other, and a row of tiles wants a straight bottom edge more
+   than it wants two ratios held to the pixel. Any future vertical clip that is
+   a little off 9:16 is pulled into line the same way, and `--ar` stays its real
+   shape either way, so the player still opens at it. */
 .reel:not(.reel--wide) .reel__frame { aspect-ratio: 9 / 16; }
 
 .reel__frame:hover, .reel__frame:focus-visible {
@@ -2599,12 +2600,12 @@ a.contact__value:hover { color: var(--gold-lift); }
              what shape each one is: an iframe cannot be asked. These two are
              the clips shot vertical, so they stay at their own ratios however
              square the provider's copy-paste snippet happens to be. -->
-        <figure class="reel" data-reel style="--ar: 0.548"
+        <figure class="reel" data-reel style="--ar: 0.5625"
                 data-embed="https://player.vimeo.com/video/1224358039?h=7ece193f4b&amp;autoplay=1&amp;title=0&amp;byline=0&amp;portrait=0&amp;dnt=1"
                 data-embed-title="The Devito &amp; Jenne client reel on Vimeo">
           <button class="reel__frame" type="button" data-reel-btn>
-            <img class="reel__thumb" src="/assets/clips/reel-1-poster-v13.webp" alt=""
-                 width="480" height="876" loading="lazy" decoding="async" fetchpriority="low">
+            <img class="reel__thumb" src="/assets/clips/reel-1-poster-v14.webp" alt=""
+                 width="486" height="864" loading="lazy" decoding="async" fetchpriority="low">
             <span class="reel__platform">Devito &amp; Jenne</span>
             <span class="reel__play" aria-hidden="true">
               <svg viewBox="0 0 14 16" width="13" height="15" focusable="false"><path d="M0 0 L14 8 L0 16 Z" fill="currentColor"/></svg>
