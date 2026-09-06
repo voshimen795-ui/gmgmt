@@ -749,7 +749,10 @@
       var player = document.createElement('iframe');
       player.src = embed;
       player.title = reel.getAttribute('data-embed-title') || 'Video player';
-      player.setAttribute('allow', 'autoplay; encrypted-media; picture-in-picture; fullscreen');
+      /* the union of what YouTube and Vimeo ask for, so one line covers both */
+      player.setAttribute('allow',
+        'autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share');
+      player.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
       player.setAttribute('allowfullscreen', '');
       player.setAttribute('frameborder', '0');
       openLightbox(player, ratio, frame);

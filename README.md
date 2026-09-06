@@ -6,7 +6,7 @@ no dependencies.
 
 ```
 index.html                  the page, with all styling inline in its <style>
-assets/js/main-v5.js        counters, chart, reels, player, booking, form, motes
+assets/js/main-v6.js        counters, chart, reels, player, booking, form, motes
 assets/fonts/               self-hosted variable fonts (Archivo, Instrument Sans)
 assets/og.png               link-preview image (1200×630)
 favicon.svg
@@ -199,7 +199,7 @@ A phone pays for things a laptop gives away. The page also holds to these:
   the browser would otherwise only discover them after parsing all of it — and the headline
   animation waits on `document.fonts.ready`, so this is the gate on when the hero settles.
 - **Everything with a version in its name is cached for a year.** The fonts, `/assets/clips`,
-  the hero loop and `main-v5.js` are served `immutable`; `index.html` is
+  the hero loop and `main-v6.js` are served `immutable`; `index.html` is
   `max-age=0, must-revalidate`. The script carries a version so it can never be a stale copy
   paired with a fresh document — see the `vercel.json` note above, which is the bug that put
   it there.
@@ -396,17 +396,23 @@ those attributes and the interaction follows.
    caption, and tracking comes back in as the size goes up. Spacing is 24px inside a group
    and 56 between them, on the page's own ladder.
 
-   **Every tile is its clip's own shape**, so there is no crop anywhere on
-   the page: not in the tile, not in the thumbnail, not in the player. The two clips shot
-   vertical take a column each; the one shot landscape spans the row beneath them and
-   closes the block off. Three uncropped tiles of two different shapes cannot make a
-   straight row — they can make this.
+   **Every tile is its clip's own shape**, so there is no crop anywhere on the page: not in
+   the tile, not in the thumbnail, not in the player. The two clips shot vertical take a
+   column each; the one shot landscape spans the row beneath them and closes the block off.
+   Three uncropped tiles of two different shapes cannot make a straight row — they can make
+   this.
 
    It took three tries. Forcing all three into one 16:9 tile means either cropping the
    picture or packing the sides with blur, and both shipped: a 16:9 window out of a
    870x1588 frame is 870x489, and in the first clip the speaker's head is taller than that
    window at every offset, so the crop cut his head off; the blur made two thirds of the
    tile filler. Letting the tile take the clip's shape costs nothing and cuts nothing.
+
+   **Only one of the three is hosted here.** The Short is a YouTube embed and the Long-form
+   tile is a Vimeo embed of the client's full cut — it used to carry a 33-second slice of
+   that cut, which was making the argument for long-form with the wrong evidence. Nothing is
+   requested from either host until a tile is pressed, which is why there is deliberately no
+   preconnect to them.
 
    A tile is a still until it is pressed, and pressing opens the clip **over the page** at
    the same ratio, whole, with its own controls and its sound. Nothing is fetched, decoded
