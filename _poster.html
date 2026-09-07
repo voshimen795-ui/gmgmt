@@ -1,6 +1,9 @@
 <style>
-@font-face{font-family:'Archivo';src:url('/assets/fonts/archivo-latin-var.woff2') format('woff2');font-weight:400 800;font-stretch:62% 125%}
-@font-face{font-family:'Instrument Sans';src:url('/assets/fonts/instrument-sans-latin-var.woff2') format('woff2');font-weight:400 600}
+/* -v5, and the stretch range the shipped subset was actually pinned to. The
+   names here were archivo-latin-var / instrument-sans-latin-var, which have not
+   existed since the fonts were versioned, so this rendered in Helvetica. */
+@font-face{font-family:'Archivo';src:url('/assets/fonts/archivo-latin-v5.woff2') format('woff2');font-weight:400 800;font-stretch:100% 125%}
+@font-face{font-family:'Instrument Sans';src:url('/assets/fonts/instrument-sans-latin-v5.woff2') format('woff2');font-weight:400 600}
 *{margin:0;padding:0;box-sizing:border-box}
 body{width:1280px;height:720px;background:#0B1018;position:relative;overflow:hidden;font-family:'Instrument Sans',sans-serif}
 .glow{position:absolute;inset:-20% -10% 10% -10%;background:

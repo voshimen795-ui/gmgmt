@@ -293,10 +293,38 @@
     });
   }
 
+  /* Below 900px the nav is a scroll strip, so the link the observer just made
+     active can easily be off to one side. Nothing to do above that width,
+     where every link is on screen at once. */
+  var navStrip = window.matchMedia ? window.matchMedia('(max-width: 899px)') : null;
+
+  function revealLink(link) {
+    if (!navStrip || !navStrip.matches || !link.scrollIntoView) return;
+    try {
+      /* reduceMotion is the file-wide boolean taken at the top. Declaring a
+         second one here would redeclare it — same var, same function scope —
+         and every later `!reduceMotion` would then be testing an object that
+         is always truthy, which silently switches off the hero film and the
+         motes. */
+      link.scrollIntoView({
+        behavior: reduceMotion ? 'auto' : 'smooth',
+        inline: 'center',
+        block: 'nearest'
+      });
+    } catch (e) {
+      /* Older Safari only takes the boolean form, and centring is a nicety. */
+    }
+  }
+
   if (navLinks.length && hasIO) {
     var sections = [];
     Array.prototype.forEach.call(navLinks, function (link) {
-      var target = document.querySelector(link.getAttribute('href'));
+      /* Every href here goes straight into querySelector, and a link to
+         another document — /team/ — is not a valid selector. Those links are
+         left without data-nav-link, and this is the belt to that braces. */
+      var href = link.getAttribute('href') || '';
+      if (href.charAt(0) !== '#') return;
+      var target = document.querySelector(href);
       if (target) sections.push({ link: link, el: target });
     });
 
@@ -307,6 +335,7 @@
         sections.forEach(function (s) { s.link.classList.remove('is-active'); });
         match.link.classList.add('is-active');
         if (nav && !nav.matches(':hover')) moveMarker(match.link);
+        revealLink(match.link);
       });
     }, { rootMargin: '-45% 0px -50% 0px' });
 
@@ -1112,7 +1141,14 @@
      With an endpoint in data-endpoint the form posts straight to it, so the
      message lands in Manny's inbox without the visitor opening a mail app.
      Without one it composes the same message as an email, and either way
-     the WhatsApp button hands the whole thing to his phone.               */
+     the WhatsApp button hands the whole thing to his phone.
+
+     Two things the first version got wrong. It accepted any email that was
+     not empty, so a typo produced a lead nobody could answer — the one
+     failure here that costs a real customer. And the no-endpoint path set
+     window.location to a mailto:, which does nothing visible on a phone with
+     no mail client registered; the visitor watched a button do nothing and
+     concluded the site was broken. The message is now always recoverable. */
 
   var leadForm = document.querySelector('[data-lead]');
 
@@ -1120,7 +1156,22 @@
     var leadStatus = leadForm.querySelector('[data-lead-status]');
     var leadSend = leadForm.querySelector('[data-lead-send]');
     var leadWhats = leadForm.querySelector('[data-lead-whatsapp]');
+    var leadCopy = leadForm.querySelector('[data-lead-copy]');
     var endpoint = (leadForm.getAttribute('data-endpoint') || '').trim();
+    var leadKey = 'gmgmt:lead';
+    var submitted = false;
+
+    /* Deliberately not an RFC 5322 attempt. Something before an @, something
+       after it, a dot and at least two more characters — that is the shape of
+       every address a visitor will actually type, and anything stricter starts
+       rejecting real ones. */
+    var emailShape = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+    var leadFields = [
+      { name: 'name',    id: 'lead-name',    message: 'Your name, so he knows who is writing.' },
+      { name: 'email',   id: 'lead-email',   message: 'An email he can reply to.' },
+      { name: 'message', id: 'lead-message', message: 'A line about what you need.' }
+    ];
 
     function leadValues() {
       return {
@@ -1146,22 +1197,143 @@
       leadStatus.className = 'lead__status' + (tone ? ' is-' + tone : '');
     }
 
-    function missing(v) {
-      if (!v.name || !v.email || !v.message) {
-        say('Name, email and a line about what you need, then it goes.', 'warn');
+    /* The per-field notes say which box is wrong; the status line stays the
+       single summary. Putting role="alert" on four separate notes would
+       announce four interruptions for one press of one button. */
+    function setFieldError(field, text) {
+      var input = leadForm.elements[field.name];
+      var note = document.getElementById(field.id + '-error');
+      if (note) note.textContent = text || '';
+      if (!input) return;
+      if (text) input.setAttribute('aria-invalid', 'true');
+      else input.removeAttribute('aria-invalid');
+    }
+
+    function checkField(field, v) {
+      if (!v[field.name]) return field.message;
+      if (field.name === 'email' && !emailShape.test(v.email)) {
+        return 'That address looks incomplete — check it and send again.';
+      }
+      return '';
+    }
+
+    function validate(v) {
+      var firstBad = null;
+      leadFields.forEach(function (field) {
+        var problem = checkField(field, v);
+        setFieldError(field, problem);
+        if (problem && !firstBad) firstBad = field;
+      });
+
+      if (!firstBad) {
+        say('');
         return true;
       }
+
+      say('Nearly — see the notes on the fields above.', 'warn');
+      var input = leadForm.elements[firstBad.name];
+      if (input && input.focus) input.focus();
       return false;
+    }
+
+    /* Only after the first press. Marking a field wrong while someone is still
+       typing it is how a form starts arguing with the person filling it in. */
+    leadFields.forEach(function (field) {
+      var input = leadForm.elements[field.name];
+      if (!input) return;
+      input.addEventListener('input', function () {
+        if (!submitted) return;
+        setFieldError(field, checkField(field, leadValues()));
+      });
+    });
+
+    /* Storage throws outright in a locked-down Safari rather than failing
+       quietly, so every touch of it is wrapped. A lost draft is a nuisance;
+       a thrown exception here would take the rest of the module with it. */
+    function saveDraft() {
+      try {
+        var v = leadValues();
+        window.sessionStorage.setItem(leadKey, JSON.stringify({
+          name: v.name, email: v.email, brand: v.brand, message: v.message
+        }));
+      } catch (e) {}
+    }
+
+    function clearDraft() {
+      try { window.sessionStorage.removeItem(leadKey); } catch (e) {}
+    }
+
+    function restoreDraft() {
+      var raw;
+      try { raw = window.sessionStorage.getItem(leadKey); } catch (e) { return; }
+      if (!raw) return;
+      var saved;
+      try { saved = JSON.parse(raw); } catch (e) { return; }
+      if (!saved) return;
+      ['name', 'email', 'brand', 'message'].forEach(function (key) {
+        var input = leadForm.elements[key];
+        if (input && !input.value && saved[key]) input.value = saved[key];
+      });
+    }
+
+    restoreDraft();
+
+    var draftTimer = null;
+    leadForm.addEventListener('input', function () {
+      if (draftTimer) window.clearTimeout(draftTimer);
+      draftTimer = window.setTimeout(saveDraft, 400);
+    });
+
+    /* Shown the moment a send goes anywhere the visitor cannot see the result
+       of — the mail-app handoff, or a failed post. The text is the same text
+       the endpoint would have received, so the lead survives either way. */
+    function offerCopy() {
+      if (leadCopy) leadCopy.hidden = false;
+    }
+
+    if (leadCopy) {
+      leadCopy.addEventListener('click', function () {
+        var text = leadText(leadValues());
+
+        function fallback() {
+          var scratch = document.createElement('textarea');
+          scratch.value = text;
+          scratch.setAttribute('readonly', '');
+          scratch.style.position = 'absolute';
+          scratch.style.left = '-9999px';
+          document.body.appendChild(scratch);
+          scratch.select();
+          var done = false;
+          try { done = document.execCommand('copy'); } catch (e) {}
+          document.body.removeChild(scratch);
+          say(done
+            ? 'Copied. Paste it to manny@gmgmt.co, or send it on WhatsApp.'
+            : 'Select the message and copy it, then send it to manny@gmgmt.co.',
+            done ? 'ok' : 'warn');
+        }
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(function () {
+            say('Copied. Paste it to manny@gmgmt.co, or send it on WhatsApp.', 'ok');
+          }).catch(fallback);
+        } else {
+          fallback();
+        }
+      });
     }
 
     leadForm.addEventListener('submit', function (event) {
       event.preventDefault();
       var v = leadValues();
       if (v.trap) return;
-      if (missing(v)) return;
+      submitted = true;
+      if (!validate(v)) return;
 
       if (!endpoint) {
-        say('Opening your mail app with the message ready.', 'ok');
+        /* The mail app may or may not appear. Either way the message stays on
+           screen with a way to lift it out, so this is never a dead button. */
+        say('Opening your mail app. If nothing happens, copy the message or send it on WhatsApp.', 'ok');
+        offerCopy();
         window.location.href = 'mailto:manny@gmgmt.co'
           + '?subject=' + encodeURIComponent('New enquiry from gmgmt.com')
           + '&body=' + encodeURIComponent(leadText(v));
@@ -1183,11 +1355,29 @@
           from_name: 'gmgmt.com'
         })
       }).then(function (response) {
-        if (!response.ok) throw new Error(String(response.status));
+        /* A rejected access key and a dead network used to read identically,
+           which is exactly the case where the endpoint's own words are worth
+           having — it is how a wrong key gets noticed at all. */
+        return response.json().catch(function () { return null; })
+          .then(function (body) {
+            if (!response.ok) {
+              var detail = body && body.message ? String(body.message) : '';
+              throw new Error(detail || ('HTTP ' + response.status));
+            }
+            return body;
+          });
+      }).then(function () {
         leadForm.reset();
+        clearDraft();
+        leadFields.forEach(function (field) { setFieldError(field, ''); });
+        submitted = false;
+        if (leadCopy) leadCopy.hidden = true;
         say('Sent. Manny answers the same day, usually sooner.', 'ok');
-      }).catch(function () {
-        say('That did not send. Use WhatsApp, or write to manny@gmgmt.co.', 'warn');
+      }).catch(function (error) {
+        var detail = error && error.message ? error.message : '';
+        say('That did not send' + (detail ? ' (' + detail + ')' : '')
+          + '. Copy the message, use WhatsApp, or write to manny@gmgmt.co.', 'warn');
+        offerCopy();
       }).then(function () {
         leadSend.disabled = false;
       });
@@ -1196,7 +1386,8 @@
     if (leadWhats) {
       leadWhats.addEventListener('click', function () {
         var v = leadValues();
-        if (missing(v)) return;
+        submitted = true;
+        if (!validate(v)) return;
         window.open('https://wa.me/17869295735?text=' + encodeURIComponent(leadText(v)),
                     '_blank', 'noopener');
         say('WhatsApp is open with the message ready to send.', 'ok');

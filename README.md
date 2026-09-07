@@ -6,7 +6,8 @@ no dependencies.
 
 ```
 index.html                  the page, with all styling inline in its <style>
-assets/js/main-v7.js        counters, chart, reels, player, booking, form, motes
+team/index.html             the team page, styled the same way and for the same reason
+assets/js/main-v8.js        counters, chart, reels, player, booking, form, motes
 assets/fonts/               self-hosted variable fonts (Archivo, Instrument Sans)
 assets/og.png               link-preview image (1200×630)
 favicon.svg
@@ -200,7 +201,7 @@ A phone pays for things a laptop gives away. The page also holds to these:
   the browser would otherwise only discover them after parsing all of it — and the headline
   animation waits on `document.fonts.ready`, so this is the gate on when the hero settles.
 - **Everything with a version in its name is cached for a year.** The fonts, `/assets/clips`,
-  the hero loop and `main-v7.js` are served `immutable`; `index.html` is
+  the hero loop and `main-v8.js` are served `immutable`; `index.html` is
   `max-age=0, must-revalidate`. The script carries a version so it can never be a stale copy
   paired with a fresh document — see the `vercel.json` note above, which is the bug that put
   it there.
@@ -302,14 +303,17 @@ else, change the four absolute URLs in `<head>` and the two in `sitemap.xml` and
 **Booking link.** The contact section has an empty scheduler slot:
 
 ```html
-<div class="booking" data-booking data-booking-url=""></div>
+<div class="booker__embed" data-booking data-booking-url=""></div>
 ```
 
-Put a Calendly (or similar) embed URL in `data-booking-url` and the inline scheduler
-appears above the form. Left empty, the slot stays hidden and the form is the booking
-path. The form has no backend — it composes an email to `manny@gmgmt.co` and opens the
-visitor's mail app. If a real form endpoint is added later, swap the `submit` handler in
-`assets/clips/README.md`.
+Put a Cal.com, Calendly or Google appointment URL in `data-booking-url` and the scheduler
+takes over the card. Left empty, the page's own month picker stays and collects the slot.
+
+The form endpoint is the separate switch described above. With `data-endpoint` empty the
+form composes the same message as an email and opens the visitor's mail app — and, because
+that does nothing visible on a phone with no mail client registered, leaves the message on
+screen with a **Copy the message** button beside the WhatsApp one. The handler is module 10
+of `assets/js/main-v8.js`.
 
 **Hero background video.** The hero has a media layer wired for the client's own footage:
 
@@ -319,9 +323,12 @@ visitor's mail app. If a real form endpoint is added later, swap the `submit` ha
 
 Drop a file at that path (or list several, comma separated — `.mp4` and `.webm` are both
 recognised) and it plays behind the hero, muted, looping, cropped to cover, under a scrim
-that keeps the type at full contrast. Nothing is requested under `prefers-reduced-motion`
-or on a connection flagged `saveData`, and if no source plays the element is removed and
-the light field carries the hero on its own.
+that keeps the type at full contrast. Nothing is requested on a connection flagged
+`saveData`, and if no source plays the element is removed and the light field carries the
+hero on its own. Reduced motion does not skip it — this said it did, and the section on
+the speed pass above says the opposite, which is the one that matches the code: the film
+mounts without `autoplay` and holds on its first frame, so the hero keeps its picture and
+nothing moves.
 
 **Give it a landscape file.** The hero paints it `object-fit: cover` across the viewport, so
 a portrait file on a 1920px desktop is scaled about 3.5x and most of it is thrown away —
@@ -361,20 +368,37 @@ third party is contacted until someone presses. See `assets/clips/README.md`.
 **The client videos.** Each tile stores its own embed URL:
 
 ```html
-<figure class="reel" data-reel data-autoload data-embed="…" data-embed-title="…">
+<figure class="reel" data-reel data-embed="…" data-embed-title="…">
 ```
 
-`data-autoload` brings the embed in as soon as the tile scrolls into view — that is how
-the YouTube short simply plays on the page, muted and looping. Without it the tile stays a
-poster frame and loads on press, which is what the Facebook tile does, since Facebook does
-not autoplay in an embed. Every caption links out to the original post, so the proof is
-reachable even if a platform declines to embed. The Facebook embed uses the video plugin
-against the share URL; if that stops resolving, replace the `href=` inside `data-embed`
-with the canonical `/reel/<id>` URL, URL-encoded.
+Every tile is a poster frame that loads its player on press. Nothing autoplays and no
+third party is contacted until someone presses — there is no `data-autoload`, and the
+Facebook tile this section used to describe is gone; the three tiles are two Vimeo and
+one youtube-nocookie. Every caption links out to the original post, so the proof stays
+reachable even if a platform declines to embed.
 
 **Numbers.** Every figure lives in the markup as text. The hero counters read their target
-from `data-to`, and the Houdini scrub reads `data-from` / `data-to` on each figure — change
-those attributes and the interaction follows.
+from `data-to` — change the attribute and the count-up follows.
+
+## The team page
+
+`team/index.html` is a second document at `/team/`, linked from the header nav and the
+footer. It carries one real card — Manny — and a commented-out template beside it. Copy
+the template once per person and fill in five things: initials, name, role, one line on
+what they do on an account, and any links. Nothing else needs touching; the grid auto-fits
+and stays centred whether there is one person on it or seven.
+
+A portrait is optional. Without one the card shows the person's initials in a 72px gold
+ring, and a photograph drops into exactly that box, so adding one later moves nothing else
+on the page. Export square, 144x144 for two-times screens, WebP, into `assets/team/`, and
+put a version number in the filename — the cache headers in `vercel.json` are long and the
+filename is what busts them.
+
+**Its styling is a copy, not a link.** Fonts, tokens, reset, layout, buttons, header,
+footer and the motion block are lifted from `index.html` verbatim. A shared stylesheet
+would be a second round trip before either page could paint, which is the exact cost the
+first performance pass existed to remove. The price of that decision is that a token
+changed in `index.html` has to be changed here too.
 
 ## The page, section by section
 
@@ -477,12 +501,22 @@ The real scheduler then takes over the card and the built-in picker is hidden.
 
 ## What the page does
 
-- **Pointer follower.** A ring trails the pointer and expands into a "Watch" badge over
-  the video tiles. Fine pointers only — never on touch, never under reduced motion.
+- **Section nav, at every width.** The header nav used to be desktop-only, which left a
+  phone with no way to reach a section by name. It is a horizontal scroll strip below
+  900px instead: same links, same observer, same sliding marker, and the active one
+  scrolls itself back into the middle of the strip as the page moves. Below 768px the
+  header's own Book button steps aside, because the phone action bar is already carrying
+  it — that is what pays for the strip without making the bar any taller.
 - **Contact actions.** Copy the email, open WhatsApp, or download a vCard built in the
   browser.
-- **Phone action bar.** Below 768px a Book / WhatsApp / Call bar slides in once the hero
+- **Phone action bar.** Below 768px a Book / WhatsApp / Email bar slides in once the hero
   has scrolled past, and gets out of the way over the booking section.
+- **A form that says which box is wrong.** Name, email and message are checked on submit,
+  each against its own note under the field, with `aria-invalid` set and the focus moved
+  to the first one. The email is checked for shape and not just for emptiness — a typo
+  used to be accepted and posted, and that is the failure here that costs a real customer.
+  What has been typed is kept in `sessionStorage`, so a reload or a failed send does not
+  empty the form.
 
 ## Regenerating the link-preview image
 

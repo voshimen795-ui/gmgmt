@@ -96,6 +96,14 @@
   --line: #1E2735;
   --gold: #C9A227;
   --gold-lift: #E4C25C;
+  /* Chrome gold: rules, edges and washes that should read as gold without
+     competing with the Book button, which is the only object on the page
+     allowed to be solid gold. Literals here for the same reason the two glow
+     shadows below are literals — a custom property's value is not checked
+     where it is declared, so a plain duplicate cannot win, and the mixed
+     versions have to sit behind the @supports guard instead. */
+  --gold-edge: rgba(201, 162, 39, 0.28);
+  --gold-wash: rgba(201, 162, 39, 0.07);
   /* Lifted from #7E8794. Against the page's ink that was 5.4:1 and against a
      card 4.9:1 — enough to pass AA and not enough to read a footnote on a phone
      in daylight without leaning in. This clears 7:1 on both, so the same grey
@@ -155,6 +163,8 @@
     --neon-soft: 0 0 24px color-mix(in srgb, var(--gold) 30%, transparent);
     --neon: 0 0 20px color-mix(in srgb, var(--gold) 45%, transparent),
             0 0 56px color-mix(in srgb, var(--gold) 18%, transparent);
+    --gold-edge: color-mix(in srgb, var(--gold) 28%, transparent);
+    --gold-wash: color-mix(in srgb, var(--gold) 7%, transparent);
   }
 }
 
@@ -319,16 +329,38 @@ section { padding-block: var(--section-y); }
   position: sticky;
   top: 0;
   z-index: 20;
-  background: rgba(7, 10, 18, 0.94);
-  background: color-mix(in srgb, var(--ink) 94%, transparent);
+  /* Colour and image are set apart rather than through the shorthand, because
+     the ink is what transitions on stick and a gradient cannot be transitioned
+     at all. The shorthand would reset one every time the other was declared. */
+  background-color: rgba(7, 10, 18, 0.94);
+  background-color: color-mix(in srgb, var(--ink) 94%, transparent);
+  /* The gold laid across the bar as a wash, heaviest at the two ends. Filling
+     the bar instead would put the Book button in gold on gold and cost it the
+     only thing that makes it the loudest object above the fold. */
+  background-image: linear-gradient(100deg, var(--gold-wash) 0%, transparent 40%,
+                                            transparent 60%, var(--gold-wash) 100%);
   border-bottom: 1px solid transparent;
   transition: background-color 300ms var(--ease), border-color 300ms var(--ease);
 }
-.site-header.is-stuck {
-  background: rgba(7, 10, 18, 0.94);
-  background: color-mix(in srgb, var(--ink) 94%, transparent);
-  border-bottom-color: var(--line);
+/* A lit edge along the top, brightest in the middle and gone at both ends, so
+   the bar sits on the hero film rather than flush against it. */
+.site-header::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-edge) 20%,
+                              var(--gold) 50%, var(--gold-edge) 80%, transparent);
+  opacity: 0.5;
+  pointer-events: none;
+  transition: opacity 300ms var(--ease);
 }
+.site-header.is-stuck {
+  background-color: rgba(7, 10, 18, 0.94);
+  background-color: color-mix(in srgb, var(--ink) 94%, transparent);
+  border-bottom-color: var(--gold-edge);
+}
+.site-header.is-stuck::after { opacity: 0.9; }
 
 .site-header__progress {
   position: absolute;
@@ -339,7 +371,7 @@ section { padding-block: var(--section-y); }
 .site-header__progress span {
   display: block;
   height: 100%;
-  background: var(--gold);
+  background: linear-gradient(90deg, var(--gold), var(--gold-lift));
   box-shadow: var(--neon-soft);
   transform: scaleX(var(--p, 0));
   transform-origin: left;
@@ -347,7 +379,11 @@ section { padding-block: var(--section-y); }
 
 .site-header__inner {
   display: grid;
-  grid-template-columns: 1fr auto;
+  /* minmax(0, 1fr) and not 1fr: the nav is a scroll container, and a bare 1fr
+     track floors at its content's width, which would let the strip push the
+     header wider than the phone instead of scrolling inside it. */
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas: 'brand nav';
   align-items: center;
   gap: var(--sp-16);
   min-height: 68px;
@@ -361,7 +397,18 @@ section { padding-block: var(--section-y); }
   text-decoration: none;
   letter-spacing: -0.02em;
 }
-.wordmark__g { font-size: 1.25rem; font-weight: 800; font-stretch: 125%; color: var(--gold); }
+.wordmark {
+  grid-area: brand;
+}
+.wordmark__g {
+  font-size: 1.25rem;
+  font-weight: 800;
+  font-stretch: 125%;
+  color: var(--gold-lift);
+  transition: text-shadow 200ms var(--ease);
+}
+.wordmark:hover .wordmark__g,
+.wordmark:focus-visible .wordmark__g { text-shadow: var(--neon-soft); }
 .wordmark__rest {
   font-size: 0.9375rem;
   font-weight: 500;
@@ -370,7 +417,30 @@ section { padding-block: var(--section-y); }
 }
 .wordmark:hover .wordmark__rest { color: var(--paper); }
 
-.site-nav { display: none; position: relative; gap: var(--sp-32); justify-self: center; }
+/* The nav used to be display:none below 900px with nothing in its place, so a
+   phone had no way to reach a section by name. It is a horizontal scroll strip
+   at those widths instead of a drawer: a drawer needs a focus trap, a scroll
+   lock and an open/closed state, and this page pays for none of that today.
+   Same links, same observer, same marker — only the box changes. */
+.site-nav {
+  grid-area: nav;
+  display: flex;
+  position: relative;
+  gap: var(--sp-24);
+  justify-self: end;
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  /* Fades at the trailing edge to say there is more. Masked rather than
+     covered with a gradient, because the bar behind it is a wash now and an
+     overlay would have to track it. */
+  -webkit-mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 20px), transparent 100%);
+          mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 20px), transparent 100%);
+}
+.site-nav::-webkit-scrollbar { display: none; }
+.site-nav a { white-space: nowrap; }
 .site-nav a {
   display: inline-flex;
   align-items: center;
@@ -382,15 +452,15 @@ section { padding-block: var(--section-y); }
   transition: color 200ms var(--ease);
 }
 .site-nav a:hover { color: var(--paper); }
-.site-nav a.is-active { color: var(--gold); }
+.site-nav a.is-active { color: var(--gold-lift); }
 
 .site-nav__marker {
   position: absolute;
   bottom: 12px;
   left: 0;
-  height: 1px;
+  height: 2px;
   width: var(--w, 0px);
-  background: var(--gold);
+  background: linear-gradient(90deg, var(--gold), var(--gold-lift));
   box-shadow: var(--neon-soft);
   transform: translateX(var(--x, 0px));
   opacity: var(--o, 0);
@@ -408,13 +478,49 @@ section { padding-block: var(--section-y); }
    The bar is over near-black at every scroll position, so the glass was
    costing a frame budget to blur something nobody could see through. A flat
    translucent ink reads identically and costs nothing. */
-@media (min-width: 900px) {
-  .site-header {
-    background: rgba(7, 10, 18, 0.86);
-    background: color-mix(in srgb, var(--ink) 86%, transparent);
+/* The header rearranges over three bands rather than two, because the phone
+   action bar only exists below 768px and the header has to cover the gap. */
+
+/* Below 768 the action bar already carries Book / WhatsApp / Email, so the
+   header's own CTA is the same button twice on the same screen. Dropping it is
+   what pays for the nav strip, and the bar keeps its 68px. */
+@media (max-width: 767px) {
+  .site-header .btn { display: none; }
+}
+
+/* No action bar in this band, so the CTA stays and the strip takes its own row. */
+@media (min-width: 768px) and (max-width: 899px) {
+  .site-header__inner {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'brand cta'
+      'nav   nav';
+    row-gap: var(--sp-4);
+    padding-block: var(--sp-8);
+    min-height: 0;
   }
-  .site-header__inner { grid-template-columns: 1fr auto 1fr; }
-  .site-nav { display: flex; }
+  .site-nav { justify-self: start; }
+  .site-header .btn { grid-area: cta; justify-self: end; }
+}
+
+@media (min-width: 900px) {
+  /* background-color, not background: the shorthand would drop the gold wash. */
+  .site-header {
+    background-color: rgba(7, 10, 18, 0.86);
+    background-color: color-mix(in srgb, var(--ink) 86%, transparent);
+  }
+  .site-header__inner {
+    grid-template-columns: 1fr auto 1fr;
+    grid-template-areas: 'brand nav cta';
+  }
+  /* Wide enough for every link, so the strip goes back to being a plain row. */
+  .site-nav {
+    justify-self: center;
+    gap: var(--sp-32);
+    overflow: visible;
+    -webkit-mask-image: none;
+            mask-image: none;
+  }
   .site-header .btn { justify-self: end; }
 }
 
@@ -2040,8 +2146,19 @@ html:not(.js) .swing__track > span { width: calc(var(--w) * 1%); }
 }
 .field--trap { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 
+/* Gold rather than red. There is no red anywhere in this palette, and one
+   field message is a thin reason to introduce a second accent colour. The
+   wording carries the failure; the colour only has to draw the eye. */
+.field__error { font-size: var(--t-label); color: var(--gold-lift); }
+.field__error:empty { display: none; }
+.field input[aria-invalid="true"],
+.field textarea[aria-invalid="true"] { border-color: var(--gold); }
+
 .lead__actions { display: flex; flex-wrap: wrap; gap: var(--sp-8); margin-top: var(--sp-8); }
 .lead__actions .btn { flex: 1 1 12rem; }
+/* .btn sets display, and an attribute selector ties with a class on
+   specificity, so the later rule would win and [hidden] would not hide. */
+.lead__actions .btn[hidden] { display: none; }
 
 .lead__status { min-height: 1.4em; font-size: var(--t-label); color: var(--grey); }
 .lead__status.is-ok { color: var(--gold-lift); }
@@ -2473,8 +2590,10 @@ a.contact__value:hover { color: var(--gold-lift); }
     <nav class="site-nav" aria-label="Sections" data-nav>
       <span class="site-nav__marker" aria-hidden="true" data-nav-marker></span>
       <a href="#work" data-nav-link>Work</a>
+      <a href="#proof" data-nav-link>Proof</a>
       <a href="#results" data-nav-link>Results</a>
       <a href="#voices" data-nav-link>Clients</a>
+      <a href="/team/">Team</a>
       <a href="#book" data-nav-link>Book</a>
     </nav>
 
@@ -3113,12 +3232,14 @@ a.contact__value:hover { color: var(--gold-lift); }
 
           <div class="field">
             <label for="lead-name">Name</label>
-            <input id="lead-name" name="name" type="text" autocomplete="name" required>
+            <input id="lead-name" name="name" type="text" autocomplete="name" required aria-describedby="lead-name-error">
+            <p class="field__error" id="lead-name-error"></p>
           </div>
 
           <div class="field">
             <label for="lead-email">Email</label>
-            <input id="lead-email" name="email" type="email" autocomplete="email" required>
+            <input id="lead-email" name="email" type="email" autocomplete="email" required aria-describedby="lead-email-error">
+            <p class="field__error" id="lead-email-error"></p>
           </div>
 
           <div class="field">
@@ -3128,18 +3249,20 @@ a.contact__value:hover { color: var(--gold-lift); }
 
           <div class="field">
             <label for="lead-message">What do you need?</label>
-            <textarea id="lead-message" name="message" rows="3" required></textarea>
+            <textarea id="lead-message" name="message" rows="3" required aria-describedby="lead-message-error"></textarea>
+            <p class="field__error" id="lead-message-error"></p>
           </div>
 
           <input type="hidden" name="subject" value="New enquiry from gmgmt.com">
-          <p class="field field--trap" aria-hidden="true">
-            <label for="lead-company">Company</label>
+          <p class="field field--trap">
+            <label for="lead-company">Leave this field empty</label>
             <input id="lead-company" name="botcheck" type="text" tabindex="-1" autocomplete="off">
           </p>
 
           <div class="lead__actions">
             <button class="btn btn--primary btn--glow" type="submit" data-lead-send>Send it</button>
             <button class="btn btn--ghost" type="button" data-lead-whatsapp>Send on WhatsApp</button>
+            <button class="btn btn--ghost" type="button" data-lead-copy hidden>Copy the message</button>
           </div>
 
           <p class="lead__status" data-lead-status role="status" aria-live="polite"></p>
@@ -3191,8 +3314,11 @@ a.contact__value:hover { color: var(--gold-lift); }
       <nav class="site-footer__nav" aria-label="Footer">
         <p class="site-footer__heading">Page</p>
         <a href="#work">Work</a>
+        <a href="#proof">Proof</a>
         <a href="#results">Results</a>
         <a href="#voices">Clients</a>
+        <a href="/team/">Team</a>
+        <a href="#faq">Questions</a>
         <a href="#book">Book a call</a>
       </nav>
 
@@ -3216,6 +3342,6 @@ a.contact__value:hover { color: var(--gold-lift); }
   <a class="btn btn--ghost btn--sm" href="mailto:manny@gmgmt.co">Email</a>
 </div>
 
-<script src="/assets/js/main-v7.js" defer></script>
+<script src="/assets/js/main-v8.js" defer></script>
 </body>
 </html>
