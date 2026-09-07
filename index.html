@@ -481,47 +481,23 @@ section { padding-block: var(--section-y); }
 /* The header rearranges over three bands rather than two, because the phone
    action bar only exists below 768px and the header has to cover the gap. */
 
-/* Below 768 the action bar already carries Book / WhatsApp / Email, so the
-   header's own CTA is the same button twice on the same screen. Dropping it is
-   what pays for the nav strip, and the bar keeps its 68px. */
-@media (max-width: 767px) {
-  .site-header .btn { display: none; }
-}
-
-/* No action bar in this band, so the CTA stays and the strip takes its own row. */
-@media (min-width: 768px) and (max-width: 899px) {
-  .site-header__inner {
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-areas:
-      'brand cta'
-      'nav   nav';
-    row-gap: var(--sp-4);
-    padding-block: var(--sp-8);
-    min-height: 0;
-  }
-  .site-nav { justify-self: start; }
-  .site-header .btn { grid-area: cta; justify-self: end; }
-}
-
+/* The header carried a Book button until the action bar and the Book nav link
+   made it the same offer three times on one screen. With it gone the header is
+   one shape at every width — wordmark left, nav right, 68px — and the two
+   bands that existed only to place that button went with it. */
 @media (min-width: 900px) {
   /* background-color, not background: the shorthand would drop the gold wash. */
   .site-header {
     background-color: rgba(7, 10, 18, 0.86);
     background-color: color-mix(in srgb, var(--ink) 86%, transparent);
   }
-  .site-header__inner {
-    grid-template-columns: 1fr auto 1fr;
-    grid-template-areas: 'brand nav cta';
-  }
   /* Wide enough for every link, so the strip goes back to being a plain row. */
   .site-nav {
-    justify-self: center;
     gap: var(--sp-32);
     overflow: visible;
     -webkit-mask-image: none;
             mask-image: none;
   }
-  .site-header .btn { justify-self: end; }
 }
 
 /* 7. Hero ----------------------------------------------------------------- */
@@ -2596,8 +2572,6 @@ a.contact__value:hover { color: var(--gold-lift); }
       <a href="/team/">Team</a>
       <a href="#book" data-nav-link>Book</a>
     </nav>
-
-    <a class="btn btn--primary btn--sm btn--glow" href="#book">Book a call</a>
   </div>
 </header>
 
@@ -3342,6 +3316,6 @@ a.contact__value:hover { color: var(--gold-lift); }
   <a class="btn btn--ghost btn--sm" href="mailto:manny@gmgmt.co">Email</a>
 </div>
 
-<script src="/assets/js/main-v8.js" defer></script>
+<script src="/assets/js/main-v9.js" defer></script>
 </body>
 </html>

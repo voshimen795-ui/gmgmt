@@ -7,7 +7,7 @@ no dependencies.
 ```
 index.html                  the page, with all styling inline in its <style>
 team/index.html             the team page, styled the same way and for the same reason
-assets/js/main-v8.js        counters, chart, reels, player, booking, form, motes
+assets/js/main-v9.js        counters, chart, reels, player, booking, form, motes
 assets/fonts/               self-hosted variable fonts (Archivo, Instrument Sans)
 assets/og.png               link-preview image (1200×630)
 favicon.svg
@@ -201,7 +201,7 @@ A phone pays for things a laptop gives away. The page also holds to these:
   the browser would otherwise only discover them after parsing all of it — and the headline
   animation waits on `document.fonts.ready`, so this is the gate on when the hero settles.
 - **Everything with a version in its name is cached for a year.** The fonts, `/assets/clips`,
-  the hero loop and `main-v8.js` are served `immutable`; `index.html` is
+  the hero loop and `main-v9.js` are served `immutable`; `index.html` is
   `max-age=0, must-revalidate`. The script carries a version so it can never be a stale copy
   paired with a fresh document — see the `vercel.json` note above, which is the bug that put
   it there.
@@ -313,7 +313,7 @@ The form endpoint is the separate switch described above. With `data-endpoint` e
 form composes the same message as an email and opens the visitor's mail app — and, because
 that does nothing visible on a phone with no mail client registered, leaves the message on
 screen with a **Copy the message** button beside the WhatsApp one. The handler is module 10
-of `assets/js/main-v8.js`.
+of `assets/js/main-v9.js`.
 
 **Hero background video.** The hero has a media layer wired for the client's own footage:
 
@@ -504,9 +504,15 @@ The real scheduler then takes over the card and the built-in picker is hidden.
 - **Section nav, at every width.** The header nav used to be desktop-only, which left a
   phone with no way to reach a section by name. It is a horizontal scroll strip below
   900px instead: same links, same observer, same sliding marker, and the active one
-  scrolls itself back into the middle of the strip as the page moves. Below 768px the
-  header's own Book button steps aside, because the phone action bar is already carrying
-  it — that is what pays for the strip without making the bar any taller.
+  scrolls itself back into the middle of the strip as the page moves. That centring sets
+  the strip's own `scrollLeft` and nothing else — it briefly used `scrollIntoView`, which
+  scrolls *every* scrollable ancestor including the document, and since the link sits in a
+  sticky header the page hauled itself backwards on a phone until it would not scroll past
+  about 620px.
+- **The header carries no Book button.** It did, until the phone action bar and the Book
+  nav link made it the same offer three times on one screen. The header is wordmark and
+  nav only now, one 68px row at every width, and the booking paths are the nav link, the
+  action bar below 768px, and the Book section itself.
 - **Contact actions.** Copy the email, open WhatsApp, or download a vCard built in the
   browser.
 - **Phone action bar.** Below 768px a Book / WhatsApp / Email bar slides in once the hero

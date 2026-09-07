@@ -298,22 +298,37 @@
      where every link is on screen at once. */
   var navStrip = window.matchMedia ? window.matchMedia('(max-width: 899px)') : null;
 
+  /* This scrolls the strip and nothing else, and that is the whole point.
+     It used to call link.scrollIntoView({inline:'center', block:'nearest'}),
+     which does not scroll one box — it walks up and scrolls every scrollable
+     ancestor, the document included. The link sits inside a position:sticky
+     header, so the browser worked out a *document* scroll to satisfy the
+     request and hauled the page back every time the observer fired. On a phone
+     the page pinned itself around 620px and would not go past it. Measured at
+     390px: 2 of 20 requested positions were actually reached, the worst miss
+     5370px. Element.scrollTo and scrollLeft cannot move the document, so the
+     failure is gone rather than tuned around.
+
+     reduceMotion is the file-wide boolean taken at the top. Do not declare a
+     second one here — same var, same function scope, and every later
+     `!reduceMotion` would then be testing an object that is always truthy,
+     which silently switches off the hero film and the motes. */
   function revealLink(link) {
-    if (!navStrip || !navStrip.matches || !link.scrollIntoView) return;
-    try {
-      /* reduceMotion is the file-wide boolean taken at the top. Declaring a
-         second one here would redeclare it — same var, same function scope —
-         and every later `!reduceMotion` would then be testing an object that
-         is always truthy, which silently switches off the hero film and the
-         motes. */
-      link.scrollIntoView({
-        behavior: reduceMotion ? 'auto' : 'smooth',
-        inline: 'center',
-        block: 'nearest'
-      });
-    } catch (e) {
-      /* Older Safari only takes the boolean form, and centring is a nicety. */
-    }
+    if (!nav || !navStrip || !navStrip.matches) return;
+
+    var max = nav.scrollWidth - nav.clientWidth;
+    if (max <= 0) return;                 /* every link already fits */
+
+    /* offsetLeft is relative to .site-nav, which is position:relative — the
+       same coordinate moveMarker uses, so the pill and the marker agree. */
+    var want = link.offsetLeft - (nav.clientWidth - link.offsetWidth) / 2;
+    if (want < 0) want = 0;
+    if (want > max) want = max;
+    if (Math.abs(nav.scrollLeft - want) < 1) return;
+
+    if (reduceMotion || !nav.scrollTo) { nav.scrollLeft = want; return; }
+    try { nav.scrollTo({ left: want, behavior: 'smooth' }); }
+    catch (e) { nav.scrollLeft = want; }  /* older Safari: no options object */
   }
 
   if (navLinks.length && hasIO) {
