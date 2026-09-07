@@ -6,17 +6,17 @@
 <script>document.documentElement.classList.add('js');</script>
 <title>G Management — social media management and brand deals, Miami</title>
 <meta name="description" content="Manny Garcia runs social media for brands and brand deals for creators, out of Miami. 5.4M accounts reached in 30 days, orders up 54%. Book a 15-minute call.">
-<link rel="canonical" href="https://gmgmt.co/">
+<link rel="canonical" href="https://gmgmt.com/">
 <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
 <meta name="author" content="Manny Garcia">
 
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://gmgmt.co/">
+<meta property="og:url" content="https://gmgmt.com/">
 <meta property="og:site_name" content="G Management">
 <meta property="og:locale" content="en_US">
 <meta property="og:title" content="G Management — social media management and brand deals, Miami">
 <meta property="og:description" content="Short-form video, posted daily, on accounts run end to end. 5.4M accounts reached in 30 days. Orders up 54%. $19,265 through one link. Book a 15-minute call.">
-<meta property="og:image" content="https://gmgmt.co/assets/og.png">
+<meta property="og:image" content="https://gmgmt.com/assets/og.png">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -25,7 +25,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="G Management — social media management and brand deals, Miami">
 <meta name="twitter:description" content="Short-form video, posted daily, on accounts run end to end. Real client dashboards, with the dates attached.">
-<meta name="twitter:image" content="https://gmgmt.co/assets/og.png">
+<meta name="twitter:image" content="https://gmgmt.com/assets/og.png">
 <meta name="twitter:image:alt" content="G Management, Miami. 5.4M accounts reached in 30 days.">
 <meta name="theme-color" content="#070A12">
 
@@ -51,6 +51,7 @@
     7. Hero
     8. Marquee
     9. Work — landscape video grid
+   9b. The player — clips open over the page
    10. Results — bento grid, stats, meters
    11. Results — Pivot Point chart
    12. Voices
@@ -95,7 +96,19 @@
   --line: #1E2735;
   --gold: #C9A227;
   --gold-lift: #E4C25C;
-  --grey: #7E8794;
+  /* Chrome gold: rules, edges and washes that should read as gold without
+     competing with the Book button, which is the only object on the page
+     allowed to be solid gold. Literals here for the same reason the two glow
+     shadows below are literals — a custom property's value is not checked
+     where it is declared, so a plain duplicate cannot win, and the mixed
+     versions have to sit behind the @supports guard instead. */
+  --gold-edge: rgba(201, 162, 39, 0.28);
+  --gold-wash: rgba(201, 162, 39, 0.07);
+  /* Lifted from #7E8794. Against the page's ink that was 5.4:1 and against a
+     card 4.9:1 — enough to pass AA and not enough to read a footnote on a phone
+     in daylight without leaning in. This clears 7:1 on both, so the same grey
+     now carries the small print everywhere instead of only just carrying it. */
+  --grey: #9BA5B4;
   --paper: #F2F1EC;
 
   /* type */
@@ -150,6 +163,22 @@
     --neon-soft: 0 0 24px color-mix(in srgb, var(--gold) 30%, transparent);
     --neon: 0 0 20px color-mix(in srgb, var(--gold) 45%, transparent),
             0 0 56px color-mix(in srgb, var(--gold) 18%, transparent);
+    --gold-edge: color-mix(in srgb, var(--gold) 28%, transparent);
+    --gold-wash: color-mix(in srgb, var(--gold) 7%, transparent);
+  }
+}
+
+/* On a phone the secondary type runs two points larger. 14 and 13 are
+   comfortable at arm's length on a desktop and are not in one hand on a train,
+   and every place these two tokens are used is exactly the text that was being
+   squinted at: the steps in "How a month runs", the labels under every figure,
+   the chips, the footnotes, the form hints, the FAQ answers. Moving the tokens
+   moves all forty-four of them at once and keeps the ladder intact — there is
+   no second scale to remember. */
+@media (max-width: 699px) {
+  :root {
+    --t-small: 1rem;         /* 14px -> 16px */
+    --t-label: 0.9375rem;    /* 13px -> 15px */
   }
 }
 
@@ -300,16 +329,38 @@ section { padding-block: var(--section-y); }
   position: sticky;
   top: 0;
   z-index: 20;
-  background: rgba(7, 10, 18, 0.94);
-  background: color-mix(in srgb, var(--ink) 94%, transparent);
+  /* Colour and image are set apart rather than through the shorthand, because
+     the ink is what transitions on stick and a gradient cannot be transitioned
+     at all. The shorthand would reset one every time the other was declared. */
+  background-color: rgba(7, 10, 18, 0.94);
+  background-color: color-mix(in srgb, var(--ink) 94%, transparent);
+  /* The gold laid across the bar as a wash, heaviest at the two ends. Filling
+     the bar instead would put the Book button in gold on gold and cost it the
+     only thing that makes it the loudest object above the fold. */
+  background-image: linear-gradient(100deg, var(--gold-wash) 0%, transparent 40%,
+                                            transparent 60%, var(--gold-wash) 100%);
   border-bottom: 1px solid transparent;
   transition: background-color 300ms var(--ease), border-color 300ms var(--ease);
 }
-.site-header.is-stuck {
-  background: rgba(7, 10, 18, 0.94);
-  background: color-mix(in srgb, var(--ink) 94%, transparent);
-  border-bottom-color: var(--line);
+/* A lit edge along the top, brightest in the middle and gone at both ends, so
+   the bar sits on the hero film rather than flush against it. */
+.site-header::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-edge) 20%,
+                              var(--gold) 50%, var(--gold-edge) 80%, transparent);
+  opacity: 0.5;
+  pointer-events: none;
+  transition: opacity 300ms var(--ease);
 }
+.site-header.is-stuck {
+  background-color: rgba(7, 10, 18, 0.94);
+  background-color: color-mix(in srgb, var(--ink) 94%, transparent);
+  border-bottom-color: var(--gold-edge);
+}
+.site-header.is-stuck::after { opacity: 0.9; }
 
 .site-header__progress {
   position: absolute;
@@ -320,7 +371,7 @@ section { padding-block: var(--section-y); }
 .site-header__progress span {
   display: block;
   height: 100%;
-  background: var(--gold);
+  background: linear-gradient(90deg, var(--gold), var(--gold-lift));
   box-shadow: var(--neon-soft);
   transform: scaleX(var(--p, 0));
   transform-origin: left;
@@ -328,7 +379,11 @@ section { padding-block: var(--section-y); }
 
 .site-header__inner {
   display: grid;
-  grid-template-columns: 1fr auto;
+  /* minmax(0, 1fr) and not 1fr: the nav is a scroll container, and a bare 1fr
+     track floors at its content's width, which would let the strip push the
+     header wider than the phone instead of scrolling inside it. */
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas: 'brand nav';
   align-items: center;
   gap: var(--sp-16);
   min-height: 68px;
@@ -342,7 +397,18 @@ section { padding-block: var(--section-y); }
   text-decoration: none;
   letter-spacing: -0.02em;
 }
-.wordmark__g { font-size: 1.25rem; font-weight: 800; font-stretch: 125%; color: var(--gold); }
+.wordmark {
+  grid-area: brand;
+}
+.wordmark__g {
+  font-size: 1.25rem;
+  font-weight: 800;
+  font-stretch: 125%;
+  color: var(--gold-lift);
+  transition: text-shadow 200ms var(--ease);
+}
+.wordmark:hover .wordmark__g,
+.wordmark:focus-visible .wordmark__g { text-shadow: var(--neon-soft); }
 .wordmark__rest {
   font-size: 0.9375rem;
   font-weight: 500;
@@ -351,7 +417,30 @@ section { padding-block: var(--section-y); }
 }
 .wordmark:hover .wordmark__rest { color: var(--paper); }
 
-.site-nav { display: none; position: relative; gap: var(--sp-32); justify-self: center; }
+/* The nav used to be display:none below 900px with nothing in its place, so a
+   phone had no way to reach a section by name. It is a horizontal scroll strip
+   at those widths instead of a drawer: a drawer needs a focus trap, a scroll
+   lock and an open/closed state, and this page pays for none of that today.
+   Same links, same observer, same marker — only the box changes. */
+.site-nav {
+  grid-area: nav;
+  display: flex;
+  position: relative;
+  gap: var(--sp-24);
+  justify-self: end;
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  /* Fades at the trailing edge to say there is more. Masked rather than
+     covered with a gradient, because the bar behind it is a wash now and an
+     overlay would have to track it. */
+  -webkit-mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 20px), transparent 100%);
+          mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 20px), transparent 100%);
+}
+.site-nav::-webkit-scrollbar { display: none; }
+.site-nav a { white-space: nowrap; }
 .site-nav a {
   display: inline-flex;
   align-items: center;
@@ -363,15 +452,15 @@ section { padding-block: var(--section-y); }
   transition: color 200ms var(--ease);
 }
 .site-nav a:hover { color: var(--paper); }
-.site-nav a.is-active { color: var(--gold); }
+.site-nav a.is-active { color: var(--gold-lift); }
 
 .site-nav__marker {
   position: absolute;
   bottom: 12px;
   left: 0;
-  height: 1px;
+  height: 2px;
   width: var(--w, 0px);
-  background: var(--gold);
+  background: linear-gradient(90deg, var(--gold), var(--gold-lift));
   box-shadow: var(--neon-soft);
   transform: translateX(var(--x, 0px));
   opacity: var(--o, 0);
@@ -389,13 +478,49 @@ section { padding-block: var(--section-y); }
    The bar is over near-black at every scroll position, so the glass was
    costing a frame budget to blur something nobody could see through. A flat
    translucent ink reads identically and costs nothing. */
-@media (min-width: 900px) {
-  .site-header {
-    background: rgba(7, 10, 18, 0.86);
-    background: color-mix(in srgb, var(--ink) 86%, transparent);
+/* The header rearranges over three bands rather than two, because the phone
+   action bar only exists below 768px and the header has to cover the gap. */
+
+/* Below 768 the action bar already carries Book / WhatsApp / Email, so the
+   header's own CTA is the same button twice on the same screen. Dropping it is
+   what pays for the nav strip, and the bar keeps its 68px. */
+@media (max-width: 767px) {
+  .site-header .btn { display: none; }
+}
+
+/* No action bar in this band, so the CTA stays and the strip takes its own row. */
+@media (min-width: 768px) and (max-width: 899px) {
+  .site-header__inner {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'brand cta'
+      'nav   nav';
+    row-gap: var(--sp-4);
+    padding-block: var(--sp-8);
+    min-height: 0;
   }
-  .site-header__inner { grid-template-columns: 1fr auto 1fr; }
-  .site-nav { display: flex; }
+  .site-nav { justify-self: start; }
+  .site-header .btn { grid-area: cta; justify-self: end; }
+}
+
+@media (min-width: 900px) {
+  /* background-color, not background: the shorthand would drop the gold wash. */
+  .site-header {
+    background-color: rgba(7, 10, 18, 0.86);
+    background-color: color-mix(in srgb, var(--ink) 86%, transparent);
+  }
+  .site-header__inner {
+    grid-template-columns: 1fr auto 1fr;
+    grid-template-areas: 'brand nav cta';
+  }
+  /* Wide enough for every link, so the strip goes back to being a plain row. */
+  .site-nav {
+    justify-self: center;
+    gap: var(--sp-32);
+    overflow: visible;
+    -webkit-mask-image: none;
+            mask-image: none;
+  }
   .site-header .btn { justify-self: end; }
 }
 
@@ -517,15 +642,26 @@ section { padding-block: var(--section-y); }
   text-shadow: 0 1px 2px color-mix(in srgb, var(--ink) 55%, transparent),
                0 2px 28px color-mix(in srgb, var(--ink) 70%, transparent);
 }
-/* Same story as the header, on a smaller box: this button sits over the film,
-   so its backdrop blur was re-running on every decoded frame. The button is
-   opaque enough that the blur behind it was never visible. */
+/* One filled button and one outline, so the eye is told which of the two to
+   press. "Book a call" keeps the solid gold; this one is a ghost in the proper
+   sense — nothing behind it at all, just a gold edge — which is also what fixed
+   the last of the per-frame blurs: it used to carry a backdrop filter over the
+   playing film, re-running on every decoded frame for a pane nobody could see
+   through anyway.
+
+   With no panel behind it the label has to hold its own over whatever frame the
+   film lands on, so it keeps a shadow rather than the background it lost. */
+.hero .btn--ghost {
+  background: transparent;
+  border-color: rgba(201, 162, 39, 0.55);
+  border-color: color-mix(in srgb, var(--gold) 55%, transparent);
+}
+.hero .btn--ghost:hover,
+.hero .btn--ghost:focus-visible { border-color: var(--gold); }
+
 .hero__media.has-video ~ .hero__inner .btn--ghost {
-  border-color: rgba(242, 241, 236, 0.3);
-  border-color: color-mix(in srgb, var(--paper) 30%, transparent);
-  background: rgba(7, 10, 18, 0.66);
-  background: color-mix(in srgb, var(--ink) 66%, transparent);
-  text-shadow: none;
+  text-shadow: 0 1px 14px rgba(7, 10, 18, 0.9);
+  text-shadow: 0 1px 14px color-mix(in srgb, var(--ink) 90%, transparent);
 }
 
 .hero__where {
@@ -661,17 +797,24 @@ section { padding-block: var(--section-y); }
 
 .work { border-bottom: var(--hairline); }
 
+/* Two shapes of tile in one grid. The two clips shot vertical take a column
+   each; the one shot landscape spans the row beneath them and closes the block
+   off. Every tile is its clip's own shape, so no thumbnail is cropped and the
+   grid still has square corners — which a row of three uncropped tiles of two
+   different shapes could not do.
+
+   The block is capped rather than stretched. A vertical tile is 1.8 times its
+   own width, so two of them across a 1240px shell would be a 1100px wall of
+   video; at 360 they are 656 tall, which is a showcase. */
 .reels {
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--sp-24);
   align-items: stretch;
-  max-width: 720px;
+  max-width: 744px;
   margin-inline: auto;
 }
 
-/* A landscape tile has no reason to be capped at a phone's width: it is given
-   the whole column it sits in, so the picture is as large as the row allows. */
 .reel {
   position: relative;
   width: 100%;
@@ -681,7 +824,7 @@ section { padding-block: var(--section-y); }
    inserted above it, so pressing never adds a second frame to the page */
 
 /* The thumbnail is a real lazy image rather than a CSS background. Three
-   posters is 83KB, the tiles sit a long way below the fold, and a background
+   posters is 35KB, the tiles sit a long way below the fold, and a background
    image is fetched as soon as its element is laid out — wherever it is. As
    an <img loading="lazy"> that weight leaves the opening load entirely and
    arrives only when the section is approached. */
@@ -695,11 +838,15 @@ section { padding-block: var(--section-y); }
   border-radius: inherit;
 }
 
-/* Every clip is encoded 16:9 — landscape, the shape a video player is, the
-   shape YouTube is — and every clip fills that box corner to corner. Where a
-   source was shot vertical the fill is a blurred, darkened copy of its own
-   frame either side, so the whole picture is visible and nothing is cropped
-   out of it. There are no bars and no box the picture floats inside. */
+/* The tile is the clip's own shape — `--ar`, set on the figure — and the
+   thumbnail is that clip's whole frame, scaled, never cropped. So there is no
+   crop anywhere on this page: not in the tile, not in the player.
+
+   That is the third answer to a problem the first two got wrong. Forcing every
+   clip into one 16:9 tile meant either cutting the picture (and in the first
+   clip the speaker's head is taller than the widest 16:9 window his frame can
+   give, so it cut his head off) or packing the sides with blur. Letting the
+   tile take the clip's shape costs nothing and cuts nothing. */
 .reel__frame {
   position: relative;
   display: flex;
@@ -707,7 +854,7 @@ section { padding-block: var(--section-y); }
   justify-content: space-between;
   align-items: flex-start;
   width: 100%;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: var(--ar, 16 / 9);
   padding: var(--sp-16);
   border: 1px solid rgb(68, 66, 50);
   border: 1px solid color-mix(in srgb, var(--gold) 22%, var(--line));
@@ -740,6 +887,79 @@ section { padding-block: var(--section-y); }
                     color-mix(in srgb, var(--ink) 42%, transparent));
   pointer-events: none;
 }
+/* The two shapes of work, named. Uppercase Archivo between two gold hairlines
+   that draw outward from the words as the row arrives.
+
+   The whole effect is three transforms and one opacity, all of them composited,
+   and every one of them stops the moment it lands — there is nothing here still
+   running while the page is being read. It rides the reveal observer the rest
+   of the page already uses, so it adds no script at all. */
+/* Sized to be read across the room, not squinted at: it is the label that tells
+   a visitor which half of the work they are looking at, so it sits between the
+   section title and the body rather than down with the small print. Tracking
+   comes back in as the size goes up — 0.2em is what makes a 13px label legible
+   and what would tear a 34px one apart. */
+.reel-kicker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(var(--sp-16), 2.4vw, var(--sp-32));
+  margin-top: var(--sp-32);
+  font-family: var(--font-display);
+  font-size: clamp(1.375rem, 3.2vw, 2.125rem);
+  font-weight: 800;
+  font-stretch: 118%;
+  letter-spacing: 0.08em;
+  line-height: 1.1;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--paper);
+  text-shadow: 0 0 32px rgba(201, 162, 39, 0.5);
+  text-shadow: 0 0 32px color-mix(in srgb, var(--gold) 50%, transparent);
+}
+/* the first one opens the block, so the section head's own margin is the space
+   above it and it needs none of its own */
+.reels > .reel-kicker:first-child { margin-top: 0; }
+
+/* 24 inside a group, 56 between them: the kickers sit 24 above their own tiles
+   and 56 below the ones before, and the offer panel takes the same so it reads
+   as the next thing rather than the last tile's caption. The gap grew with the
+   type — a label this size needs the air to read as a heading and not as
+   something stuck to the tile above it. */
+.reels > .playbook { margin-top: var(--sp-32); }
+
+.reel-kicker::before,
+.reel-kicker::after {
+  content: "";
+  flex: 1 1 0;
+  max-width: 148px;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--gold));
+}
+.reel-kicker::after { background: linear-gradient(to left, transparent, var(--gold)); }
+
+/* each rule is anchored at the end that touches the words, so they open away
+   from the label rather than sliding in from the edges of the block */
+.js .reel-kicker::before,
+.js .reel-kicker::after {
+  transform: scaleX(0);
+  transition: transform 900ms var(--ease-out);
+  transition-delay: calc(var(--delay, 0ms) + 180ms);
+}
+.js .reel-kicker::before { transform-origin: right center; }
+.js .reel-kicker::after { transform-origin: left center; }
+.js .reel-kicker.is-in::before,
+.js .reel-kicker.is-in::after { transform: scaleX(1); }
+
+/* Both clips shot vertical are 9:16, so this line currently changes nothing —
+   it is kept as the guard it was written to be. It arrived when the two were
+   0.548 and 0.5625: close, but at 360px wide that is 17px of one tile ending
+   lower than the other, and a row of tiles wants a straight bottom edge more
+   than it wants two ratios held to the pixel. Any future vertical clip that is
+   a little off 9:16 is pulled into line the same way, and `--ar` stays its real
+   shape either way, so the player still opens at it. */
+.reel:not(.reel--wide) .reel__frame { aspect-ratio: 9 / 16; }
+
 .reel__frame:hover, .reel__frame:focus-visible {
   transform: translateY(-3px);
   border-color: var(--gold);
@@ -747,6 +967,7 @@ section { padding-block: var(--section-y); }
   box-shadow: 0 22px 50px color-mix(in srgb, var(--ink) 80%, transparent), var(--neon);
 }
 
+/* the client, named, on every tile — not the platform it happens to sit on */
 .reel__platform {
   position: relative;
   z-index: 2;
@@ -784,46 +1005,107 @@ section { padding-block: var(--section-y); }
   background: var(--gold-lift);
 }
 
-/* the player sits exactly where the thumbnail was. The clips are encoded at
-   the tile's own 16:9, so `cover` crops nothing — it only guards against a
-   rounding gap at the edges. */
-.reel__player {
-  position: absolute;
+/* 9b. The player ------------------------------------------------------------
+
+   The clips do not play inside their tile, and that is the whole point.
+
+   Two of these three were shot vertical, as a 9:16 close-up. A 16:9 tile is a
+   third of that frame's height, and the speaker's head in the first clip is
+   taller than the widest 16:9 window his frame can give — measured, not
+   guessed — so playing it inside the tile means either cutting his head off or
+   packing the sides with blur. Neither is a video anyone wants to watch.
+
+   So the tile is a thumbnail and nothing else: a still, cropped 16:9, chosen
+   from a moment where the crop falls well. Pressing it opens the clip over the
+   page at its own shape, whole. The row stays three uniform landscape tiles
+   with no blur and no dead space in it, and the video is never cut. It is also
+   what finally frees the YouTube Short, which as an embed could not be cropped
+   at all: in here it simply opens 9:16, full height, with no black bars.       */
+
+.lightbox {
+  position: fixed;
   inset: 0;
-  z-index: 3;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: clamp(12px, 3vw, 40px);
+  background: rgba(3, 5, 10, 0.92);
+  background: color-mix(in srgb, var(--ink) 92%, #000);
+  opacity: 0;
+  transition: opacity 220ms var(--ease);
+}
+.lightbox.is-open { opacity: 1; }
+
+/* `--ar` is the clip's own width/height as a plain number, set from the tile.
+   Only the width is resolved — the smallest of the room across, the width that
+   keeps the box inside 86vh at that ratio, and a sane cap so a landscape clip
+   is not stretched across an ultrawide monitor. `aspect-ratio` then gives the
+   height. One declaration covers 9:16 and 2:1 alike, and nothing is measured in
+   script, so the box is the right shape before any media has loaded.
+
+   Resolving the height instead would be the bug that was here first: an
+   explicit height plus a clamped width leaves `aspect-ratio` overruled in both
+   directions, and the box quietly stops matching the clip. */
+.lightbox__stage {
+  position: relative;
+  --ar: 1.7778;
+  aspect-ratio: var(--ar);
+  width: min(100%, calc(86vh * var(--ar)), 1280px);
+  height: auto;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: #000;
+  box-shadow: 0 40px 120px rgba(0, 0, 0, 0.7), var(--neon-soft);
+  transform: scale(0.97);
+  transition: transform 260ms var(--ease-out);
+}
+.lightbox.is-open .lightbox__stage { transform: none; }
+
+/* a dashboard screenshot is white to its own edge, so the stage behind one is
+   white too rather than a black seam at a rounded corner */
+.lightbox__stage:has(> img) { background: #fff; }
+
+/* `contain` is belt and braces: the stage is already the media's own ratio, so
+   there is nothing to letterbox — but the initial value of object-fit is
+   `fill`, and a stage that is ever a pixel out would stretch the picture
+   rather than show it honestly. */
+.lightbox__stage > video,
+.lightbox__stage > iframe,
+.lightbox__stage > img {
+  display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  border: 1px solid rgb(107, 94, 47);
-  border: 1px solid color-mix(in srgb, var(--gold) 45%, var(--line));
-  border-radius: var(--radius);
-  background: #000;
-  box-shadow: var(--neon-soft);
-}
-
-/* The YouTube Short is the one clip we cannot re-encode, so it is framed
-   rather than filled: the embed is held at the Short's own 9:16 down the
-   middle of the tile at full height, and the poster's blurred fill — already
-   baked into the image — carries the rest of the box. Same landscape tile,
-   same edge-to-edge picture, no black bars of the player's own. */
-.reel--embed .reel__player {
-  left: 50%;
-  right: auto;
-  width: auto;
-  aspect-ratio: 9 / 16;
-  transform: translateX(-50%);
   border: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
+  object-fit: contain;
+  background: #000;
 }
 
-.reel.is-playing .reel__frame { pointer-events: none; }
-/* nothing of the still tile is left over the picture once it is playing —
-   on the embed the thumbnail stays, because it is the blurred fill */
-.reel.is-playing .reel__frame::before,
-.reel.is-playing .reel__platform,
-.reel.is-playing .reel__play { opacity: 0; }
+.lightbox__close {
+  position: absolute;
+  top: clamp(8px, 2vw, 20px);
+  right: clamp(8px, 2vw, 20px);
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: var(--hairline);
+  border-radius: 999px;
+  background: rgba(7, 10, 18, 0.72);
+  background: color-mix(in srgb, var(--ink) 72%, transparent);
+  color: var(--paper);
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 200ms var(--ease), color 200ms var(--ease);
+}
+.lightbox__close:hover, .lightbox__close:focus-visible {
+  border-color: var(--gold);
+  color: var(--gold-lift);
+}
+
+/* the page underneath must not scroll behind an open player */
+body.has-lightbox { overflow: hidden; }
 
 .reel__caption {
   margin-top: var(--sp-16);
@@ -906,21 +1188,12 @@ section { padding-block: var(--section-y); }
   .playbook { max-width: none; padding: var(--sp-32); }
 }
 
-/* One column or three, never two: a two-column row leaves the third tile
-   orphaned beside a gap, and the three cuts are meant to be read as one row.
-   Below the switch each tile gets the full column, which is the bigger picture
-   anyway — a 16:9 tile across a 360px phone is wider than the 9:16 tile it
-   replaces ever was on a desktop.
-
-   900px is where the header already becomes its desktop self, so the row and
-   the nav arrive together. The offer panel spans the whole row underneath
-   rather than being squeezed in beside a tile. */
-@media (min-width: 900px) {
-  .reels {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    max-width: none;
-  }
-  .playbook { grid-column: 1 / -1; }
+/* One column on a phone, two from the width that fits two vertical tiles side
+   by side. The landscape tile and the offer panel both span the row, so the
+   block is a single column of full-width rows however narrow it gets. */
+@media (min-width: 700px) {
+  .reels { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .reel-kicker, .reel--wide, .playbook { grid-column: 1 / -1; }
 }
 
 /* 10. Results — bento grid -------------------------------------------------- */
@@ -1215,15 +1488,24 @@ html:not(.js) .meter__track span { width: calc(var(--pct) * 1%); }
 .ba__pair figure { display: grid; grid-template-rows: 1fr auto; min-width: 0; }
 /* both panels are cropped to the same square around the date and the figure,
    so the two sides read at one glance */
-/* the frame: it clips, it lights up, and the sheen runs across it */
+/* the frame: it clips, it lights up, the sheen runs across it — and it is a
+   button, because a dashboard screenshot scaled to a phone is a grey smear of
+   numbers nobody can read. Pressing it opens the real thing full size in the
+   same player the clips use. `--ar` is the screenshot's own shape, so the
+   player opens at it rather than guessing. */
 .shot {
   position: relative;
   display: block;
+  width: 100%;
   height: 100%;
+  padding: 0;
   overflow: hidden;
   border: var(--hairline);
   border-radius: var(--radius-sm);
   background: #fff;
+  color: var(--paper);
+  font: inherit;
+  cursor: pointer;
   isolation: isolate;
   transition: border-color 320ms var(--ease), box-shadow 520ms var(--ease-out),
               transform 520ms var(--ease-out);
@@ -1235,6 +1517,30 @@ html:not(.js) .meter__track span { width: calc(var(--pct) * 1%); }
   transition: transform 900ms var(--ease-out), filter 520ms var(--ease);
 }
 .ba__pair--stack .shot img { height: auto; object-fit: fill; }
+
+/* it has to say so, not just behave so */
+.shot__zoom {
+  position: absolute;
+  right: var(--sp-8);
+  bottom: var(--sp-8);
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(7, 10, 18, 0.82);
+  background: color-mix(in srgb, var(--ink) 82%, transparent);
+  font-family: var(--font-body);
+  font-size: var(--t-label);
+  font-weight: 500;
+  line-height: 1;
+  color: var(--paper);
+  transition: background-color 200ms var(--ease), color 200ms var(--ease);
+  pointer-events: none;
+}
+.shot:hover .shot__zoom,
+.shot:focus-visible .shot__zoom { background: var(--gold); color: var(--ink); }
 
 .ba__pair figure:hover .shot {
   transform: translateY(-4px);
@@ -1387,6 +1693,60 @@ html:not(.js) .swing__track > span { width: calc(var(--w) * 1%); }
   .ba__card { padding: var(--sp-32); }
 }
 
+/* Mobile: the proof, simplified ------------------------------------------- */
+
+@media (max-width: 699px) {
+  /* A bar 3mm long under a number in 13px type is decoration standing where the
+     reading should be. On a phone each metric becomes its own card and says the
+     thing it is there to say: what moved, how far it moved, and the two numbers
+     in full. The bars go, and the multiplier — a footnote off to the right —
+     becomes the headline it always was. Same markup, same figures; only what is
+     shown changes, so there is nothing to keep in step. */
+  .swing { gap: var(--sp-16); margin-top: var(--sp-24); }
+  .swing li {
+    padding: var(--sp-16);
+    border: var(--hairline);
+    border-radius: var(--radius-sm);
+    background: var(--surface-lift);
+  }
+  .swing li + li { padding-top: var(--sp-16); border-top: var(--hairline); }
+
+  .swing__k {
+    display: grid;
+    justify-items: start;
+    gap: var(--sp-4);
+    font-size: var(--t-label);
+  }
+  .swing__k b { font-size: 1.875rem; line-height: 1; }
+
+  /* with the track gone the row is label and value, and the value can finally
+     be the size of a number rather than the size of a caption */
+  .swing__row {
+    grid-template-columns: 4.25rem minmax(0, 1fr);
+    align-items: baseline;
+    gap: var(--sp-8);
+    margin-top: var(--sp-8);
+  }
+  .swing__track { display: none; }
+  .swing__v { min-width: 0; text-align: left; font-size: 1.25rem; }
+  .swing__row--after .swing__v { color: var(--gold-lift); }
+
+  /* The screenshots stop pretending to be readable. They are thumbnails at a
+     size that reads as one — the top of the dashboard, where the date and the
+     headline figure sit — and the badge says where the full one lives. */
+  .ba__pair { margin-top: var(--sp-24); padding-top: var(--sp-24); }
+  .ba__pair .shot { height: 128px; }
+  .ba__pair .shot img,
+  .ba__pair--stack .shot img {
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+  }
+
+  /* the video tiles are not part of this pass and keep the type they had */
+  .reel__platform, .reel__caption { font-size: 0.8125rem; }
+}
+
 /* 11. Results — Pivot Point chart ------------------------------------------- */
 
 .chart { margin-top: var(--sp-24); }
@@ -1490,12 +1850,19 @@ html:not(.js) .swing__track > span { width: calc(var(--w) * 1%); }
 
 .qa { border-bottom: var(--hairline); }
 
+/* The whole row is the control, so the whole row has to look like one: it
+   lights up under the pointer and under a finger, and the tint runs the full
+   width of the question rather than stopping at the text — the negative inline
+   margin pulls it out to the card's own edges. */
 .qa summary {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--sp-16);
   padding-block: var(--sp-24);
+  padding-inline: var(--sp-16);
+  margin-inline: calc(-1 * var(--sp-16));
+  border-radius: var(--radius-sm);
   font-family: var(--font-display);
   font-size: clamp(1.0625rem, 1.6vw, 1.25rem);
   font-weight: 700;
@@ -1503,22 +1870,32 @@ html:not(.js) .swing__track > span { width: calc(var(--w) * 1%); }
   letter-spacing: -0.02em;
   cursor: pointer;
   list-style: none;
-  transition: color 200ms var(--ease);
+  -webkit-tap-highlight-color: transparent;
+  transition: color 200ms var(--ease), background-color 200ms var(--ease);
 }
 .qa summary::-webkit-details-marker { display: none; }
-.qa summary:hover { color: var(--gold-lift); }
+.qa summary:hover,
+.qa summary:focus-visible,
+.qa summary:active {
+  color: var(--gold-lift);
+  background: rgba(242, 241, 236, 0.06);
+  background: color-mix(in srgb, var(--paper) 6%, transparent);
+}
+.qa[open] summary { color: var(--gold-lift); }
 
-/* the marker is drawn rather than typed, so it can turn */
+/* the marker is drawn rather than typed, so it can turn. Half again as large as
+   it was and on the brighter gold, because at 12px in the page's dimmest gold
+   it was a hint that something might open rather than a control. */
 .qa summary::after {
   content: "";
   flex: none;
-  width: 12px; height: 12px;
-  border-right: 2px solid var(--gold);
-  border-bottom: 2px solid var(--gold);
-  transform: rotate(45deg) translate(-2px, -2px);
+  width: 18px; height: 18px;
+  border-right: 3px solid var(--gold-lift);
+  border-bottom: 3px solid var(--gold-lift);
+  transform: rotate(45deg) translate(-3px, -3px);
   transition: transform 320ms var(--ease-out);
 }
-.qa[open] summary::after { transform: rotate(-135deg) translate(-2px, -2px); }
+.qa[open] summary::after { transform: rotate(-135deg) translate(-3px, -3px); }
 
 .qa p {
   max-width: 68ch;
@@ -1769,8 +2146,19 @@ html:not(.js) .swing__track > span { width: calc(var(--w) * 1%); }
 }
 .field--trap { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 
+/* Gold rather than red. There is no red anywhere in this palette, and one
+   field message is a thin reason to introduce a second accent colour. The
+   wording carries the failure; the colour only has to draw the eye. */
+.field__error { font-size: var(--t-label); color: var(--gold-lift); }
+.field__error:empty { display: none; }
+.field input[aria-invalid="true"],
+.field textarea[aria-invalid="true"] { border-color: var(--gold); }
+
 .lead__actions { display: flex; flex-wrap: wrap; gap: var(--sp-8); margin-top: var(--sp-8); }
 .lead__actions .btn { flex: 1 1 12rem; }
+/* .btn sets display, and an attribute selector ties with a class on
+   specificity, so the later rule would win and [hidden] would not hide. */
+.lead__actions .btn[hidden] { display: none; }
 
 .lead__status { min-height: 1.4em; font-size: var(--t-label); color: var(--grey); }
 .lead__status.is-ok { color: var(--gold-lift); }
@@ -2020,6 +2408,7 @@ a.contact__value:hover { color: var(--gold-lift); }
 
   .js [data-reveal] { opacity: 1; transform: none; }
   .js [data-reveal="shot"] { clip-path: none; }
+  .js .reel-kicker::before, .js .reel-kicker::after { transform: none; }
   .shot::before, .shot::after { display: none; }
   .ba__pair figure:hover .shot img { transform: none; }
   .motes { display: none; }
@@ -2036,11 +2425,11 @@ a.contact__value:hover { color: var(--gold-lift); }
   "@graph": [
     {
       "@type": "ProfessionalService",
-      "@id": "https://gmgmt.co/#business",
+      "@id": "https://gmgmt.com/#business",
       "name": "G Management",
-      "url": "https://gmgmt.co/",
+      "url": "https://gmgmt.com/",
       "email": "manny@gmgmt.co",
-      "image": "https://gmgmt.co/assets/og.png",
+      "image": "https://gmgmt.com/assets/og.png",
       "priceRange": "$$",
       "areaServed": {
         "@type": "Country",
@@ -2096,17 +2485,17 @@ a.contact__value:hover { color: var(--gold-lift); }
     },
     {
       "@type": "WebSite",
-      "@id": "https://gmgmt.co/#website",
-      "url": "https://gmgmt.co/",
+      "@id": "https://gmgmt.com/#website",
+      "url": "https://gmgmt.com/",
       "name": "G Management",
       "publisher": {
-        "@id": "https://gmgmt.co/#business"
+        "@id": "https://gmgmt.com/#business"
       },
       "inLanguage": "en-US"
     },
     {
       "@type": "FAQPage",
-      "@id": "https://gmgmt.co/#faq",
+      "@id": "https://gmgmt.com/#faq",
       "mainEntity": [
         {
           "@type": "Question",
@@ -2201,8 +2590,10 @@ a.contact__value:hover { color: var(--gold-lift); }
     <nav class="site-nav" aria-label="Sections" data-nav>
       <span class="site-nav__marker" aria-hidden="true" data-nav-marker></span>
       <a href="#work" data-nav-link>Work</a>
+      <a href="#proof" data-nav-link>Proof</a>
       <a href="#results" data-nav-link>Results</a>
       <a href="#voices" data-nav-link>Clients</a>
+      <a href="/team/">Team</a>
       <a href="#book" data-nav-link>Book</a>
     </nav>
 
@@ -2311,50 +2702,81 @@ a.contact__value:hover { color: var(--gold-lift); }
 
       <div class="reels" data-reels>
 
-        <figure class="reel" data-reel
-                data-video="/assets/clips/reel-1-v9.mp4"
-                data-poster="/assets/clips/reel-1-poster-v9.webp">
+        <h3 class="reel-kicker" data-reveal="rise">Short-form</h3>
+
+        <!-- Each tile is given its clip's own shape as `--ar`, so a thumbnail
+             is the whole frame and there is nothing to crop out of it anywhere
+             on this page. The two clips shot vertical sit side by side; the one
+             shot landscape spans the row beneath them, which is how three
+             uncropped tiles of two different shapes still make a grid.
+
+             `--ar` is inline rather than in a data attribute because it is
+             layout: the tile has to be the right shape with scripting off, and
+             before a byte of media has been asked for. The player reads the
+             same value back off the computed style, so there is one number per
+             clip and no second place to keep it in step.
+
+             All three are embeds now, and `--ar` is the only thing that knows
+             what shape each one is: an iframe cannot be asked. These two are
+             the clips shot vertical, so they stay at their own ratios however
+             square the provider's copy-paste snippet happens to be. -->
+        <figure class="reel" data-reel style="--ar: 0.5625"
+                data-embed="https://player.vimeo.com/video/1224358039?h=7ece193f4b&amp;autoplay=1&amp;title=0&amp;byline=0&amp;portrait=0&amp;dnt=1"
+                data-embed-title="The Devito &amp; Jenne client reel on Vimeo">
           <button class="reel__frame" type="button" data-reel-btn>
-            <img class="reel__thumb" src="/assets/clips/reel-1-poster-v9.webp" alt=""
-                 width="768" height="432" loading="lazy" decoding="async" fetchpriority="low">
+            <img class="reel__thumb" src="/assets/clips/reel-1-poster-v14.webp" alt=""
+                 width="486" height="864" loading="lazy" decoding="async" fetchpriority="low">
             <span class="reel__platform">Devito &amp; Jenne</span>
             <span class="reel__play" aria-hidden="true">
               <svg viewBox="0 0 14 16" width="13" height="15" focusable="false"><path d="M0 0 L14 8 L0 16 Z" fill="currentColor"/></svg>
             </span>
-            <span class="visually-hidden">Play the client reel</span>
+            <span class="visually-hidden">Play the client reel on Vimeo</span>
           </button>
         </figure>
 
-        <figure class="reel" data-reel
-                data-video="/assets/clips/reel-2-v9.mp4"
-                data-poster="/assets/clips/reel-2-poster-v9.webp">
-          <button class="reel__frame" type="button" data-reel-btn>
-            <img class="reel__thumb" src="/assets/clips/reel-2-poster-v9.webp" alt=""
-                 width="768" height="432" loading="lazy" decoding="async" fetchpriority="low">
-            <span class="reel__platform">Short-form</span>
-            <span class="reel__play" aria-hidden="true">
-              <svg viewBox="0 0 14 16" width="13" height="15" focusable="false"><path d="M0 0 L14 8 L0 16 Z" fill="currentColor"/></svg>
-            </span>
-            <span class="visually-hidden">Play the client cut</span>
-          </button>
-        </figure>
-
-        <!-- The one clip that is not ours to re-encode. Its poster carries the
-             same 16:9 blurred fill the other two are encoded with, and the
-             embed is laid over it at the Short's own 9:16 — so the tile is the
-             same landscape box, filled edge to edge, as the two beside it. -->
-        <figure class="reel reel--embed" data-reel
+        <!-- The one clip that is not ours to host. An iframe's picture cannot be
+             cropped from out here at all, so it is the tile that most needed a
+             frame of its own shape — and now has one. -->
+        <figure class="reel" data-reel style="--ar: 0.5625"
                 data-embed="https://www.youtube-nocookie.com/embed/WZF_Tt_xNAQ?autoplay=1&loop=1&playlist=WZF_Tt_xNAQ&rel=0&playsinline=1&modestbranding=1"
-                data-embed-title="YouTube Short from a G Management client account"
-                data-poster="/assets/clips/reel-3-poster-v6.webp">
+                data-embed-title="PJ Vilardo's Short, from an account G Management runs">
           <button class="reel__frame" type="button" data-reel-btn>
-            <img class="reel__thumb" src="/assets/clips/reel-3-poster-v6.webp" alt=""
-                 width="768" height="432" loading="lazy" decoding="async" fetchpriority="low">
-            <span class="reel__platform">YouTube</span>
+            <img class="reel__thumb" src="/assets/clips/reel-3-poster-v8.webp" alt=""
+                 width="432" height="768" loading="lazy" decoding="async" fetchpriority="low">
+            <span class="reel__platform">PJ Vilardo</span>
             <span class="reel__play" aria-hidden="true">
               <svg viewBox="0 0 14 16" width="13" height="15" focusable="false"><path d="M0 0 L14 8 L0 16 Z" fill="currentColor"/></svg>
             </span>
-            <span class="visually-hidden">Play the client short from YouTube</span>
+            <span class="visually-hidden">Play PJ Vilardo's short</span>
+          </button>
+        </figure>
+
+        <h3 class="reel-kicker" data-reveal="rise">Long-form</h3>
+
+        <!-- Landscape, so it takes the full width under the two vertical ones.
+
+             This one is the client's full cut, hosted on Vimeo, rather than the
+             33-second 2.085:1 slice of it this tile used to carry: long-form is
+             the point of the tile, and a trimmed copy was making that argument
+             with the wrong evidence. The self-hosted mp4 is gone with it — it
+             was 4MB of a shorter edit nobody would now be shown.
+
+             `h=` is the video's privacy hash and is not optional. `dnt=1` asks
+             Vimeo not to track, and title, byline and portrait are off so the
+             player opens on the picture rather than on its own furniture. As
+             with the Short, nothing is requested from Vimeo until the tile is
+             pressed — there is deliberately no preconnect. -->
+        <figure class="reel reel--wide" data-reel style="--ar: 1.7778"
+                data-embed="https://player.vimeo.com/video/1224354817?h=d76df15c11&amp;autoplay=1&amp;title=0&amp;byline=0&amp;portrait=0&amp;dnt=1"
+                data-embed-title="Jared Goetz, the full long-form cut">
+          <button class="reel__frame" type="button" data-reel-btn>
+            <img class="reel__thumb" src="/assets/clips/reel-2-poster-v12.webp" alt=""
+                 width="768" height="432" loading="lazy" decoding="async" fetchpriority="low">
+            <span class="reel__platform">Jared Goetz</span>
+            <span class="reel__play" aria-hidden="true">
+              <svg viewBox="0 0 14 16" width="13" height="15" focusable="false"><path d="M0 0 L14 8 L0 16 Z" fill="currentColor"/></svg>
+            </span>
+            <span class="visually-hidden">Play the full Jared Goetz cut</span>
           </button>
         </figure>
 
@@ -2467,20 +2889,24 @@ a.contact__value:hover { color: var(--gold-lift); }
 
           <div class="ba__pair ba__pair--stack">
             <figure data-reveal="shot" style="--delay:0ms">
-              <span class="shot">
+              <button class="shot" type="button" data-proof="/assets/proof/houdini-before-v2.webp" style="--ar: 2.439">
                 <img src="/assets/proof/houdini-before-v2.webp" loading="lazy" decoding="async"
                    width="1200" height="492"
                    alt="Shopify dashboard, September 1 to 30, 2024: 77,440 sessions, 1,544 orders, 1.85 per cent conversion rate.">
-              </span>
+                <span class="shot__zoom" aria-hidden="true"><svg viewBox="0 0 14 14" width="11" height="11" focusable="false"><path d="M5 1H1v4M9 13h4V9M1 9v4h4M13 5V1H9" stroke="currentColor" stroke-width="1.6" fill="none"/></svg>Full size</span>
+                <span class="visually-hidden">Open the full screenshot</span>
+              </button>
 
               <figcaption>Before &middot; 1,544 orders at 1.85%</figcaption>
             </figure>
             <figure data-reveal="shot" style="--delay:140ms">
-              <span class="shot">
+              <button class="shot" type="button" data-proof="/assets/proof/houdini-after-v2.webp" style="--ar: 2.2388">
                 <img src="/assets/proof/houdini-after-v2.webp" loading="lazy" decoding="async"
                    width="1200" height="536"
                    alt="Shopify dashboard, November 1 to 30, 2024: 131,814 sessions, 3,272 orders, 2.23 per cent conversion rate.">
-              </span>
+                <span class="shot__zoom" aria-hidden="true"><svg viewBox="0 0 14 14" width="11" height="11" focusable="false"><path d="M5 1H1v4M9 13h4V9M1 9v4h4M13 5V1H9" stroke="currentColor" stroke-width="1.6" fill="none"/></svg>Full size</span>
+                <span class="visually-hidden">Open the full screenshot</span>
+              </button>
 
               <figcaption class="is-after">After &middot; 3,272 orders at 2.23%</figcaption>
             </figure>
@@ -2545,20 +2971,24 @@ a.contact__value:hover { color: var(--gold-lift); }
           </ul>
           <div class="ba__pair">
             <figure data-reveal="shot" style="--delay:0ms">
-              <span class="shot">
+              <button class="shot" type="button" data-proof="/assets/proof/pivot-point-before-v2.webp" style="--ar: 0.9744">
                 <img src="/assets/proof/pivot-point-before-v2.webp" loading="lazy" decoding="async"
                    width="760" height="780"
                    alt="Instagram Views panel, last 30 days, December 22 to January 20: 116,498 views, 48,792 accounts reached, 83.1 per cent non-followers.">
-              </span>
+                <span class="shot__zoom" aria-hidden="true"><svg viewBox="0 0 14 14" width="11" height="11" focusable="false"><path d="M5 1H1v4M9 13h4V9M1 9v4h4M13 5V1H9" stroke="currentColor" stroke-width="1.6" fill="none"/></svg>Full size</span>
+                <span class="visually-hidden">Open the full screenshot</span>
+              </button>
 
               <figcaption>Before &middot; 116,498 views</figcaption>
             </figure>
             <figure data-reveal="shot" style="--delay:140ms">
-              <span class="shot">
+              <button class="shot" type="button" data-proof="/assets/proof/pivot-point-after-v2.webp" style="--ar: 0.9257">
                 <img src="/assets/proof/pivot-point-after-v2.webp" loading="lazy" decoding="async"
                    width="760" height="821"
                    alt="Instagram Views panel, last 30 days, January 22 to February 20: 1,224,413 views, 585,289 accounts reached, up 1,095.3 per cent, 97.7 per cent non-followers.">
-              </span>
+                <span class="shot__zoom" aria-hidden="true"><svg viewBox="0 0 14 14" width="11" height="11" focusable="false"><path d="M5 1H1v4M9 13h4V9M1 9v4h4M13 5V1H9" stroke="currentColor" stroke-width="1.6" fill="none"/></svg>Full size</span>
+                <span class="visually-hidden">Open the full screenshot</span>
+              </button>
 
               <figcaption class="is-after">After &middot; 1,224,413 views</figcaption>
             </figure>
@@ -2802,12 +3232,14 @@ a.contact__value:hover { color: var(--gold-lift); }
 
           <div class="field">
             <label for="lead-name">Name</label>
-            <input id="lead-name" name="name" type="text" autocomplete="name" required>
+            <input id="lead-name" name="name" type="text" autocomplete="name" required aria-describedby="lead-name-error">
+            <p class="field__error" id="lead-name-error"></p>
           </div>
 
           <div class="field">
             <label for="lead-email">Email</label>
-            <input id="lead-email" name="email" type="email" autocomplete="email" required>
+            <input id="lead-email" name="email" type="email" autocomplete="email" required aria-describedby="lead-email-error">
+            <p class="field__error" id="lead-email-error"></p>
           </div>
 
           <div class="field">
@@ -2817,18 +3249,20 @@ a.contact__value:hover { color: var(--gold-lift); }
 
           <div class="field">
             <label for="lead-message">What do you need?</label>
-            <textarea id="lead-message" name="message" rows="3" required></textarea>
+            <textarea id="lead-message" name="message" rows="3" required aria-describedby="lead-message-error"></textarea>
+            <p class="field__error" id="lead-message-error"></p>
           </div>
 
-          <input type="hidden" name="subject" value="New enquiry from gmgmt.co">
-          <p class="field field--trap" aria-hidden="true">
-            <label for="lead-company">Company</label>
+          <input type="hidden" name="subject" value="New enquiry from gmgmt.com">
+          <p class="field field--trap">
+            <label for="lead-company">Leave this field empty</label>
             <input id="lead-company" name="botcheck" type="text" tabindex="-1" autocomplete="off">
           </p>
 
           <div class="lead__actions">
             <button class="btn btn--primary btn--glow" type="submit" data-lead-send>Send it</button>
             <button class="btn btn--ghost" type="button" data-lead-whatsapp>Send on WhatsApp</button>
+            <button class="btn btn--ghost" type="button" data-lead-copy hidden>Copy the message</button>
           </div>
 
           <p class="lead__status" data-lead-status role="status" aria-live="polite"></p>
@@ -2880,8 +3314,11 @@ a.contact__value:hover { color: var(--gold-lift); }
       <nav class="site-footer__nav" aria-label="Footer">
         <p class="site-footer__heading">Page</p>
         <a href="#work">Work</a>
+        <a href="#proof">Proof</a>
         <a href="#results">Results</a>
         <a href="#voices">Clients</a>
+        <a href="/team/">Team</a>
+        <a href="#faq">Questions</a>
         <a href="#book">Book a call</a>
       </nav>
 
@@ -2905,6 +3342,6 @@ a.contact__value:hover { color: var(--gold-lift); }
   <a class="btn btn--ghost btn--sm" href="mailto:manny@gmgmt.co">Email</a>
 </div>
 
-<script src="/assets/js/main.js" defer></script>
+<script src="/assets/js/main-v8.js" defer></script>
 </body>
 </html>

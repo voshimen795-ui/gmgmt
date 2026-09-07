@@ -1,4 +1,4 @@
-# G Management — gmgmt.co
+# G Management — gmgmt.com
 
 Single-page site for G Management, a social media and influencer marketing agency in
 Miami run by Manny Garcia. Static HTML, CSS and JavaScript. No build step, no framework,
@@ -6,7 +6,8 @@ no dependencies.
 
 ```
 index.html                  the page, with all styling inline in its <style>
-assets/js/main.js           counters, chart, reels, booking, form, motes
+team/index.html             the team page, styled the same way and for the same reason
+assets/js/main-v8.js        counters, chart, reels, player, booking, form, motes
 assets/fonts/               self-hosted variable fonts (Archivo, Instrument Sans)
 assets/og.png               link-preview image (1200×630)
 favicon.svg
@@ -26,7 +27,7 @@ Then open <http://127.0.0.1:8099/>.
 ## Deploying
 
 Upload the repository root as-is to any static host. It expects to live at the domain
-root (gmgmt.co). Nothing needs compiling.
+root (gmgmt.com). Nothing needs compiling.
 
 
 ## What was done for speed
@@ -67,10 +68,10 @@ Where it came from:
   glyphs took 120KB of woff2 to 63KB; trimming the axes took it to 43KB. They are not
   preloaded: preloading raced them against the stylesheet on a narrow pipe, and
   `font-display: swap` paints the text immediately regardless.
-- **The tile thumbnails are lazy WebP at 432x768** — 60KB for all three, and each one is a
-  frame of the clip it fronts, taken at that clip's own start offset, so the picture does
-  not change at the moment of pressing. They are real `<img loading="lazy">` elements, not
-  CSS backgrounds: a background image is fetched as soon as its element is laid out no
+- **The tile thumbnails are lazy WebP** — 60KB for all three, and now the whole of
+  `assets/clips`, since every clip moved to a provider. Each is the whole frame of the clip
+  it fronts, scaled, never cropped. They are real `<img loading="lazy">` elements,
+  not CSS backgrounds: a background image is fetched as soon as its element is laid out no
   matter where on the page it sits, and these tiles are a long way down.
 - **The proof screenshots are WebP.** The same four dashboards were 197KB as JPEG and are
   85KB as WebP, with the small type in them unchanged. They are lazy too, and carry their
@@ -108,22 +109,36 @@ Where it came from:
   request on a phone should not cost the hero its film for the rest of the visit.
 
 - **The hero has a local film behind the hosted one.** `data-video` is a list and the first
-  source to produce a frame wins, so the hosted cut still leads; `/assets/hero-loop-v1.mp4`
+  source to produce a frame wins, so the hosted cut still leads; `/assets/hero-loop-v3.mp4`
   sits behind it so the section is never empty on a device that cannot reach or cannot
-  decode the hosted file. It is 795KB, 720x1280, and ping-ponged — played forward then
-  backward — so it loops with no seam. Replace that second entry to change the fallback.
+  decode the hosted file. It is 777KB and **1280x720** — landscape, because the hero paints
+  it `object-fit: cover` across the viewport and the 540x960 portrait file it replaced was
+  being scaled about 3.5x on a desktop with most of it thrown away. Replace that second
+  entry to change the fallback.
 
 - **A source that hangs is dropped, not waited on.** A file too heavy for the device never
   errors: it simply never arrives, and the section stays empty for the whole visit while
   the phone keeps pulling at it. So while there is still something to fall back to, each
   source gets six seconds to produce a first frame and is abandoned if it misses. The last
   source in the list has nowhere to go and is left alone to take as long as it needs.
-- **`vercel.json`** gives the fonts a year of immutable caching and everything else ten
-  minutes with revalidation. It briefly gave *everything* under `/assets` the year, which
-  was a mistake: the filenames do not carry a content hash, so a browser that cached a clip
-  under that header would keep serving it for a year no matter what was deployed. Media
-  filenames now end in `-v2`; bump that suffix whenever a file's contents change and the
-  old copy can never be served in its place.
+- **`vercel.json`** gives a year of immutable caching to everything whose filename carries a
+  version — the fonts, `/assets/clips`, the hero loop, and the script — and ten minutes with
+  revalidation to whatever is left. `index.html` itself is `max-age=0, must-revalidate`, so
+  the document is always the current one.
+
+  **The script has a version in its name for a reason, and it is not caching efficiency.**
+  It used to be `main.js` on `max-age=600, stale-while-revalidate=86400`, and that pairing
+  is a trap: `stale-while-revalidate` lets a browser keep serving a stale copy for a day
+  after it goes off, revalidating in the background. So a returning visitor could be handed
+  **today's `index.html` with yesterday's script**. That is not a slow update, it is a
+  broken page — this site's CSS lives inside the document, so markup, styles and behaviour
+  ship as one thing and a script that disagrees with them has nothing to hold onto. It
+  happened: the players opened in the page instead of over it, because the new stylesheet
+  had dropped the rule the old script's markup depended on.
+
+  A version in the filename makes it impossible. The document names the exact build it
+  needs, so the two can never be out of step. **Bump the suffix whenever the script changes**,
+  in the same commit as the markup that needs it.
 
 **If the copy changes, re-subset the fonts.** The subset covers printable ASCII plus the
 punctuation the page uses. A character outside that set will silently fall back to Helvetica
@@ -185,9 +200,19 @@ A phone pays for things a laptop gives away. The page also holds to these:
 - **Both faces are preloaded.** They are set above the fold and the stylesheet is inline, so
   the browser would otherwise only discover them after parsing all of it — and the headline
   animation waits on `document.fonts.ready`, so this is the gate on when the hero settles.
-- **Versioned files are cached for a year.** `/assets/clips` and the hero loop carry a
-  version in the name, so they are served `immutable`. `main.js` does not, so it stays on a
-  ten-minute cache and a deploy still reaches people.
+- **Everything with a version in its name is cached for a year.** The fonts, `/assets/clips`,
+  the hero loop and `main-v8.js` are served `immutable`; `index.html` is
+  `max-age=0, must-revalidate`. The script carries a version so it can never be a stale copy
+  paired with a fresh document — see the `vercel.json` note above, which is the bug that put
+  it there.
+- **The small print is two points larger on a phone, and the grey is brighter everywhere.**
+  `--t-small` and `--t-label` go 14→16 and 13→15 below 700px, which lifts all forty-four
+  places they are used at once — the steps in "How a month runs", every label under a
+  figure, the chips, the footnotes, the form hints, the FAQ answers — without a second scale
+  to remember. The video tiles are pinned back to 13, because they were not part of that
+  pass. `--grey` went from `#7E8794` to `#9BA5B4`: 5.4:1 against the ink and 4.9:1 against a
+  card became **7.95:1 and 7.26:1**, so the same one grey carries the small print everywhere
+  instead of only just carrying it.
 - **No motes on phones**, and none anywhere under reduced motion.
 
 ### Old phones
@@ -266,7 +291,7 @@ no tag, no cookie.
 
 ### The link preview
 
-`og:image`, `og:url` and the canonical all point at `https://gmgmt.co/`. Link previews
+`og:image`, `og:url` and the canonical all point at `https://gmgmt.com/`. Link previews
 (WhatsApp, iMessage, Slack, X) fetch that absolute URL, so the image and description
 only appear once the domain is connected. Sharing a `*.vercel.app` link before then
 shows the title and description but no image. If the site is going to live somewhere
@@ -278,14 +303,17 @@ else, change the four absolute URLs in `<head>` and the two in `sitemap.xml` and
 **Booking link.** The contact section has an empty scheduler slot:
 
 ```html
-<div class="booking" data-booking data-booking-url=""></div>
+<div class="booker__embed" data-booking data-booking-url=""></div>
 ```
 
-Put a Calendly (or similar) embed URL in `data-booking-url` and the inline scheduler
-appears above the form. Left empty, the slot stays hidden and the form is the booking
-path. The form has no backend — it composes an email to `manny@gmgmt.co` and opens the
-visitor's mail app. If a real form endpoint is added later, swap the `submit` handler in
-`assets/js/main.js`.
+Put a Cal.com, Calendly or Google appointment URL in `data-booking-url` and the scheduler
+takes over the card. Left empty, the page's own month picker stays and collects the slot.
+
+The form endpoint is the separate switch described above. With `data-endpoint` empty the
+form composes the same message as an email and opens the visitor's mail app — and, because
+that does nothing visible on a phone with no mail client registered, leaves the message on
+screen with a **Copy the message** button beside the WhatsApp one. The handler is module 10
+of `assets/js/main-v8.js`.
 
 **Hero background video.** The hero has a media layer wired for the client's own footage:
 
@@ -295,9 +323,12 @@ visitor's mail app. If a real form endpoint is added later, swap the `submit` ha
 
 Drop a file at that path (or list several, comma separated — `.mp4` and `.webm` are both
 recognised) and it plays behind the hero, muted, looping, cropped to cover, under a scrim
-that keeps the type at full contrast. Nothing is requested under `prefers-reduced-motion`
-or on a connection flagged `saveData`, and if no source plays the element is removed and
-the light field carries the hero on its own.
+that keeps the type at full contrast. Nothing is requested on a connection flagged
+`saveData`, and if no source plays the element is removed and the light field carries the
+hero on its own. Reduced motion does not skip it — this said it did, and the section on
+the speed pass above says the opposite, which is the one that matches the code: the film
+mounts without `autoplay` and holds on its first frame, so the hero keeps its picture and
+nothing moves.
 
 **Give it a landscape file.** The hero paints it `object-fit: cover` across the viewport, so
 a portrait file on a 1920px desktop is scaled about 3.5x and most of it is thrown away —
@@ -305,55 +336,69 @@ soft, blocky, and a much larger decode than the picture that survives. `hero-loo
 1280x720 for that reason. Keep it short and small; it is background, not content, and ten
 seconds under a megabyte is plenty.
 
-**Reel clips.** Every clip is 1280x720 at 30fps with its audio kept, so it fills a 16:9 tile
-corner to corner and talks when someone presses it. Nothing is ever cropped to get there: a
-vertical source goes in whole at full height with a blurred, darkened copy of its own frame
-either side. `assets/clips/README.md` carries the full recipe — the filter graph, where each
-clip's audio comes from, and why the head of a file gets cut rather than seeked past. The
-short version:
+**Reel clips.** Each clip is encoded at **its own** aspect ratio, whole, at 30fps
+with its audio kept — no crop, no blurred band, nothing added and nothing taken
+away — and the player gives it a box that matches. `assets/clips/README.md`
+carries the full recipe: why the tile and the clip are different shapes, how a
+thumbnail moment is chosen, where each clip's audio comes from, and why the head
+of a file gets cut rather than seeked past. The short version:
 
 ```
 ffmpeg -ss <cut> -i source.mp4 -filter_complex "
-  [0:v]scale=-2:720:flags=lanczos,setsar=1,split=2[fg][bs];
-  [bs]scale=1280:720:force_original_aspect_ratio=increase,crop=1280:720,
-      gblur=sigma=32,eq=brightness=-0.22:saturation=0.90:contrast=0.92[bg];
-  [bg][fg]overlay=(W-w)/2:0,fps=30,format=yuv420p[v]" -map "[v]" -map 0:a \
-  -c:v libx264 -preset slow -crf 24 -g 60 -c:a aac -b:a 96k -movflags +faststart out.mp4
+  [0:v]scale=720:-2:flags=lanczos,setsar=1,fps=30,format=yuv420p[v]" \
+  -map "[v]" -map 0:a -c:v libx264 -preset slow -crf 26 -g 60 \
+  -c:a aac -b:a 96k -movflags +faststart out.mp4
 ```
 
-30fps, not the 60 the sources were shot at: talking heads gain nothing from it and it halves
-what a phone has to decode to keep up, which is most of what "the video stutters" is.
+30fps, not the 60 the sources were shot at: talking heads gain nothing from it and
+it halves what a phone has to decode to keep up, which is most of what "the video
+stutters" is. Put the result's width over its height in the tile's `--ar`,
+so the player opens the right shape before any media has arrived.
 
-Filenames carry a version (`-v9`). `/assets/clips` is served `immutable` for a year and these
-files have no content hash, so a re-encode under an old name keeps showing the old cut on a
-phone that already has it.
+Filenames carry a version (`-v11`). `/assets/clips` is served `immutable` for a year
+and these files have no content hash, so a re-encode under an old name keeps showing
+the old cut on a phone that already has it.
 
-A tile plays a self-hosted file inline, muted and looping, as soon as it
-scrolls into view — add `data-video="/assets/clips/whatever.mp4"` to the
-`<figure class="reel">`. Several files can be listed comma separated and the first one
-that plays wins; if none do, the tile stays a poster frame and its platform embed loads on
-press. See `assets/clips/README.md`.
-The clip is only created on first hover, plays muted and looping, and is dropped if the
-file is missing. Tiles keep working without a clip: they stay poster frames that load the
-real post when pressed.
+A tile is a still until it is pressed. Add `data-video="/assets/clips/whatever.mp4"`
+and `style="--ar: <width over height>"` to the `<figure class="reel">`, and a press opens
+that file over the page with its own controls and its sound. A tile with `data-embed`
+instead opens the platform's player the same way. Either way nothing is fetched and no
+third party is contacted until someone presses. See `assets/clips/README.md`.
 
 **The client videos.** Each tile stores its own embed URL:
 
 ```html
-<figure class="reel" data-reel data-autoload data-embed="…" data-embed-title="…">
+<figure class="reel" data-reel data-embed="…" data-embed-title="…">
 ```
 
-`data-autoload` brings the embed in as soon as the tile scrolls into view — that is how
-the YouTube short simply plays on the page, muted and looping. Without it the tile stays a
-poster frame and loads on press, which is what the Facebook tile does, since Facebook does
-not autoplay in an embed. Every caption links out to the original post, so the proof is
-reachable even if a platform declines to embed. The Facebook embed uses the video plugin
-against the share URL; if that stops resolving, replace the `href=` inside `data-embed`
-with the canonical `/reel/<id>` URL, URL-encoded.
+Every tile is a poster frame that loads its player on press. Nothing autoplays and no
+third party is contacted until someone presses — there is no `data-autoload`, and the
+Facebook tile this section used to describe is gone; the three tiles are two Vimeo and
+one youtube-nocookie. Every caption links out to the original post, so the proof stays
+reachable even if a platform declines to embed.
 
 **Numbers.** Every figure lives in the markup as text. The hero counters read their target
-from `data-to`, and the Houdini scrub reads `data-from` / `data-to` on each figure — change
-those attributes and the interaction follows.
+from `data-to` — change the attribute and the count-up follows.
+
+## The team page
+
+`team/index.html` is a second document at `/team/`, linked from the header nav and the
+footer. It carries one real card — Manny — and a commented-out template beside it. Copy
+the template once per person and fill in five things: initials, name, role, one line on
+what they do on an account, and any links. Nothing else needs touching; the grid auto-fits
+and stays centred whether there is one person on it or seven.
+
+A portrait is optional. Without one the card shows the person's initials in a 72px gold
+ring, and a photograph drops into exactly that box, so adding one later moves nothing else
+on the page. Export square, 144x144 for two-times screens, WebP, into `assets/team/`, and
+put a version number in the filename — the cache headers in `vercel.json` are long and the
+filename is what busts them.
+
+**Its styling is a copy, not a link.** Fonts, tokens, reset, layout, buttons, header,
+footer and the motion block are lifted from `index.html` verbatim. A shared stylesheet
+would be a second round trip before either page could paint, which is the exact cost the
+first performance pass existed to remove. The price of that decision is that a token
+changed in `index.html` has to be changed here too.
 
 ## The page, section by section
 
@@ -367,36 +412,67 @@ those attributes and the interaction follows.
 3. **Clients** — the account names on an infinite roll, faded at both edges and paused on
    hover. Swap a name for an `<img>` when a client sends a logo file; the row does not care
    which it is holding.
-4. **Work** — three 16:9 tiles in one row above a panel carrying the offer. Landscape is
-   the shape a video player is, so the tiles read as three videos rather than three phone
-   screenshots, and each one gets the full width of its column. One column below 900px and
-   three above it — never two, because two leaves the third tile orphaned beside a gap.
+4. **Work** — two named groups: **Short-form**, the two clips shot vertical, and
+   **Long-form**, the podcast cut that spans the row beneath them. Each label is centred
+   between two gold hairlines that draw outward from the words as the row arrives — three
+   transforms and one opacity, all composited, all of them finished the moment they land,
+   riding the reveal observer the rest of the page already uses rather than adding any
+   script. They are set 22px on a phone up to 34px on a desktop, a heading rather than a
+   caption, and tracking comes back in as the size goes up. Spacing is 24px inside a group
+   and 56 between them, on the page's own ladder.
 
-   Every clip fills its tile corner to corner. The two we host are encoded 1280x720; where
-   a source was shot vertical the frame goes in whole, uncropped, at full tile height, and
-   the space either side is a blurred, darkened copy of the same frame — nothing cut off, no
-   black bars, box full, which is what YouTube does with a vertical upload. The third is a
-   YouTube Short and not ours to re-encode, so its poster carries the identical blurred fill
-   and the iframe is laid over it at the Short's own 9:16 down the middle at full height.
+   **Every tile is its clip's own shape**, so there is no crop anywhere on the page: not in
+   the tile, not in the thumbnail, not in the player. The two clips shot vertical take a
+   column each; the one shot landscape spans the row beneath them and closes the block off.
+   Three uncropped tiles of two different shapes cannot make a straight row — they can make
+   this.
 
-   Each tile is a thumbnail until it is pressed; pressing mounts the real player over it —
-   the file with its own controls and its sound, or YouTube's embed for the one that lives
-   there. A reel that has been pressed pauses when it scrolls out of view and is not resumed
-   on the way back, because a clip that starts talking again on its own is worse than one
-   that waits. Nothing is decoded and no third party is contacted until someone presses
-   play.
+   It took three tries. Forcing all three into one 16:9 tile means either cropping the
+   picture or packing the sides with blur, and both shipped: a 16:9 window out of a
+   870x1588 frame is 870x489, and in the first clip the speaker's head is taller than that
+   window at every offset, so the crop cut his head off; the blur made two thirds of the
+   tile filler. Letting the tile take the clip's shape costs nothing and cuts nothing.
 
-   There is no `data-start`. A clip whose source opens on junk is **cut in the encode**, not
-   seeked past at play time: a browser paints frame zero while it seeks and drops the poster
-   the moment playback is asked for, so a seek shows the junk anyway, every single press.
+   **None of the three is hosted here now** — two on Vimeo, one on YouTube. `assets/clips`
+   holds three posters and nothing else, 76KB where it was 7MB. An iframe cannot be asked
+   what shape it is, so `--ar` is the only thing that knows, and both providers hand out a
+   copy-paste snippet sized 640x360 whatever the video actually is: ignore it, or a vertical
+   clip letterboxes inside a 16:9 box.
 
-4b. **Before and after** — each screenshot sits in a `.shot` frame: it uncovers itself from
-   the bottom as it arrives, lifts under the pointer with the image scaling inside the clip,
-   a light travels its border (a conic gradient turned by an `@property` angle) and one sheen
-   sweeps across the glass. Behind the cards, a canvas drifts gold motes upward — drawn only
-   while the section is on screen and the tab is visible, at device pixel ratio 1 on phones,
-   and not at all under reduced motion, where the frames also drop their clip and both
-   pseudo-elements.
+   Nothing is requested from either provider until a tile is pressed. **The handshake is
+   moved off that press without the fetch moving with it**: a tile preconnects its origins
+   the first time it is hovered, focused or touched, all of which come before the press, so
+   the DNS lookup, TCP connection and TLS handshake are done by the time the player is asked
+   for. A visitor who never goes near a tile still asks those hosts for nothing. Those links
+   carry no `crossorigin`, deliberately — an iframe is a credentialed navigation, and an
+   anonymous preconnect opens a connection in the wrong pool that the iframe cannot reuse.
+
+   A tile is a still until it is pressed, and pressing opens the clip **over the page** at
+   the same ratio, whole, with its own controls and its sound. Nothing is fetched, decoded
+   or contacted for a visitor who never presses play, and closing tears the clip down —
+   paused, source dropped, `load()` called, element removed — because a paused `<video>`
+   keeps its decoder and its buffer and would go on running behind the page.
+
+   There is no `data-start`. A clip whose source opens on junk is **cut in the encode**,
+   not seeked past at play time: a browser paints frame zero while it seeks and drops the
+   poster the moment playback is asked for, so a seek shows the junk anyway, every press.
+
+4b. **Before and after** — each screenshot sits in a `.shot` frame that is a **button**:
+   it uncovers itself from the bottom as it arrives, lifts under the pointer with the image
+   scaling inside the clip, a light travels its border (a conic gradient turned by an
+   `@property` angle), one sheen sweeps across the glass — and pressing it opens the full
+   screenshot over the page in the same player the clips use, at the screenshot's own ratio.
+   A Shopify dashboard scaled into a phone is a grey smear of numbers nobody can read, so on
+   the page it is a thumbnail that says "Full size" and means it.
+
+   On a phone the comparison is simplified: the bars come off and each metric becomes its
+   own card — what moved, how far (the multiplier as the headline it always was), and both
+   numbers at full size. Same markup and same figures; only what is shown changes, so there
+   is nothing to keep in step.
+
+   Behind the cards, a canvas drifts gold motes upward — drawn only while the section is on
+   screen and the tab is visible, at device pixel ratio 1 on phones, and not at all under
+   reduced motion, where the frames also drop their clip and both pseudo-elements.
 
 5. **Results** — a bento grid: BKH and the Pivot Point chart across the top, then Houdini,
    the link-in-bio revenue and PAC-Hub. Every figure counts up on arrival, and the shares
@@ -425,12 +501,22 @@ The real scheduler then takes over the card and the built-in picker is hidden.
 
 ## What the page does
 
-- **Pointer follower.** A ring trails the pointer and expands into a "Watch" badge over
-  the video tiles. Fine pointers only — never on touch, never under reduced motion.
+- **Section nav, at every width.** The header nav used to be desktop-only, which left a
+  phone with no way to reach a section by name. It is a horizontal scroll strip below
+  900px instead: same links, same observer, same sliding marker, and the active one
+  scrolls itself back into the middle of the strip as the page moves. Below 768px the
+  header's own Book button steps aside, because the phone action bar is already carrying
+  it — that is what pays for the strip without making the bar any taller.
 - **Contact actions.** Copy the email, open WhatsApp, or download a vCard built in the
   browser.
-- **Phone action bar.** Below 768px a Book / WhatsApp / Call bar slides in once the hero
+- **Phone action bar.** Below 768px a Book / WhatsApp / Email bar slides in once the hero
   has scrolled past, and gets out of the way over the booking section.
+- **A form that says which box is wrong.** Name, email and message are checked on submit,
+  each against its own note under the field, with `aria-invalid` set and the focus moved
+  to the first one. The email is checked for shape and not just for emptiness — a typo
+  used to be accepted and posted, and that is the failure here that costs a real customer.
+  What has been typed is kept in `sessionStorage`, so a reload or a failed send does not
+  empty the form.
 
 ## Regenerating the link-preview image
 

@@ -1,75 +1,157 @@
 # Reel clips
 
-Self-hosted video for the three tiles in the Work section.
+Posters for the three tiles in the Work section.
 
-## One shape: 16:9, edge to edge
+**Nothing is hosted here any more.** All three tiles are embeds — two on Vimeo,
+one on YouTube — so each is a poster and a URL. This directory went from 7MB to
+76KB when the last mp4 left it.
 
-Every tile is **16:9** and the two clips we host are encoded **1280x720**, so the
-video fills the tile corner to corner. Landscape is the shape a video player is
-and the shape a visitor already reads as "a video"; a column of vertical tiles
-reads as three phone screenshots.
+The encoding recipes below are kept because they are the argument for why the
+clips look the way they do, and because the next clip may well arrive as a file.
 
-Filling a 16:9 box from a source that was shot vertical is a choice between
-cropping the picture and filling the frame some other way. **We fill.** The
-foreground is the whole frame, uncropped, at the tile's full height; either side
-of it is a blurred, darkened, slightly desaturated copy of the same frame,
-scaled to cover. Nothing is cut off, there are no black bars, and the box is
-full. It is what YouTube does with a vertical upload, for the same reason.
+## Every tile is its clip's own shape
 
-The poster is the clip's own **first frame** at 768x432, so the picture does not
-change at the moment of pressing. It is a real `<img class="reel__thumb"
-loading="lazy">` in the tile, not a CSS background: a background image is
-fetched as soon as its element is laid out, wherever on the page that element
-sits, and these tiles are a long way below the fold.
+There is no crop anywhere on this page. Not in the tile, not in the thumbnail,
+not in the player. Each tile is given its clip's aspect ratio, its thumbnail is
+that clip's whole frame scaled down, and pressing it opens the clip over the
+page at the same ratio again.
 
-    ffmpeg -i out.mp4 -frames:v 1 -vf "scale=768:432:flags=lanczos" \
-      -c:v libwebp -quality 64 -compression_level 6 out-poster.webp
+The grid is what makes that possible. The two clips shot vertical take a column
+each; the one shot landscape spans the row beneath them and closes the block
+off:
 
-768 wide covers the ~400px the tile is ever given at 2x, and all three together
-are 36KB.
+    ┌──────────┐ ┌──────────┐
+    │  9:16    │ │  9:16    │     reel-1 (0.5625)  reel-3 (0.5625)
+    │          │ │          │
+    └──────────┘ └──────────┘
+    ┌───────────────────────┐
+    │         16:9          │     reel-2 (1.7778)
+    └───────────────────────┘
+
+Three uncropped tiles of two different shapes cannot make a straight row. They
+can make this.
+
+**It took three tries to get here, and the two wrong ones are worth keeping in
+mind.** Forcing all three into one 16:9 tile means either cropping the picture
+or packing the sides with blur, and both shipped. The crop is the worse of them:
+a 16:9 window out of a 870x1588 frame is 870x489, the widest that frame can
+give, and in the first clip **the speaker's head is taller than that window** —
+scalp above it, chin below it, at every offset. There is no placement that holds
+his head. The blur is the other: 886 of the tile's 1280 pixels are filler, which
+reads as a video that did not fit, the exact thing the blur was there to hide.
+
+Letting the tile take the clip's shape costs nothing and cuts nothing.
+
+### `--ar`
+
+Each tile carries its clip's width over its height, inline on the figure:
+
+    <figure class="reel" data-reel style="--ar: 0.5625" ...>
+
+Inline, and not a data attribute, because it is **layout**: the tile has to be
+the right shape with scripting off and before a byte of media has been asked
+for. The player reads the same value back off the computed style, so there is
+one number per clip and no second place to keep it in step. A `<video>` also
+corrects it from the real frame on `loadedmetadata`, which covers a re-encode
+that changed shape without the markup being updated.
+
+The two vertical tiles are held to a shared 9:16 frame in CSS. Both are 9:16
+today so it changes nothing, but it arrived when they were 0.548 and 0.5625 —
+close, and at 360px wide still 17px of one tile ending lower than the other. A
+row wants a straight bottom edge more than it wants two ratios held to the
+pixel, so the guard stays. `--ar` is untouched either way, and the player opens
+at the clip's real shape.
+
+**Getting `--ar` right matters more now that every clip is an embed.** A
+`<video>` corrects it from the real frame on `loadedmetadata`; an iframe cannot
+be asked at all, so whatever is in the markup is what the player believes.
+
+### The thumbnails
+
+Whole frames, scaled, nothing cropped:
+
+    ffmpeg -i out.mp4 -frames:v 1 -vf "scale=480:-2:flags=lanczos" \
+      -c:v libwebp -quality 66 -compression_level 6 out-poster.webp
+
+480 wide covers the 360px a vertical tile is ever given; the landscape one is
+768. All three together are 60KB.
+
+**Take the frame from a still moment, not just any moment.** These clips animate
+their burned-in captions, and a frame grabbed mid-transition gives you a smeared
+band of yellow where a readable line should be — which is what the first tile
+shipped with until someone looked at it on a phone. Sample a spread and pick one
+where the caption has landed:
+
+    for T in 3.2 4.6 6.1 7.4 10.2 13.1; do
+      ffmpeg -ss $T -i source.mp4 -frames:v 1 -vf "scale=190:-1" tn-$T.png
+    done
+
+Take it from the sharpest source you have rather than from whatever the tile
+happens to be pointing at. `reel-1-poster-v13.webp` comes off the 6.1Mbps screen
+recording, not off the 720-wide encode that used to sit in this directory, and
+certainly not off the embed — which cannot be sampled at all. They are real `<img class="reel__thumb"
+loading="lazy">` elements, not CSS backgrounds: a background image is fetched as
+soon as its element is laid out, wherever on the page that element sits, and
+these tiles are a long way below the fold.
 
 ## Cut the head off the file, never at play time
 
-`reel-1-v9.mp4` is made from a screen recording of a Facebook post, and the
-recording opens on about a second of a **"Video unavailable"** card, then black,
-then a loading spinner, before the clip itself starts.
+The first clip is made from a screen recording of a Facebook post, and **the
+recording opens on about a second of a "Video unavailable" card, then black,
+then a loading spinner**, before the clip itself starts.
 
 That used to be shipped in the file, with `data-start="1.7"` on the tile and a
-seek in `main.js` to skip it. It never worked. A browser paints frame zero while
+seek in the script to skip it. It never worked. A browser paints frame zero while
 it seeks, and the poster is dropped the moment playback is asked for, so every
 single press flashed the error card first — which is exactly what "the first two
-seconds are nothing" means when someone reports it.
+seconds are nothing" means when someone reports it. It was cut in the encode
+instead, at 0.95s, the first frame of real picture.
 
-**A head you have to skip is a head that should not be in the file.** Find the
-first frame of real picture, and cut there in the encode:
+**That cut lives in the file, so it only holds for as long as the file does.**
+The tile is a Vimeo embed now, and if what was uploaded there is the raw screen
+recording rather than the trimmed cut, the error card is back and nothing on this
+page can hide it — an iframe's timeline is not ours. Check the opening second of
+the upload; trim it at the source if it is there.
+
+Find the first frame of real picture the same way it was found here:
 
     # sample the opening at 4fps and look at it
     ffmpeg -t 3.6 -i source.mp4 -vf "fps=4,scale=160:-1,tile=7x2" -frames:v 1 head.png
 
-`data-start` no longer exists. Do not put it back.
+`data-start` no longer exists, and would not help an embed even if it did. Do not
+put it back.
 
 ## Getting a source into shape
 
-**Shot vertical** (`reel-1-v9.mp4`, from an 870x1588 phone recording — the file
-reads 1588x870 with a -90 rotation, which ffmpeg applies on its own). Scale the
-whole frame to 720 tall and fill the 886px either side of it from a blurred,
-darkened copy, so nothing at all is cropped:
+There is no reshaping any more. Each clip is encoded at its **own** aspect ratio,
+whole, and the player gives it a box that matches. No crop, no blurred band,
+nothing added and nothing taken away.
+
+**Shot vertical** (this was `reel-1-v11.mp4`, from an 870x1588 phone recording — the file
+reads 1588x870 with a -90 rotation, which ffmpeg applies on its own):
 
     ffmpeg -ss <cut> -i source.mp4 -ss <cut> -i audio-source.mp4 -filter_complex "
-      [0:v]scale=-2:720:flags=lanczos,setsar=1,split=2[fg][bs];
-      [bs]scale=1280:720:force_original_aspect_ratio=increase:flags=fast_bilinear,
-          crop=1280:720,gblur=sigma=32,eq=brightness=-0.22:saturation=0.90:contrast=0.92[bg];
-      [bg][fg]overlay=(W-w)/2:0:shortest=1,fps=30,format=yuv420p[v]" \
-      -map "[v]" -map 1:a -c:v libx264 -profile:v high -level 4.0 -preset slow \
-      -crf 24 -g 60 -keyint_min 60 -sc_threshold 0 \
+      [0:v]scale=720:-2:flags=lanczos,setsar=1,fps=30,format=yuv420p[v]" \
+      -map "[v]" -map 1:a -shortest -c:v libx264 -profile:v high -level 4.0 \
+      -preset slow -crf 26 -g 60 -keyint_min 60 -sc_threshold 0 \
       -c:a aac -b:a 96k -ac 2 -ar 44100 -movflags +faststart out.mp4
 
-**Shot landscape** (`reel-2-v9.mp4`, from a 1280x614 podcast edit): it is already
-the right shape, so it goes in at its native width, untouched, with 53px of the
-same blurred fill above and below. Same filter graph with the overlay at
-`0:(H-h)/2` and the split taken straight off `[0:v]`.
+720 wide is a downscale from 870, so the picture stays sharper than any box the
+page will ever give it.
 
-Both foregrounds are the complete frame. Neither clip is cropped.
+**Shot landscape** — there is no longer a file for this. The Long-form tile used
+to carry `reel-2-v10.mp4`, a 33-second 2.085:1 slice of the client's podcast cut,
+and it now points at the whole thing on Vimeo instead. Long-form is the point of
+that tile and a trimmed copy was making the argument with the wrong evidence. If
+a landscape source ever does need hosting here, it goes in at its native size
+with the scale dropped:
+
+    [0:v]setsar=1,hqdn3d=2:1.5:4:4,fps=30,format=yuv420p[v]
+
+`hqdn3d` is there because that source is already lossy at about 750kbps, and a
+re-encode otherwise spends real bits preserving its own compression artefacts.
+
+Whatever you encode, put its width over its height in the tile's `--ar`.
 
 ### The watermark
 
@@ -78,26 +160,55 @@ watermark burned into the bottom-right corner**, and the vertical version that
 shipped before this one had to pan a narrow window around it, shot by shot, to
 keep it out.
 
-That is all gone. The landscape source used here (`1280x614`, 2.085:1) is the
-same edit with the bottom 318 rows of the 3840x2160 original already dropped —
-which is where the watermark lived. Checked across the whole clip, corner
-sampled every four seconds: clean. **Anything new arriving with a watermark gets
-cropped out at the source, not worked around in the player.**
+That is all gone twice over: the vertical crop was replaced by a clean landscape
+source (`1280x614`, the same edit with the bottom 318 rows of the 3840x2160
+original already dropped — which is where the watermark lived, checked across the
+whole clip with the corner sampled every four seconds), and that file has since
+been replaced by the Vimeo embed of the full cut. **Anything new arriving with a
+watermark gets cropped out at the source, not worked around in the player.**
 
-### The third tile
+### All three are embeds
 
-`reel-3` is a YouTube Short and is not ours to re-encode, so it is an embed. It
-gets the same landscape box anyway: its poster carries the identical 16:9 blurred
-fill, baked into the image, and `main.js` lays the iframe over it held at the
-Short's own 9:16 down the middle at full tile height. Same tile, same
-edge-to-edge picture, and no black bars of the player's own.
+None of the three is ours to host any more, so each is a poster and an iframe,
+and all three open in the same player.
 
-    ffmpeg -i poster-9x16.webp -filter_complex "
-      [0:v]scale=-2:432:flags=lanczos,setsar=1,split=2[fg][bs];
-      [bs]scale=768:432:force_original_aspect_ratio=increase,crop=768:432,
-          gblur=sigma=20,eq=brightness=-0.22:saturation=0.90:contrast=0.92[bg];
-      [bg][fg]overlay=(W-w)/2:0[v]" -map "[v]" -frames:v 1 \
-      -c:v libwebp -quality 64 -compression_level 6 out-poster.webp
+**Vimeo** carries the first tile (`1224358039`) and the Long-form one
+(`1224354817`). Two parts of those URLs are not optional: `h=` is the video's
+privacy hash, without which the player will not load an unlisted video at all,
+and `dnt=1` asks Vimeo not to track. `title`, `byline` and `portrait` are off so
+the player opens on the picture rather than on its own furniture.
+
+**YouTube** carries the Short (`WZF_Tt_xNAQ`), on `youtube-nocookie`.
+
+An iframe cannot be asked what shape it is, so **`--ar` is the only thing that
+knows**. Both providers hand out a copy-paste snippet sized 640x360 whatever the
+video actually is; ignore it and set the clip's real ratio, or a vertical clip
+will letterbox inside a 16:9 box.
+
+Posters are ours either way. `reel-3-poster-v8.webp` is drawn from the clip
+rather than pulled from `i.ytimg.com`, which answers with a grey placeholder
+rather than a 404 when a Short has no thumbnail in the size asked for.
+`reel-2-poster-v12.webp` is a 16:9 frame cut from the local slice the tile used
+to carry — the same shot, and honest, but Vimeo's own thumbnail would be better
+and could not be reached from the machine that built it:
+
+    curl -s "https://vimeo.com/api/oembed.json?url=https%3A%2F%2Fvimeo.com%2F<id>%2F<hash>"
+
+### Warming the connection
+
+Nothing is asked of either provider until a tile is pressed. That is the right
+default — it is why the page contacts nobody on arrival — and it means the press
+pays for the introduction: a DNS lookup, a TCP connection and a TLS handshake
+before a byte of player is on the wire.
+
+So the handshake moves off the press without the fetch moving with it. A tile
+preconnects its origins the first time it is **hovered, focused or touched**, all
+of which come before the press. A visitor who never goes near a tile still asks
+those hosts for nothing.
+
+There is deliberately no `crossorigin` on those links. An iframe is a credentialed
+navigation, and an anonymous preconnect opens a connection in the wrong pool that
+the iframe cannot then reuse — all of the cost and none of the saving.
 
 ## 30fps, not 60
 
@@ -108,31 +219,23 @@ is in the filter chain above; leave it there.
 
 ## Sound
 
-Both files keep their audio (AAC 96k), and both measure about -18.6 dB mean, so
-they are level with each other. Pressing play is a user gesture, so the clip is
-allowed its sound and starts unmuted; if a browser refuses anyway the script
-retries muted rather than leaving a dead tile.
+Every clip carries its own audio now, because every clip is on someone else's
+player. What is worth remembering is why the one we hosted needed care: **its
+audio did not come from its own video**.
 
-Neither audio track comes from its own video source, so **both are muxed and
-both can drift if you are careless**:
+The screen recording's AAC track was digital silence end to end — `volumedetect`
+reported a mean and a max of -91 dB, the noise floor of an empty stream. The
+sound was recovered from a second, quarter-resolution copy that ran **1.1417s
+behind**, an offset measured rather than guessed, and muxed on with the same
+`-ss` applied to both inputs. It landed at about -18.7 dB mean, level with the
+other clip.
 
-- The first clip's own recording carries a full AAC track that is digital
-  silence end to end (`volumedetect` reports mean and max of -91 dB, the noise
-  floor of an empty stream). The sound was recovered from a second, quarter-
-  resolution copy that ran 1.1417s behind, and that offset is already baked into
-  `reel-1-v7.mp4` — which is why the encode above takes video from the screen
-  recording and audio from `reel-1-v7.mp4`, with **the same `-ss` on both**.
-- The second clip's landscape source has no audio at all. It is taken from
-  `reel-2-v8.mp4`, which is the same edit at the same 33.074708s duration and
-  the same timeline; captions line up frame for frame at 20s.
-
-Check any new clip before shipping it:
+If the Vimeo upload was made from the silent original rather than from that
+muxed file, it is a silent video. Check before assuming, the same way:
 
     ffmpeg -i clip.mp4 -map 0:a -af volumedetect -f null /dev/null
 
-A reel that the visitor pressed is **paused** when it scrolls out of view and is
-not resumed on the way back — a clip that starts talking again on its own is
-worse than one that waits.
+Pressing play is a user gesture, so a clip is allowed its sound and gets it.
 
 ## Keep them small, and always faststart
 
@@ -142,13 +245,13 @@ tile is pressed, so they cost nothing on load.
 
 If a re-encode comes out heavy, raise the CRF before you touch the resolution —
 a source that is already lossy (the 1280x614 podcast is ~750kbps) spends real
-bits preserving its own compression artefacts, and `hqdn3d=2:1.5:4:4` ahead of
-the split takes most of that back for nothing visible.
+bits preserving its own compression artefacts, and `hqdn3d=2:1.5:4:4` in front of
+the encoder takes most of that back for nothing visible.
 
 ## Filenames carry a version
 
 `/assets/clips` is served `immutable` for a year (see `vercel.json`) and these
 files carry no content hash, so a re-encode **must** land under a new name
-(`-v8` -> `-v9`) and the reference in `index.html` must move with it. Overwriting
+(`-v10` -> `-v11`) and the reference in `index.html` must move with it. Overwriting
 a name in place means every browser that already holds the old copy keeps showing
 it, effectively for ever.

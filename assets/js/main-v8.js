@@ -7,7 +7,7 @@
    3. Reveal on view (rows, meters, chart)
    4. Header — progress, stuck state, sliding nav marker
    5. Hero background video
-   6. Reels — thumbnail until pressed
+   6. Reels — thumbnail until pressed, clip opens over the page
    8. Booking — inline scheduler or built-in calendar
    9. Contact actions and phone bar
   10. Lead form
@@ -293,10 +293,38 @@
     });
   }
 
+  /* Below 900px the nav is a scroll strip, so the link the observer just made
+     active can easily be off to one side. Nothing to do above that width,
+     where every link is on screen at once. */
+  var navStrip = window.matchMedia ? window.matchMedia('(max-width: 899px)') : null;
+
+  function revealLink(link) {
+    if (!navStrip || !navStrip.matches || !link.scrollIntoView) return;
+    try {
+      /* reduceMotion is the file-wide boolean taken at the top. Declaring a
+         second one here would redeclare it — same var, same function scope —
+         and every later `!reduceMotion` would then be testing an object that
+         is always truthy, which silently switches off the hero film and the
+         motes. */
+      link.scrollIntoView({
+        behavior: reduceMotion ? 'auto' : 'smooth',
+        inline: 'center',
+        block: 'nearest'
+      });
+    } catch (e) {
+      /* Older Safari only takes the boolean form, and centring is a nicety. */
+    }
+  }
+
   if (navLinks.length && hasIO) {
     var sections = [];
     Array.prototype.forEach.call(navLinks, function (link) {
-      var target = document.querySelector(link.getAttribute('href'));
+      /* Every href here goes straight into querySelector, and a link to
+         another document — /team/ — is not a valid selector. Those links are
+         left without data-nav-link, and this is the belt to that braces. */
+      var href = link.getAttribute('href') || '';
+      if (href.charAt(0) !== '#') return;
+      var target = document.querySelector(href);
       if (target) sections.push({ link: link, el: target });
     });
 
@@ -307,6 +335,7 @@
         sections.forEach(function (s) { s.link.classList.remove('is-active'); });
         match.link.classList.add('is-active');
         if (nav && !nav.matches(':hover')) moveMarker(match.link);
+        revealLink(match.link);
       });
     }, { rootMargin: '-45% 0px -50% 0px' });
 
@@ -541,10 +570,199 @@
   }
 
   /* 6. Reels ---------------------------------------------------------------
-     Every tile is a thumbnail until it is pressed. Nothing is decoded, no
-     third party is contacted and no bytes are spent on a visitor who never
-     presses play. Pressing mounts the real thing: the file in a player with
-     its own controls, or the platform's embed where the video lives there. */
+     Every tile is a thumbnail and nothing else. No file is fetched, nothing is
+     decoded and no third party is contacted for a visitor who never presses
+     play. Pressing opens the clip over the page, at the clip's own shape.
+
+     It plays over the page rather than inside the tile because two of these
+     three were shot vertical. A 16:9 tile is a third of a 9:16 frame's height,
+     and in the first clip the speaker's head is taller than the widest 16:9
+     window that frame can give — so playing it in the tile means cutting his
+     head off or packing the sides with blur, and neither is a video anyone
+     wants to watch. Out here the row keeps three uniform landscape tiles with
+     no blur and no dead space, and the clip is never cut.
+
+     It is also what frees the YouTube Short. An embed cannot be cropped from
+     outside the iframe at all; in here it just opens 9:16 with no black bars. */
+
+  var lightbox = null;
+  var lightboxStage = null;
+  var lightboxClose = null;
+  var lightboxReturn = null;
+
+  function emptyStage() {
+    if (!lightboxStage) return;
+    var media = lightboxStage.firstChild;
+
+    /* A paused <video> keeps its decoder and its buffer. Dropping the source
+       and calling load() is what actually lets go of both — without it, closing
+       the player leaves it running behind the page. */
+    while (media) {
+      if (media.tagName === 'VIDEO') {
+        try {
+          media.pause();
+          media.removeAttribute('src');
+          media.load();
+        } catch (e) { /* nothing to do */ }
+      }
+      lightboxStage.removeChild(media);
+      media = lightboxStage.firstChild;
+    }
+  }
+
+  function closeLightbox() {
+    if (!lightbox || lightbox.hidden) return;
+    lightbox.classList.remove('is-open');
+    document.body.classList.remove('has-lightbox');
+
+    /* the media goes now, so the sound stops with the press rather than with
+       the transition; the box itself waits for the fade to finish */
+    emptyStage();
+
+    var hide = function () { lightbox.hidden = true; };
+    if (reduceMotion) hide(); else window.setTimeout(hide, 240);
+
+    if (lightboxReturn && lightboxReturn.focus) lightboxReturn.focus();
+    lightboxReturn = null;
+  }
+
+  function onLightboxKey(event) {
+    if (!lightbox || lightbox.hidden) return;
+
+    if (event.key === 'Escape' || event.keyCode === 27) {
+      closeLightbox();
+      return;
+    }
+
+    if (event.key !== 'Tab' && event.keyCode !== 9) return;
+
+    /* Focus stays in the dialog. The only reliable stops are the close button
+       and the player itself, so the cycle is short and written out rather than
+       queried — a <video controls> exposes its buttons to the tab order inside
+       a shadow tree the page cannot see into. */
+    var media = lightboxStage.firstChild;
+    var stops = media && media.tagName === 'VIDEO' ? [lightboxClose, media] : [lightboxClose];
+    var at = stops.indexOf(document.activeElement);
+    var next = event.shiftKey ? at - 1 : at + 1;
+
+    if (at === -1 || next < 0 || next >= stops.length) {
+      event.preventDefault();
+      stops[event.shiftKey ? stops.length - 1 : 0].focus();
+    }
+  }
+
+  function buildLightbox() {
+    if (lightbox) return;
+
+    lightbox = document.createElement('div');
+    lightbox.className = 'lightbox';
+    lightbox.hidden = true;
+    lightbox.setAttribute('role', 'dialog');
+    lightbox.setAttribute('aria-modal', 'true');
+    lightbox.setAttribute('aria-label', 'Video player');
+
+    lightboxStage = document.createElement('div');
+    lightboxStage.className = 'lightbox__stage';
+
+    lightboxClose = document.createElement('button');
+    lightboxClose.type = 'button';
+    lightboxClose.className = 'lightbox__close';
+    lightboxClose.setAttribute('aria-label', 'Close the player');
+    lightboxClose.innerHTML =
+      '<svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false">' +
+      '<path d="M1 1 L15 15 M15 1 L1 15" stroke="currentColor" stroke-width="1.8" fill="none"/></svg>';
+
+    lightbox.appendChild(lightboxStage);
+    lightbox.appendChild(lightboxClose);
+    document.body.appendChild(lightbox);
+
+    lightboxClose.addEventListener('click', closeLightbox);
+    /* the backdrop is the box itself: a press that lands on the stage or the
+       player must not close it */
+    lightbox.addEventListener('click', function (event) {
+      if (event.target === lightbox) closeLightbox();
+    });
+    document.addEventListener('keydown', onLightboxKey);
+  }
+
+  /* The stage takes the tile's own ratio, so it is the right shape before a
+     single byte of media has arrived — otherwise the box opens at some default
+     and jumps once the file describes itself. A <video> then corrects it from
+     the real frame, which costs nothing and covers a re-encode that changed
+     shape without the markup being updated. */
+  function shapeStage(ratio) {
+    lightboxStage.style.setProperty('--ar', ratio);
+  }
+
+  function openLightbox(media, ratio, returnTo) {
+    buildLightbox();
+    emptyStage();
+    shapeStage(ratio);
+    lightboxStage.appendChild(media);
+
+    lightboxReturn = returnTo;
+    lightbox.hidden = false;
+    document.body.classList.add('has-lightbox');
+
+    /* one frame between unhiding and the class, or the transition has nothing
+       to move from */
+    window.requestAnimationFrame(function () { lightbox.classList.add('is-open'); });
+    lightboxClose.focus();
+  }
+
+  /* Nothing is asked of YouTube or Vimeo until a tile is pressed, which is the
+     right default and is why the page contacts nobody on arrival. It does mean
+     the press pays for the introduction: a DNS lookup, a TCP connection and a
+     TLS handshake before a single byte of player is on the wire. On a phone
+     that is most of the wait before the picture.
+
+     So the handshake moves off the press without the fetch moving with it. A
+     tile warms its origins the first time it is hovered, focused or touched —
+     all of which come before the press, most of them by a good half second —
+     and a visitor who never goes near it still asks those hosts for nothing.
+
+     Deliberately no `crossorigin`: an iframe is a credentialed navigation, and
+     an anonymous preconnect opens a connection in the wrong pool that the
+     iframe then cannot reuse — which would be all of the cost and none of the
+     saving. */
+
+  var warmed = {};
+
+  function warmOrigin(origin) {
+    if (warmed[origin]) return;
+    warmed[origin] = true;
+    var link = document.createElement('link');
+    link.rel = 'preconnect';
+    link.href = origin;
+    document.head.appendChild(link);
+  }
+
+  /* the player's own origin is unavoidable; these are the hosts it goes on to
+     ask for the poster and the video itself, and they cost the same three
+     round trips again if they are met cold */
+  var ALSO_WARM = {
+    'player.vimeo.com': ['https://i.vimeocdn.com', 'https://f.vimeocdn.com'],
+    'www.youtube-nocookie.com': ['https://i.ytimg.com'],
+    'www.youtube.com': ['https://i.ytimg.com']
+  };
+
+  var INTENT = ['pointerenter', 'touchstart', 'focusin'];
+
+  function warmOnIntent(reel, embed) {
+    var host;
+    try { host = new URL(embed, window.location.href).host; } catch (e) { return; }
+
+    var origins = ['https://' + host].concat(ALSO_WARM[host] || []);
+
+    function once() {
+      origins.forEach(warmOrigin);
+      INTENT.forEach(function (type) { reel.removeEventListener(type, once); });
+    }
+
+    INTENT.forEach(function (type) {
+      reel.addEventListener(type, once, { passive: true });
+    });
+  }
 
   Array.prototype.forEach.call(document.querySelectorAll('[data-reel]'), function (reel) {
     var frame = reel.querySelector('[data-reel-btn]');
@@ -552,7 +770,14 @@
 
     var file = reel.getAttribute('data-video');
     var embed = reel.getAttribute('data-embed');
-    var mounted = false;
+
+    if (embed) warmOnIntent(reel, embed);
+
+    /* The clip's shape is read back off the tile rather than kept in a second
+       attribute. The tile is already that shape — `--ar` is what makes it one,
+       inline on the figure so it holds with scripting off — so there is one
+       number per clip and nothing that can fall out of step with itself. */
+    var ratio = parseFloat(window.getComputedStyle(reel).getPropertyValue('--ar')) || 16 / 9;
 
     /* There used to be a `data-start` here, and the first tile carried
        `data-start="1.7"` because its file opened on 1.7 seconds of the screen
@@ -563,26 +788,14 @@
        the error card for an instant every single time.
 
        A head you have to skip is a head that should not be in the file. It is
-       cut in the encode now: `reel-1-v9.mp4` opens on the first frame of the
+       cut in the encode now: `reel-1-v11.mp4` opens on the first frame of the
        actual clip, and there is nothing left to seek past. If a future clip
        arrives with junk at the front, trim it with ffmpeg rather than putting
        the offset back — see assets/clips/README.md. */
 
-    /* the thumbnail the tile is painted with, handed to the player so the
-       picture never changes at the moment of pressing */
-    function posterUrl() {
-      return reel.getAttribute('data-poster') || '';
-    }
-
-    function mount() {
-      if (mounted) return;
-      mounted = true;
-      reel.classList.add('is-playing');
-
+    function open() {
       if (file) {
         var video = document.createElement('video');
-        video.className = 'reel__player';
-        video.poster = posterUrl();
         video.src = file;
         video.controls = true;
         video.autoplay = true;
@@ -593,22 +806,18 @@
         /* Pressing play is a user gesture, so the clip is allowed its sound
            and gets it. If a browser refuses the unmuted start anyway, it is
            retried muted rather than left as a still frame — a silent clip
-           beats a dead tile, and the controls are right there. */
+           beats a dead player, and the controls are right there. */
         video.muted = false;
         video.volume = 1;
 
-        video.addEventListener('loadeddata', function () {
-          reel.classList.add('is-loaded');
-          watchPlayback(video);
+        video.addEventListener('loadedmetadata', function () {
+          if (video.videoWidth && video.videoHeight) {
+            shapeStage(video.videoWidth / video.videoHeight);
+          }
         });
 
-        video.addEventListener('error', function () {
-          reel.classList.remove('is-playing');
-          mounted = false;
-          if (video.parentNode) video.parentNode.removeChild(video);
-        }, true);
+        openLightbox(video, ratio, frame);
 
-        reel.insertBefore(video, frame);
         var playing = video.play();
         if (playing && playing.catch) {
           playing.catch(function () {
@@ -623,19 +832,43 @@
       if (!embed) return;
 
       var player = document.createElement('iframe');
-      player.className = 'reel__player';
       player.src = embed;
       player.title = reel.getAttribute('data-embed-title') || 'Video player';
-      player.setAttribute('allow', 'autoplay; encrypted-media; picture-in-picture; fullscreen');
+      /* the union of what YouTube and Vimeo ask for, so one line covers both */
+      player.setAttribute('allow',
+        'autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share');
+      player.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
       player.setAttribute('allowfullscreen', '');
       player.setAttribute('frameborder', '0');
-      player.addEventListener('load', function () {
-        reel.classList.add('is-loaded');
-      });
-      reel.insertBefore(player, frame);
+      openLightbox(player, ratio, frame);
     }
 
-    frame.addEventListener('click', mount);
+    frame.addEventListener('click', open);
+  });
+
+  /* 7. Proof screenshots ---------------------------------------------------
+     The same player, holding a picture. A Shopify dashboard scaled into a phone
+     is a grey smear of numbers nobody can read, so on the page it is a
+     thumbnail and the real thing opens over it at full size.
+
+     It reuses the reels' player rather than growing a second one: the stage
+     already takes a ratio and centres whatever it is handed, closing already
+     tears the contents down and gives focus back, and Escape, the backdrop and
+     the close button already work. Nothing here but the <img>. */
+
+  Array.prototype.forEach.call(document.querySelectorAll('[data-proof]'), function (button) {
+    button.addEventListener('click', function () {
+      var full = document.createElement('img');
+      var thumb = button.querySelector('img');
+
+      full.src = button.getAttribute('data-proof');
+      /* the alt is already written on the thumbnail and describes the figures in
+         the screenshot, which is exactly what the opened copy needs too */
+      full.alt = thumb ? thumb.alt : '';
+      full.decoding = 'async';
+
+      openLightbox(full, parseFloat(window.getComputedStyle(button).getPropertyValue('--ar')) || 16 / 9, button);
+    });
   });
 
   /* 8. Booking -------------------------------------------------------------
@@ -908,7 +1141,14 @@
      With an endpoint in data-endpoint the form posts straight to it, so the
      message lands in Manny's inbox without the visitor opening a mail app.
      Without one it composes the same message as an email, and either way
-     the WhatsApp button hands the whole thing to his phone.               */
+     the WhatsApp button hands the whole thing to his phone.
+
+     Two things the first version got wrong. It accepted any email that was
+     not empty, so a typo produced a lead nobody could answer — the one
+     failure here that costs a real customer. And the no-endpoint path set
+     window.location to a mailto:, which does nothing visible on a phone with
+     no mail client registered; the visitor watched a button do nothing and
+     concluded the site was broken. The message is now always recoverable. */
 
   var leadForm = document.querySelector('[data-lead]');
 
@@ -916,7 +1156,22 @@
     var leadStatus = leadForm.querySelector('[data-lead-status]');
     var leadSend = leadForm.querySelector('[data-lead-send]');
     var leadWhats = leadForm.querySelector('[data-lead-whatsapp]');
+    var leadCopy = leadForm.querySelector('[data-lead-copy]');
     var endpoint = (leadForm.getAttribute('data-endpoint') || '').trim();
+    var leadKey = 'gmgmt:lead';
+    var submitted = false;
+
+    /* Deliberately not an RFC 5322 attempt. Something before an @, something
+       after it, a dot and at least two more characters — that is the shape of
+       every address a visitor will actually type, and anything stricter starts
+       rejecting real ones. */
+    var emailShape = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+    var leadFields = [
+      { name: 'name',    id: 'lead-name',    message: 'Your name, so he knows who is writing.' },
+      { name: 'email',   id: 'lead-email',   message: 'An email he can reply to.' },
+      { name: 'message', id: 'lead-message', message: 'A line about what you need.' }
+    ];
 
     function leadValues() {
       return {
@@ -929,7 +1184,7 @@
     }
 
     function leadText(v) {
-      return 'New enquiry from gmgmt.co\n\n'
+      return 'New enquiry from gmgmt.com\n\n'
         + 'Name: ' + v.name + '\n'
         + 'Email: ' + v.email + '\n'
         + 'Brand or handle: ' + (v.brand || '—') + '\n\n'
@@ -942,24 +1197,145 @@
       leadStatus.className = 'lead__status' + (tone ? ' is-' + tone : '');
     }
 
-    function missing(v) {
-      if (!v.name || !v.email || !v.message) {
-        say('Name, email and a line about what you need, then it goes.', 'warn');
+    /* The per-field notes say which box is wrong; the status line stays the
+       single summary. Putting role="alert" on four separate notes would
+       announce four interruptions for one press of one button. */
+    function setFieldError(field, text) {
+      var input = leadForm.elements[field.name];
+      var note = document.getElementById(field.id + '-error');
+      if (note) note.textContent = text || '';
+      if (!input) return;
+      if (text) input.setAttribute('aria-invalid', 'true');
+      else input.removeAttribute('aria-invalid');
+    }
+
+    function checkField(field, v) {
+      if (!v[field.name]) return field.message;
+      if (field.name === 'email' && !emailShape.test(v.email)) {
+        return 'That address looks incomplete — check it and send again.';
+      }
+      return '';
+    }
+
+    function validate(v) {
+      var firstBad = null;
+      leadFields.forEach(function (field) {
+        var problem = checkField(field, v);
+        setFieldError(field, problem);
+        if (problem && !firstBad) firstBad = field;
+      });
+
+      if (!firstBad) {
+        say('');
         return true;
       }
+
+      say('Nearly — see the notes on the fields above.', 'warn');
+      var input = leadForm.elements[firstBad.name];
+      if (input && input.focus) input.focus();
       return false;
+    }
+
+    /* Only after the first press. Marking a field wrong while someone is still
+       typing it is how a form starts arguing with the person filling it in. */
+    leadFields.forEach(function (field) {
+      var input = leadForm.elements[field.name];
+      if (!input) return;
+      input.addEventListener('input', function () {
+        if (!submitted) return;
+        setFieldError(field, checkField(field, leadValues()));
+      });
+    });
+
+    /* Storage throws outright in a locked-down Safari rather than failing
+       quietly, so every touch of it is wrapped. A lost draft is a nuisance;
+       a thrown exception here would take the rest of the module with it. */
+    function saveDraft() {
+      try {
+        var v = leadValues();
+        window.sessionStorage.setItem(leadKey, JSON.stringify({
+          name: v.name, email: v.email, brand: v.brand, message: v.message
+        }));
+      } catch (e) {}
+    }
+
+    function clearDraft() {
+      try { window.sessionStorage.removeItem(leadKey); } catch (e) {}
+    }
+
+    function restoreDraft() {
+      var raw;
+      try { raw = window.sessionStorage.getItem(leadKey); } catch (e) { return; }
+      if (!raw) return;
+      var saved;
+      try { saved = JSON.parse(raw); } catch (e) { return; }
+      if (!saved) return;
+      ['name', 'email', 'brand', 'message'].forEach(function (key) {
+        var input = leadForm.elements[key];
+        if (input && !input.value && saved[key]) input.value = saved[key];
+      });
+    }
+
+    restoreDraft();
+
+    var draftTimer = null;
+    leadForm.addEventListener('input', function () {
+      if (draftTimer) window.clearTimeout(draftTimer);
+      draftTimer = window.setTimeout(saveDraft, 400);
+    });
+
+    /* Shown the moment a send goes anywhere the visitor cannot see the result
+       of — the mail-app handoff, or a failed post. The text is the same text
+       the endpoint would have received, so the lead survives either way. */
+    function offerCopy() {
+      if (leadCopy) leadCopy.hidden = false;
+    }
+
+    if (leadCopy) {
+      leadCopy.addEventListener('click', function () {
+        var text = leadText(leadValues());
+
+        function fallback() {
+          var scratch = document.createElement('textarea');
+          scratch.value = text;
+          scratch.setAttribute('readonly', '');
+          scratch.style.position = 'absolute';
+          scratch.style.left = '-9999px';
+          document.body.appendChild(scratch);
+          scratch.select();
+          var done = false;
+          try { done = document.execCommand('copy'); } catch (e) {}
+          document.body.removeChild(scratch);
+          say(done
+            ? 'Copied. Paste it to manny@gmgmt.co, or send it on WhatsApp.'
+            : 'Select the message and copy it, then send it to manny@gmgmt.co.',
+            done ? 'ok' : 'warn');
+        }
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(function () {
+            say('Copied. Paste it to manny@gmgmt.co, or send it on WhatsApp.', 'ok');
+          }).catch(fallback);
+        } else {
+          fallback();
+        }
+      });
     }
 
     leadForm.addEventListener('submit', function (event) {
       event.preventDefault();
       var v = leadValues();
       if (v.trap) return;
-      if (missing(v)) return;
+      submitted = true;
+      if (!validate(v)) return;
 
       if (!endpoint) {
-        say('Opening your mail app with the message ready.', 'ok');
+        /* The mail app may or may not appear. Either way the message stays on
+           screen with a way to lift it out, so this is never a dead button. */
+        say('Opening your mail app. If nothing happens, copy the message or send it on WhatsApp.', 'ok');
+        offerCopy();
         window.location.href = 'mailto:manny@gmgmt.co'
-          + '?subject=' + encodeURIComponent('New enquiry from gmgmt.co')
+          + '?subject=' + encodeURIComponent('New enquiry from gmgmt.com')
           + '&body=' + encodeURIComponent(leadText(v));
         return;
       }
@@ -975,15 +1351,33 @@
           email: v.email,
           brand: v.brand,
           message: v.message,
-          subject: 'New enquiry from gmgmt.co',
-          from_name: 'gmgmt.co'
+          subject: 'New enquiry from gmgmt.com',
+          from_name: 'gmgmt.com'
         })
       }).then(function (response) {
-        if (!response.ok) throw new Error(String(response.status));
+        /* A rejected access key and a dead network used to read identically,
+           which is exactly the case where the endpoint's own words are worth
+           having — it is how a wrong key gets noticed at all. */
+        return response.json().catch(function () { return null; })
+          .then(function (body) {
+            if (!response.ok) {
+              var detail = body && body.message ? String(body.message) : '';
+              throw new Error(detail || ('HTTP ' + response.status));
+            }
+            return body;
+          });
+      }).then(function () {
         leadForm.reset();
+        clearDraft();
+        leadFields.forEach(function (field) { setFieldError(field, ''); });
+        submitted = false;
+        if (leadCopy) leadCopy.hidden = true;
         say('Sent. Manny answers the same day, usually sooner.', 'ok');
-      }).catch(function () {
-        say('That did not send. Use WhatsApp, or write to manny@gmgmt.co.', 'warn');
+      }).catch(function (error) {
+        var detail = error && error.message ? error.message : '';
+        say('That did not send' + (detail ? ' (' + detail + ')' : '')
+          + '. Copy the message, use WhatsApp, or write to manny@gmgmt.co.', 'warn');
+        offerCopy();
       }).then(function () {
         leadSend.disabled = false;
       });
@@ -992,7 +1386,8 @@
     if (leadWhats) {
       leadWhats.addEventListener('click', function () {
         var v = leadValues();
-        if (missing(v)) return;
+        submitted = true;
+        if (!validate(v)) return;
         window.open('https://wa.me/17869295735?text=' + encodeURIComponent(leadText(v)),
                     '_blank', 'noopener');
         say('WhatsApp is open with the message ready to send.', 'ok');
@@ -1154,7 +1549,7 @@
         'TITLE:Social media management and influencer marketing',
         'EMAIL;TYPE=INTERNET,WORK:manny@gmgmt.co',
         'ADR;TYPE=WORK:;;;Miami;FL;;United States',
-        'URL:https://gmgmt.co/',
+        'URL:https://gmgmt.com/',
         'END:VCARD'
       ].join('\r\n');
 

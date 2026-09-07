@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://gmgmt.co/sitemap.xml
+Sitemap: https://gmgmt.com/sitemap.xml

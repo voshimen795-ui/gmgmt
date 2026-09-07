@@ -1,0 +1,891 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>document.documentElement.classList.add('js');</script>
+<title>The team — G Management, Miami</title>
+<meta name="description" content="The people who run your accounts at G Management: short-form video, posting and brand deals, out of Miami.">
+<link rel="canonical" href="https://gmgmt.com/team/">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+<meta name="author" content="Manny Garcia">
+
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://gmgmt.com/team/">
+<meta property="og:site_name" content="G Management">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="The team — G Management, Miami">
+<meta property="og:description" content="The people who run your accounts at G Management: short-form video, posting and brand deals, out of Miami.">
+<meta property="og:image" content="https://gmgmt.com/assets/og.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="G Management, Miami. 5.4M accounts reached in 30 days, 15M+ views for one client, orders up 54%, $19.2K through one link.">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="The team — G Management, Miami">
+<meta name="twitter:description" content="The people who run your accounts at G Management, out of Miami.">
+<meta name="twitter:image" content="https://gmgmt.com/assets/og.png">
+<meta name="theme-color" content="#070A12">
+
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="/assets/fonts/archivo-latin-v5.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/instrument-sans-latin-v5.woff2" as="font" type="font/woff2" crossorigin>
+
+<style>
+/* =============================================================================
+   G Management — the team
+   The chrome below — fonts, tokens, reset, layout, buttons, header, footer and
+   motion — is the one-pager's own, copied rather than linked. A shared
+   stylesheet would be a second round trip before either page could paint, and
+   the README's first performance pass exists because that cost 440ms. Change a
+   token in index.html and change it here.
+   ========================================================================== */
+
+/* 1. Fonts ---------------------------------------------------------------- */
+
+/* Both faces are cut to the 104 glyphs this page sets, and their variable axes
+   are cut to the range it actually asks for: Archivo is used from 400 to 800
+   and never narrower than 100% wide, so the 100-900 weight and 62-125 width
+   the family ships with is delta data nobody reads. Trimming the axes took
+   the pair from 63KB to 43KB with the same glyphs on the page. */
+@font-face {
+  font-family: 'Archivo';
+  src: url('/assets/fonts/archivo-latin-v5.woff2') format('woff2');
+  font-weight: 400 800;
+  font-stretch: 100% 125%;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Instrument Sans';
+  src: url('/assets/fonts/instrument-sans-latin-v5.woff2') format('woff2');
+  font-weight: 400 600;
+  font-stretch: 100%;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* 2. Tokens --------------------------------------------------------------- */
+
+:root {
+  /* colour */
+  --ink: #070A12;
+  --surface: #101623;
+  --surface-lift: #161E2E;
+  --line: #1E2735;
+  --gold: #C9A227;
+  --gold-lift: #E4C25C;
+  /* Chrome gold: rules, edges and washes that should read as gold without
+     competing with the Book button, which is the only object on the page
+     allowed to be solid gold. Literals here for the same reason the two glow
+     shadows below are literals — a custom property's value is not checked
+     where it is declared, so a plain duplicate cannot win, and the mixed
+     versions have to sit behind the @supports guard instead. */
+  --gold-edge: rgba(201, 162, 39, 0.28);
+  --gold-wash: rgba(201, 162, 39, 0.07);
+  /* Lifted from #7E8794. Against the page's ink that was 5.4:1 and against a
+     card 4.9:1 — enough to pass AA and not enough to read a footnote on a phone
+     in daylight without leaning in. This clears 7:1 on both, so the same grey
+     now carries the small print everywhere instead of only just carrying it. */
+  --grey: #9BA5B4;
+  --paper: #F2F1EC;
+
+  /* type */
+  --font-display: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+  --font-body: 'Instrument Sans', 'Helvetica Neue', Arial, sans-serif;
+
+  --t-display: clamp(2.25rem, 5.4vw, 4.5rem);
+  --t-h2: clamp(2rem, 4.6vw, 3.5rem);
+  --t-h3: clamp(1.125rem, 2vw, 1.375rem);
+  --t-figure: clamp(2.5rem, 5.5vw, 4rem);
+  --t-body: 1.0625rem;
+  --t-small: 0.875rem;
+  --t-label: 0.8125rem;
+
+  /* spacing — 8px ladder only */
+  --sp-4: 4px;
+  --sp-8: 8px;
+  --sp-16: 16px;
+  --sp-24: 24px;
+  --sp-32: 32px;
+  --sp-48: 48px;
+  --sp-64: 64px;
+  --sp-96: 96px;
+  --sp-128: 128px;
+  --sp-160: 160px;
+
+  /* layout */
+  --shell: 1240px;
+  --gutter: var(--sp-24);
+  --section-y: clamp(72px, 8vw, 128px);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --hairline: 1px solid var(--line);
+
+  /* neon */
+  --neon-soft: 0 0 24px rgba(201, 162, 39, 0.3);
+  --neon: 0 0 20px rgba(201, 162, 39, 0.45),
+          0 0 56px rgba(201, 162, 39, 0.18);
+
+  /* motion */
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* The two glow shadows are literals above, because a custom property's value
+   is not checked when it is declared — an engine without color-mix() would
+   accept the mixed version and then fail on use, so a plain duplicate never
+   wins the way it does for a normal property. Guarded, they keep following
+   --gold everywhere the feature exists. */
+@supports (color: color-mix(in srgb, red 50%, blue)) {
+  :root {
+    --neon-soft: 0 0 24px color-mix(in srgb, var(--gold) 30%, transparent);
+    --neon: 0 0 20px color-mix(in srgb, var(--gold) 45%, transparent),
+            0 0 56px color-mix(in srgb, var(--gold) 18%, transparent);
+    --gold-edge: color-mix(in srgb, var(--gold) 28%, transparent);
+    --gold-wash: color-mix(in srgb, var(--gold) 7%, transparent);
+  }
+}
+
+/* On a phone the secondary type runs two points larger. 14 and 13 are
+   comfortable at arm's length on a desktop and are not in one hand on a train,
+   and every place these two tokens are used is exactly the text that was being
+   squinted at: the steps in "How a month runs", the labels under every figure,
+   the chips, the footnotes, the form hints, the FAQ answers. Moving the tokens
+   moves all forty-four of them at once and keeps the ladder intact — there is
+   no second scale to remember. */
+@media (max-width: 699px) {
+  :root {
+    --t-small: 1rem;         /* 14px -> 16px */
+    --t-label: 0.9375rem;    /* 13px -> 15px */
+  }
+}
+
+/* 3. Reset + base --------------------------------------------------------- */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: var(--sp-64);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-body);
+  font-size: var(--t-body);
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 { font-family: var(--font-display); margin: 0; line-height: 1; }
+p, dl, ul, ol, figure, blockquote { margin: 0; }
+ul, ol { list-style: none; padding: 0; }
+img, svg, iframe, video { display: block; max-width: 100%; }
+img { height: auto; }
+a { color: inherit; }
+
+/* a hidden element stays hidden, whatever display its own class asks for */
+[hidden] { display: none !important; }
+
+:focus-visible { outline: 2px solid var(--gold-lift); outline-offset: 3px; border-radius: 2px; }
+::selection { background: var(--gold); color: var(--ink); }
+
+.visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.skip-link {
+  position: absolute;
+  left: var(--sp-16);
+  top: calc(var(--sp-8) * -8);
+  z-index: 30;
+  padding: var(--sp-8) var(--sp-16);
+  background: var(--gold);
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: none;
+  transition: top 160ms var(--ease);
+}
+.skip-link:focus { top: var(--sp-16); }
+
+/* 4. Layout primitives ---------------------------------------------------- */
+
+.shell {
+  width: 100%;
+  max-width: var(--shell);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+section { padding-block: var(--section-y); }
+
+
+/* every section opens on a centred header block */
+.section-head {
+  max-width: 46ch;
+  margin: 0 auto clamp(var(--sp-48), 5vw, var(--sp-64));
+  text-align: center;
+}
+
+/* the full stop is the brand's smallest gold accent, repeated section to
+   section without adding any furniture to the page */
+.dot { color: var(--gold); }
+
+.section-title {
+  font-size: var(--t-h2);
+  font-weight: 800;
+  font-stretch: 125%;
+  letter-spacing: -0.03em;
+}
+
+.section-lead {
+  margin-top: var(--sp-16);
+  color: var(--grey);
+}
+
+/* 5. Buttons -------------------------------------------------------------- */
+
+.btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: var(--sp-16) var(--sp-24);
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-size: var(--t-small);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  overflow: hidden;
+  isolation: isolate;
+  transition: color 200ms var(--ease), border-color 200ms var(--ease),
+              box-shadow 320ms var(--ease), transform 320ms var(--ease-out);
+}
+.btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 420ms var(--ease-out);
+}
+.btn:hover::before, .btn:focus-visible::before { transform: scaleX(1); }
+.btn:hover { transform: translateY(-1px); }
+
+.btn--primary { background: var(--gold); color: var(--ink); }
+.btn--primary::before {
+  background: linear-gradient(100deg, var(--gold) 0%, var(--gold-lift) 50%, var(--gold) 100%);
+}
+
+.btn--ghost { border-color: var(--line); color: var(--paper); background: transparent; }
+.btn--ghost::before { background: var(--surface); }
+.btn--ghost:hover, .btn--ghost:focus-visible { border-color: var(--gold); }
+
+.btn--lg { min-height: 56px; padding: var(--sp-16) var(--sp-32); font-size: 1rem; }
+.btn--sm { min-height: 44px; padding: var(--sp-8) var(--sp-16); }
+.btn--full { width: 100%; }
+
+.btn--glow:hover, .btn--glow:focus-visible { box-shadow: var(--neon); }
+.btn[disabled] { opacity: 0.45; pointer-events: none; }
+
+/* 6. Header --------------------------------------------------------------- */
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  /* Colour and image are set apart rather than through the shorthand, because
+     the ink is what transitions on stick and a gradient cannot be transitioned
+     at all. The shorthand would reset one every time the other was declared. */
+  background-color: rgba(7, 10, 18, 0.94);
+  background-color: color-mix(in srgb, var(--ink) 94%, transparent);
+  /* The gold laid across the bar as a wash, heaviest at the two ends. Filling
+     the bar instead would put the Book button in gold on gold and cost it the
+     only thing that makes it the loudest object above the fold. */
+  background-image: linear-gradient(100deg, var(--gold-wash) 0%, transparent 40%,
+                                            transparent 60%, var(--gold-wash) 100%);
+  border-bottom: 1px solid transparent;
+  transition: background-color 300ms var(--ease), border-color 300ms var(--ease);
+}
+/* A lit edge along the top, brightest in the middle and gone at both ends, so
+   the bar sits on the hero film rather than flush against it. */
+.site-header::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-edge) 20%,
+                              var(--gold) 50%, var(--gold-edge) 80%, transparent);
+  opacity: 0.5;
+  pointer-events: none;
+  transition: opacity 300ms var(--ease);
+}
+.site-header.is-stuck {
+  background-color: rgba(7, 10, 18, 0.94);
+  background-color: color-mix(in srgb, var(--ink) 94%, transparent);
+  border-bottom-color: var(--gold-edge);
+}
+.site-header.is-stuck::after { opacity: 0.9; }
+
+.site-header__progress {
+  position: absolute;
+  left: 0; right: 0; bottom: -1px;
+  height: 2px;
+  overflow: hidden;
+}
+.site-header__progress span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold), var(--gold-lift));
+  box-shadow: var(--neon-soft);
+  transform: scaleX(var(--p, 0));
+  transform-origin: left;
+}
+
+.site-header__inner {
+  display: grid;
+  /* minmax(0, 1fr) and not 1fr: the nav is a scroll container, and a bare 1fr
+     track floors at its content's width, which would let the strip push the
+     header wider than the phone instead of scrolling inside it. */
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas: 'brand nav';
+  align-items: center;
+  gap: var(--sp-16);
+  min-height: 68px;
+}
+
+.wordmark {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--sp-4);
+  font-family: var(--font-display);
+  text-decoration: none;
+  letter-spacing: -0.02em;
+}
+.wordmark {
+  grid-area: brand;
+}
+.wordmark__g {
+  font-size: 1.25rem;
+  font-weight: 800;
+  font-stretch: 125%;
+  color: var(--gold-lift);
+  transition: text-shadow 200ms var(--ease);
+}
+.wordmark:hover .wordmark__g,
+.wordmark:focus-visible .wordmark__g { text-shadow: var(--neon-soft); }
+.wordmark__rest {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--grey);
+  transition: color 200ms var(--ease);
+}
+.wordmark:hover .wordmark__rest { color: var(--paper); }
+
+/* The nav used to be display:none below 900px with nothing in its place, so a
+   phone had no way to reach a section by name. It is a horizontal scroll strip
+   at those widths instead of a drawer: a drawer needs a focus trap, a scroll
+   lock and an open/closed state, and this page pays for none of that today.
+   Same links, same observer, same marker — only the box changes. */
+.site-nav {
+  grid-area: nav;
+  display: flex;
+  position: relative;
+  gap: var(--sp-24);
+  justify-self: end;
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  /* Fades at the trailing edge to say there is more. Masked rather than
+     covered with a gradient, because the bar behind it is a wash now and an
+     overlay would have to track it. */
+  -webkit-mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 20px), transparent 100%);
+          mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 20px), transparent 100%);
+}
+.site-nav::-webkit-scrollbar { display: none; }
+.site-nav a { white-space: nowrap; }
+.site-nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: var(--t-small);
+  font-weight: 500;
+  color: var(--grey);
+  text-decoration: none;
+  transition: color 200ms var(--ease);
+}
+.site-nav a:hover { color: var(--paper); }
+.site-nav a.is-active { color: var(--gold-lift); }
+
+.site-nav__marker {
+  position: absolute;
+  bottom: 12px;
+  left: 0;
+  height: 2px;
+  width: var(--w, 0px);
+  background: linear-gradient(90deg, var(--gold), var(--gold-lift));
+  box-shadow: var(--neon-soft);
+  transform: translateX(var(--x, 0px));
+  opacity: var(--o, 0);
+  transition: transform 380ms var(--ease-out), width 380ms var(--ease-out),
+              opacity 200ms var(--ease);
+}
+
+/* The header used to carry `backdrop-filter: blur(14px) saturate(140%)` here,
+   and it is a sticky bar sitting over a full-screen hero film. A backdrop
+   filter has to re-read and re-blur everything behind it every time that
+   backdrop changes — which, over a playing video, is every single frame, for
+   as long as the hero is on screen, on the compositor thread the page also
+   scrolls on. It was desktop-only, which is exactly where the stutter was.
+
+   The bar is over near-black at every scroll position, so the glass was
+   costing a frame budget to blur something nobody could see through. A flat
+   translucent ink reads identically and costs nothing. */
+/* The header rearranges over three bands rather than two, because the phone
+   action bar only exists below 768px and the header has to cover the gap. */
+
+/* Below 768 the action bar already carries Book / WhatsApp / Email, so the
+   header's own CTA is the same button twice on the same screen. Dropping it is
+   what pays for the nav strip, and the bar keeps its 68px. */
+@media (max-width: 767px) {
+  .site-header .btn { display: none; }
+}
+
+/* No action bar in this band, so the CTA stays and the strip takes its own row. */
+@media (min-width: 768px) and (max-width: 899px) {
+  .site-header__inner {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'brand cta'
+      'nav   nav';
+    row-gap: var(--sp-4);
+    padding-block: var(--sp-8);
+    min-height: 0;
+  }
+  .site-nav { justify-self: start; }
+  .site-header .btn { grid-area: cta; justify-self: end; }
+}
+
+@media (min-width: 900px) {
+  /* background-color, not background: the shorthand would drop the gold wash. */
+  .site-header {
+    background-color: rgba(7, 10, 18, 0.86);
+    background-color: color-mix(in srgb, var(--ink) 86%, transparent);
+  }
+  .site-header__inner {
+    grid-template-columns: 1fr auto 1fr;
+    grid-template-areas: 'brand nav cta';
+  }
+  /* Wide enough for every link, so the strip goes back to being a plain row. */
+  .site-nav {
+    justify-self: center;
+    gap: var(--sp-32);
+    overflow: visible;
+    -webkit-mask-image: none;
+            mask-image: none;
+  }
+  .site-header .btn { justify-self: end; }
+}
+
+
+/* 15. Footer ---------------------------------------------------------------- */
+
+.site-footer { border-top: var(--hairline); padding-block: var(--sp-48) var(--sp-24); }
+
+.site-footer__top {
+  display: grid;
+  gap: var(--sp-32);
+  padding-bottom: var(--sp-32);
+  border-bottom: var(--hairline);
+}
+
+.site-footer__mark {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 800;
+  font-stretch: 125%;
+  letter-spacing: -0.02em;
+}
+.site-footer__line { margin-top: var(--sp-8); max-width: 36ch; font-size: var(--t-small); color: var(--grey); }
+
+.site-footer__heading { font-size: var(--t-label); color: var(--grey); margin-bottom: var(--sp-8); }
+.site-footer__nav, .site-footer__contact { display: grid; gap: var(--sp-4); align-content: start; }
+.site-footer__nav a, .site-footer__contact a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  font-size: var(--t-small);
+  text-decoration: none;
+  color: var(--paper);
+  transition: color 200ms var(--ease);
+}
+.site-footer__nav a:hover, .site-footer__contact a:hover { color: var(--gold-lift); }
+
+.site-footer__bottom {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--sp-16);
+  padding-top: var(--sp-24);
+  font-size: var(--t-label);
+  color: var(--grey);
+}
+
+@media (min-width: 720px) {
+  .site-footer__top { grid-template-columns: 2fr 1fr 1fr; gap: var(--sp-48); }
+}
+
+
+/* 16. Team ------------------------------------------------------------------
+   The number the one-pager's own contents list skips, because there was never
+   a section 16. There is now. */
+
+.team { padding-top: clamp(var(--sp-48), 6vw, var(--sp-96)); }
+
+/* auto-fit and centred rather than a fixed column count, so the row stays
+   balanced at one person and at seven without anyone editing a breakpoint
+   when somebody joins. The min() keeps a 280px card from overflowing a 320px
+   phone. */
+.team__grid {
+  display: grid;
+  gap: var(--sp-24);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 340px));
+  justify-content: center;
+}
+
+.member {
+  display: grid;
+  gap: var(--sp-16);
+  align-content: start;
+  padding: var(--sp-24);
+  border: var(--hairline);
+  border-radius: var(--radius);
+  background: rgba(16, 22, 35, 0.6);
+  background: color-mix(in srgb, var(--surface) 60%, transparent);
+  transition: border-color 200ms var(--ease), transform 200ms var(--ease);
+}
+.member:hover { border-color: var(--gold-edge); transform: translateY(-2px); }
+
+/* Initials until there is a photograph. The monogram is the same shape and
+   the same 72px box a portrait drops into, so adding one later moves nothing
+   on the page — there is no reflow to design around and no placeholder image
+   to ship. */
+.member__portrait {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--gold-edge);
+  background: var(--surface-lift);
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 800;
+  font-stretch: 125%;
+  letter-spacing: -0.02em;
+  color: var(--gold-lift);
+}
+.member__portrait img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+.member__name {
+  font-family: var(--font-display);
+  font-size: var(--t-h3);
+  font-weight: 800;
+  font-stretch: 125%;
+  letter-spacing: -0.02em;
+}
+.member__role { margin-top: var(--sp-4); font-size: var(--t-label); color: var(--gold-lift); }
+.member__line { font-size: var(--t-small); color: var(--grey); }
+
+.member__links { display: flex; flex-wrap: wrap; gap: var(--sp-16); }
+.member__links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  font-size: var(--t-label);
+  color: var(--paper);
+  text-decoration: none;
+  transition: color 200ms var(--ease);
+}
+.member__links a:hover, .member__links a:focus-visible { color: var(--gold-lift); }
+
+.team__back { display: grid; justify-items: center; gap: var(--sp-16); text-align: center; }
+
+/* This page's nav points back at the one-pager's sections, so nothing here is
+   ever the observer's "current section" — the page itself is. */
+.site-nav a[aria-current="page"] { color: var(--gold-lift); }
+
+
+/* 17. Motion ---------------------------------------------------------------- */
+
+@keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+@keyframes marquee { from { transform: none; } to { transform: translateX(-33.333%); } }
+@keyframes pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(201, 162, 39, 0.55);
+ box-shadow: 0 0 0 0 color-mix(in srgb, var(--gold) 55%, transparent); }
+  70%  { box-shadow: 0 0 0 8px rgba(0, 0, 0, 0);
+ box-shadow: 0 0 0 8px color-mix(in srgb, var(--gold) 0%, transparent); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+ box-shadow: 0 0 0 0 color-mix(in srgb, var(--gold) 0%, transparent); }
+}
+@keyframes ch-in { from { opacity: 0; transform: translateY(0.5em); } to { opacity: 1; transform: none; } }
+
+/* page load sequence, gated on JS so a scripted-off page renders complete */
+.js [data-seq] { animation: rise 700ms var(--ease-out) both; }
+.js [data-seq="1"] { animation-delay: 120ms; }
+.js [data-seq="2"], .js [data-seq="3"], .js [data-seq="4"] { animation-delay: 200ms; }
+.js [data-seq="5"] { animation-delay: 760ms; }
+.js [data-seq="6"] { animation-delay: 860ms; }
+.js [data-seq="7"] { animation-delay: 960ms; }
+.js [data-seq="8"] { animation-delay: 420ms; }
+
+/* The light field used to drift here, on desktops with a mouse. It is the
+   layer the hero paints its glow with, it spans 150% of the viewport, and it
+   carried a 40px blur — so the drift meant re-rasterising a full-screen blur
+   on every frame, for ever, directly on top of a playing video. That is what
+   made the top of the page stutter on a computer and never on a phone. The
+   blur is gone from section 7 and the drift is gone from here; the hero holds
+   still and the film is what moves. */
+.js .hero__dot { animation: pulse 2600ms var(--ease) 1600ms infinite; }
+.js .marquee__track { animation: marquee 28s linear infinite; }
+.marquee:hover .marquee__track { animation-play-state: paused; }
+/* and paused outright while the row is off screen — see section 4b in main.js */
+.marquee__track.is-idle { animation-play-state: paused; }
+
+/* headline: the per-line reveal steps aside once characters take over */
+.js [data-scramble].is-split .line > span { animation: none; opacity: 1; transform: none; }
+.js [data-scramble].is-split .ch { opacity: 0; transform: translateY(0.5em); }
+/* `will-change: transform, opacity` used to sit here, which asks the browser
+   for a composited layer per glyph — around sixty of them, all at once, in the
+   same second the hero film is being fetched and decoded. An opacity and
+   transform animation is promoted by the compositor anyway while it runs, so
+   the hint bought nothing and the layer count cost the opening frames. */
+.js [data-scramble].is-cascading .ch {
+  animation: ch-in 620ms var(--ease-out) both;
+  animation-delay: calc(250ms + var(--n) * 16ms);
+}
+
+/* once every glyph has landed the animation is dropped and the letters are
+   left as plain painted text */
+.js [data-scramble].is-done .ch {
+  animation: none;
+  opacity: 1;
+  transform: none;
+}
+
+/* reveal on view */
+.js [data-reveal="rise"] {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 800ms var(--ease-out), transform 800ms var(--ease-out);
+  transition-delay: var(--delay, 0ms);
+}
+.js [data-reveal="rise"].is-in { opacity: 1; transform: none; }
+
+/* a screenshot arrives by uncovering itself from the bottom up */
+.js [data-reveal="shot"] {
+  opacity: 0;
+  transform: translateY(18px) scale(0.98);
+  clip-path: inset(14% 0 0 0 round 10px);
+  transition: opacity 900ms var(--ease-out),
+              transform 1100ms var(--ease-out),
+              clip-path 1100ms var(--ease-out);
+  transition-delay: var(--delay, 0ms);
+}
+.js [data-reveal="shot"].is-in {
+  opacity: 1;
+  transform: none;
+  clip-path: inset(0 0 0 0 round 10px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    transition-delay: 0ms !important;
+  }
+
+  .js [data-seq], .js .hero__field, .js .hero__dot,
+  .js .marquee__track, .js [data-scramble] .ch, .js .btn {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+  }
+
+  .js [data-reveal] { opacity: 1; transform: none; }
+  .js [data-reveal="shot"] { clip-path: none; }
+  .js .reel-kicker::before, .js .reel-kicker::after { transform: none; }
+  .shot::before, .shot::after { display: none; }
+  .ba__pair figure:hover .shot img { transform: none; }
+  .motes { display: none; }
+  .reel__frame:hover { transform: none; }
+  [data-chart] .chart__line { stroke-dashoffset: 0; }
+  [data-chart] .chart__dots { opacity: 1; }
+  .meter__track span { width: calc(var(--pct) * 1%); }
+}
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header" data-header>
+  <span class="site-header__progress" aria-hidden="true"><span data-progress></span></span>
+  <div class="shell site-header__inner">
+    <a class="wordmark" href="/" aria-label="G Management, home">
+      <span class="wordmark__g">G</span><span class="wordmark__rest">Management</span>
+    </a>
+
+    <!-- No data-nav-link and no marker on this page. Those links are read back
+         through querySelector by the header module, and "/#work" is not a
+         valid selector; the sliding marker has nothing to track here anyway,
+         because the current section is the whole document. -->
+    <nav class="site-nav" aria-label="Sections">
+      <a href="/#work">Work</a>
+      <a href="/#proof">Proof</a>
+      <a href="/#results">Results</a>
+      <a href="/#voices">Clients</a>
+      <a href="/team/" aria-current="page">Team</a>
+      <a href="/#book">Book</a>
+    </nav>
+
+    <a class="btn btn--primary btn--sm btn--glow" href="/#book">Book a call</a>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="team" aria-labelledby="team-title">
+    <div class="shell">
+      <header class="section-head" data-reveal="rise">
+        <h1 class="section-title" id="team-title">Who runs your account<span class="dot">.</span></h1>
+        <p class="section-lead">G Management is a social media management and brand deals
+          agency working out of Miami, for brands and creators in the United States.</p>
+      </header>
+
+      <div class="team__grid">
+
+        <article class="member" data-reveal="rise">
+          <p class="member__portrait" aria-hidden="true">MG</p>
+          <div>
+            <h2 class="member__name">Manny Garcia</h2>
+            <p class="member__role">Founder</p>
+          </div>
+          <p class="member__line">Runs G Management, and the accounts on it — short-form
+            video, posted daily, and the brand deals that come off the back of it.</p>
+          <p class="member__links">
+            <a href="mailto:manny@gmgmt.co">manny@gmgmt.co</a>
+            <a href="https://wa.me/17869295735" target="_blank" rel="noopener">WhatsApp</a>
+          </p>
+        </article>
+
+        <!-- ============================================================ ADD PEOPLE HERE
+
+             Copy the block below once per person and fill in the five things
+             marked. Nothing else on the page needs touching — the grid goes to
+             two columns at 700px and three at 1000px on its own.
+
+               1. Initials      two letters, matching the name
+               2. Name
+               3. Role
+               4. One line      what they actually do on an account
+               5. Links         drop the whole <p> if there are none to give
+
+             For a photograph, replace the initials paragraph with:
+
+               <p class="member__portrait">
+                 <img src="/assets/team/firstname-v1.webp" alt=""
+                      width="72" height="72" loading="lazy" decoding="async">
+               </p>
+
+             alt="" is right here: the name is already the heading directly
+             beside it, so describing the face again is a second announcement of
+             the same person. Export square, 144x144 for two-times screens, and
+             put a version number in the filename the way every other asset in
+             this repo does — the cache headers in vercel.json are long, and the
+             filename is what busts them.
+
+        <article class="member" data-reveal="rise">
+          <p class="member__portrait" aria-hidden="true">XX</p>
+          <div>
+            <h2 class="member__name">Name</h2>
+            <p class="member__role">Role</p>
+          </div>
+          <p class="member__line">One line on what they do.</p>
+          <p class="member__links">
+            <a href="mailto:name@gmgmt.co">name@gmgmt.co</a>
+          </p>
+        </article>
+
+        ============================================================================= -->
+
+      </div>
+
+      <p class="team__back" data-reveal="rise" style="margin-top: var(--sp-64)">
+        <a class="btn btn--primary btn--glow" href="/#book">Book a 15-minute call</a>
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="shell">
+    <div class="site-footer__top">
+      <div class="site-footer__brand">
+        <p class="site-footer__mark">G Management</p>
+        <p class="site-footer__line">Social media management and brand deals, run out of Miami
+          for brands and creators in the United States.</p>
+      </div>
+
+      <nav class="site-footer__nav" aria-label="Footer">
+        <p class="site-footer__heading">Page</p>
+        <a href="/#work">Work</a>
+        <a href="/#proof">Proof</a>
+        <a href="/#results">Results</a>
+        <a href="/#voices">Clients</a>
+        <a href="/team/">Team</a>
+        <a href="/#faq">Questions</a>
+        <a href="/#book">Book a call</a>
+      </nav>
+
+      <div class="site-footer__contact">
+        <p class="site-footer__heading">Contact</p>
+        <a href="mailto:manny@gmgmt.co">manny@gmgmt.co</a>
+        <a href="https://wa.me/17869295735" target="_blank" rel="noopener">WhatsApp</a>
+      </div>
+    </div>
+
+    <div class="site-footer__bottom">
+      <p>&copy; <span data-year>2025</span> G Management</p>
+      <p>Miami, Florida</p>
+    </div>
+  </div>
+</footer>
+
+<script src="/assets/js/main-v8.js" defer></script>
+</body>
+</html>

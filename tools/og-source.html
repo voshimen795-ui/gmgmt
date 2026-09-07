@@ -3,9 +3,25 @@
 <head>
 <meta charset="utf-8">
 <title>og source</title>
-<link rel="stylesheet" href="/assets/css/styles.css">
 <style>
+  /* This used to link /assets/css/styles.css, which stopped existing when the
+     stylesheet moved into index.html. Regenerating assets/og.png would have
+     produced an unstyled 1200x630 image in Helvetica on white. Only the tokens
+     and faces this file actually uses are repeated here. */
+  @font-face { font-family: 'Archivo'; src: url('/assets/fonts/archivo-latin-v5.woff2') format('woff2');
+               font-weight: 400 800; font-stretch: 100% 125%; }
+  @font-face { font-family: 'Instrument Sans'; src: url('/assets/fonts/instrument-sans-latin-v5.woff2') format('woff2');
+               font-weight: 400 600; }
+  :root {
+    --ink: #070A12;
+    --gold: #C9A227;
+    --grey: #9BA5B4;
+    --paper: #F2F1EC;
+    --font-display: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+    --font-body: 'Instrument Sans', 'Helvetica Neue', Arial, sans-serif;
+  }
   html, body { margin: 0; }
+  body { font-family: var(--font-body); color: var(--paper); background: var(--ink); }
   body { width: 1200px; height: 630px; overflow: hidden; }
   .og {
     width: 1200px; height: 630px;
