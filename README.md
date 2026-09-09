@@ -244,6 +244,12 @@ subtree, so content stayed invisible.
 Everything below is a one-line edit in `index.html`. Nothing needs a build step, a
 server, or a redeploy beyond pushing the file.
 
+`vercel.json` ships a `Content-Security-Policy` that only allow-lists the hosts this
+page already talks to. Each account below adds one: a scheduler needs its host added
+to `frame-src`, a form endpoint needs its host added to `connect-src` and `form-action`.
+Wiring one up without touching the CSP means the browser silently blocks it — check the
+console for a CSP violation if a new embed or submit doesn't work.
+
 ### 1. Real booking, with a Google Meet link on every call
 
 The picker in the page is a fallback: it collects the slot and sends the request. To
