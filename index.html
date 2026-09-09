@@ -2100,6 +2100,7 @@ html:not(.js) .swing__track > span { width: calc(var(--w) * 1%); }
 
 .reach {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--sp-24);
   max-width: 880px;
   margin: var(--sp-32) auto 0;
@@ -2164,7 +2165,7 @@ html:not(.js) .swing__track > span { width: calc(var(--w) * 1%); }
 .lead__status.is-ok { color: var(--gold-lift); }
 .lead__status.is-warn { color: var(--paper); }
 
-.reach__side { display: grid; gap: var(--sp-24); align-content: start; }
+.reach__side { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--sp-24); align-content: start; }
 
 .booker__steps { display: grid; gap: var(--sp-16); }
 .booker__steps li {
