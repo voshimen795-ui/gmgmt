@@ -779,6 +779,14 @@
        number per clip and nothing that can fall out of step with itself. */
     var ratio = parseFloat(window.getComputedStyle(reel).getPropertyValue('--ar')) || 16 / 9;
 
+    /* One clip, one number — except where the player is not the clip. An
+       Instagram embed is the platform's whole card: its header, the video, and
+       the likes and caption under it, so the box it needs is squarer than the
+       9:16 the video is. `data-embed-ar` is that second shape, and only that:
+       the tile stays the clip's own ratio so the row reads straight, and
+       nothing else on the page carries it. */
+    var embedRatio = parseFloat(reel.getAttribute('data-embed-ar')) || ratio;
+
     /* There used to be a `data-start` here, and the first tile carried
        `data-start="1.7"` because its file opened on 1.7 seconds of the screen
        recording it was captured from: a Facebook "video unavailable" card,
@@ -840,7 +848,7 @@
       player.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
       player.setAttribute('allowfullscreen', '');
       player.setAttribute('frameborder', '0');
-      openLightbox(player, ratio, frame);
+      openLightbox(player, embedRatio, frame);
     }
 
     frame.addEventListener('click', open);

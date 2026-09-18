@@ -7,7 +7,7 @@ no dependencies.
 ```
 index.html                  the page, with all styling inline in its <style>
 team/index.html             the team page, styled the same way and for the same reason
-assets/js/main-v8.js        counters, chart, reels, player, booking, form, motes
+assets/js/main-v9.js        counters, chart, reels, player, booking, form, motes
 assets/fonts/               self-hosted variable fonts (Archivo, Instrument Sans)
 assets/og.png               link-preview image (1200×630)
 favicon.svg
@@ -173,7 +173,7 @@ A phone pays for things a laptop gives away. The page also holds to these:
 
 - **The hero film waits.** It is fetched after the load event, on an idle callback, so it
   never competes with first paint. Its host is preconnected in the head.
-- **Nothing plays until it is asked to.** The three tiles arrive as thumbnails; the page
+- **Nothing plays until it is asked to.** The six tiles arrive as posters; the page
   loads no video file and no third-party player. On arrival: zero video elements, zero
   iframes.
 - **No decoder runs off screen.** A player mounted by a press is watched and paused the
@@ -201,13 +201,13 @@ A phone pays for things a laptop gives away. The page also holds to these:
   the browser would otherwise only discover them after parsing all of it — and the headline
   animation waits on `document.fonts.ready`, so this is the gate on when the hero settles.
 - **Everything with a version in its name is cached for a year.** The fonts, `/assets/clips`,
-  the hero loop and `main-v8.js` are served `immutable`; `index.html` is
+  the hero loop and `main-v9.js` are served `immutable`; `index.html` is
   `max-age=0, must-revalidate`. The script carries a version so it can never be a stale copy
   paired with a fresh document — see the `vercel.json` note above, which is the bug that put
   it there.
 - **The small print is two points larger on a phone, and the grey is brighter everywhere.**
   `--t-small` and `--t-label` go 14→16 and 13→15 below 700px, which lifts all forty-four
-  places they are used at once — the steps in "How a month runs", every label under a
+  places they are used at once — the steps in "How we run your social media", every label under a
   figure, the chips, the footnotes, the form hints, the FAQ answers — without a second scale
   to remember. The video tiles are pinned back to 13, because they were not part of that
   pass. `--grey` went from `#7E8794` to `#9BA5B4`: 5.4:1 against the ink and 4.9:1 against a
@@ -319,7 +319,7 @@ The form endpoint is the separate switch described above. With `data-endpoint` e
 form composes the same message as an email and opens the visitor's mail app — and, because
 that does nothing visible on a phone with no mail client registered, leaves the message on
 screen with a **Copy the message** button beside the WhatsApp one. The handler is module 10
-of `assets/js/main-v8.js`.
+of `assets/js/main-v9.js`.
 
 **Hero background video.** The hero has a media layer wired for the client's own footage:
 
@@ -378,10 +378,24 @@ third party is contacted until someone presses. See `assets/clips/README.md`.
 ```
 
 Every tile is a poster frame that loads its player on press. Nothing autoplays and no
-third party is contacted until someone presses — there is no `data-autoload`, and the
-Facebook tile this section used to describe is gone; the three tiles are two Vimeo and
-one youtube-nocookie. Every caption links out to the original post, so the proof stays
-reachable even if a platform declines to embed.
+third party is contacted until someone presses — there is no `data-autoload`. The six
+tiles are two Vimeo, two youtube-nocookie and two Instagram.
+
+**A clip that arrived as a link has no frame to use as a poster.** Neither YouTube nor
+Instagram hands one out for an arbitrary post, and the page asks no third party for a
+thumbnail on arrival, so those tiles draw their own: `<span class="reel__thumb
+reel__thumb--mark">` in place of the `<img>`, the page's ink and gold and monogram, no
+request and no bytes. Putting a real frame back is a swap of that one element for an
+`<img class="reel__thumb" src="…" width height loading="lazy">` — see
+`assets/clips/README.md` for how a thumbnail moment is chosen.
+
+**`data-embed-ar`, for a player that is not the shape of its clip.** An Instagram embed
+is the platform's whole card — header, video, then likes and caption — so the box it
+needs is squarer than the 9:16 the video is. The tile keeps the clip's ratio in `--ar` so
+the row reads straight, and `data-embed-ar` is the shape the player opens at. Only the
+Instagram tiles carry it. Instagram's embed is also the one player on this page that is
+not themed to the site: it arrives as Instagram's own white card. Two clips sent as files
+instead of links would be ordinary self-hosted tiles, dark and uncropped, like the rest.
 
 **Numbers.** Every figure lives in the markup as text. The hero counters read their target
 from `data-to` — change the attribute and the count-up follows.
@@ -418,8 +432,9 @@ changed in `index.html` has to be changed here too.
 3. **Clients** — the account names on an infinite roll, faded at both edges and paused on
    hover. Swap a name for an `<img>` when a client sends a logo file; the row does not care
    which it is holding.
-4. **Work** — two named groups: **Short-form**, the two clips shot vertical, and
-   **Long-form**, the podcast cut that spans the row beneath them. Each label is centred
+4. **Work** — two named groups: **Short-form content**, five clips shot vertical (the odd
+   one out takes the row on its own, held to a single column's width in the middle of it),
+   and **Long-form content**, the podcast cut that spans the row beneath them. Each label is centred
    between two gold hairlines that draw outward from the words as the row arrives — three
    transforms and one opacity, all composited, all of them finished the moment they land,
    riding the reveal observer the rest of the page already uses rather than adding any
@@ -480,9 +495,11 @@ changed in `index.html` has to be changed here too.
    screen and the tab is visible, at device pixel ratio 1 on phones, and not at all under
    reduced motion, where the frames also drop their clip and both pseudo-elements.
 
-5. **Results** — a bento grid: BKH and the Pivot Point chart across the top, then Houdini,
-   the link-in-bio revenue and PAC-Hub. Every figure counts up on arrival, and the shares
-   (99.7% non-follower reach, 92% US audience) grow as bars.
+5. **Results** — a bento grid of two cards, BKH and the link-in-bio revenue, each with a
+   plain sentence under its figures. Every figure counts up on arrival, and the shares
+   (99.7% non-follower reach, Reels at 4M of 4.2M views) grow as bars. The six columns
+   split in half at 1000px and take the row one at a time below it: PAC-Hub came out at
+   the client's request, and half a row with nothing beside it is a hole.
 6. **Clients** — two short testimonials, named.
 6b. **FAQ** — seven questions as native `<details>`, so they work with scripting off. The
    answers are also emitted as `FAQPage` structured data, generated from this markup, so the
