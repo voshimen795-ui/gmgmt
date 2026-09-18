@@ -7,7 +7,7 @@ no dependencies.
 ```
 index.html                  the page, with all styling inline in its <style>
 team/index.html             the team page, styled the same way and for the same reason
-assets/js/main-v9.js        counters, chart, reels, player, booking, form, motes
+assets/js/main-v8.js        counters, chart, reels, player, booking, form, motes
 assets/fonts/               self-hosted variable fonts (Archivo, Instrument Sans)
 assets/og.png               link-preview image (1200×630)
 favicon.svg
@@ -201,7 +201,7 @@ A phone pays for things a laptop gives away. The page also holds to these:
   the browser would otherwise only discover them after parsing all of it — and the headline
   animation waits on `document.fonts.ready`, so this is the gate on when the hero settles.
 - **Everything with a version in its name is cached for a year.** The fonts, `/assets/clips`,
-  the hero loop and `main-v9.js` are served `immutable`; `index.html` is
+  the hero loop and `main-v8.js` are served `immutable`; `index.html` is
   `max-age=0, must-revalidate`. The script carries a version so it can never be a stale copy
   paired with a fresh document — see the `vercel.json` note above, which is the bug that put
   it there.
@@ -319,7 +319,7 @@ The form endpoint is the separate switch described above. With `data-endpoint` e
 form composes the same message as an email and opens the visitor's mail app — and, because
 that does nothing visible on a phone with no mail client registered, leaves the message on
 screen with a **Copy the message** button beside the WhatsApp one. The handler is module 10
-of `assets/js/main-v9.js`.
+of `assets/js/main-v8.js`.
 
 **Hero background video.** The hero has a media layer wired for the client's own footage:
 
@@ -379,23 +379,20 @@ third party is contacted until someone presses. See `assets/clips/README.md`.
 
 Every tile is a poster frame that loads its player on press. Nothing autoplays and no
 third party is contacted until someone presses — there is no `data-autoload`. The six
-tiles are two Vimeo, two youtube-nocookie and two Instagram.
+tiles are four Vimeo and two youtube-nocookie: two providers, one dark player, the same
+behaviour on every tile. Two of them were Instagram embeds for an afternoon and are not
+any more — Instagram's embed is the platform's whole white card, header and caption
+around the video, and nothing out here can theme it or ask it what shape it is. Reuploading
+those two to Vimeo cost nothing and bought the page its consistency back.
 
-**A clip that arrived as a link has no frame to use as a poster.** Neither YouTube nor
-Instagram hands one out for an arbitrary post, and the page asks no third party for a
-thumbnail on arrival, so those tiles draw their own: `<span class="reel__thumb
-reel__thumb--mark">` in place of the `<img>`, the page's ink and gold and monogram, no
-request and no bytes. Putting a real frame back is a swap of that one element for an
-`<img class="reel__thumb" src="…" width height loading="lazy">` — see
-`assets/clips/README.md` for how a thumbnail moment is chosen.
-
-**`data-embed-ar`, for a player that is not the shape of its clip.** An Instagram embed
-is the platform's whole card — header, video, then likes and caption — so the box it
-needs is squarer than the 9:16 the video is. The tile keeps the clip's ratio in `--ar` so
-the row reads straight, and `data-embed-ar` is the shape the player opens at. Only the
-Instagram tiles carry it. Instagram's embed is also the one player on this page that is
-not themed to the site: it arrives as Instagram's own white card. Two clips sent as files
-instead of links would be ordinary self-hosted tiles, dark and uncropped, like the rest.
+**A clip that arrived as a link has no frame to use as a poster.** A thumbnail can only
+come from the video itself, no provider hands one out for an arbitrary post, and this page
+asks no third party for a thumbnail on arrival — so three tiles draw their own:
+`<span class="reel__thumb reel__thumb--mark">` in place of the `<img>`, the page's ink and
+gold and monogram, no request and no bytes. Putting a real frame back is a swap of that
+one element for an `<img class="reel__thumb" src="…" width height loading="lazy">` — see
+`assets/clips/README.md` for how a thumbnail moment is chosen. Vimeo will hand the owner
+the frame it picked, on the video's own settings page.
 
 **Numbers.** Every figure lives in the markup as text. The hero counters read their target
 from `data-to` — change the attribute and the count-up follows.
