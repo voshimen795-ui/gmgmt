@@ -187,9 +187,35 @@
 *, *::before, *::after { box-sizing: border-box; }
 
 html {
-  scroll-behavior: smooth;
   scroll-padding-top: var(--sp-64);
   -webkit-text-size-adjust: 100%;
+}
+
+/* Smooth scroll only on desktop - it interferes with native momentum scroll on mobile/tablet */
+@media (min-width: 1000px) {
+  html { scroll-behavior: smooth; }
+}
+
+/* Performance optimizations for mobile: disable decorative animations that impact scroll smoothness */
+@media (max-width: 699px) {
+  /* Disable complex animations on mobile for better scroll performance */
+  .motes { display: none !important; }
+
+  /* Simplify button animations on mobile */
+  .btn { transition: color 100ms var(--ease), border-color 100ms var(--ease); }
+  .btn::before { display: none; }
+  .btn:hover { transform: none; }
+
+  /* Reduce reveal animation complexity on mobile */
+  .js [data-reveal] { transition: opacity 300ms var(--ease) !important; }
+  .js [data-reveal="shot"] { clip-path: none; transition: none; }
+
+  /* Simplify card animations on mobile */
+  .bento__card, .ba__card { transition: border-color 200ms var(--ease); }
+  .bento__card:hover, .ba__card:hover { transform: none; box-shadow: none; }
+
+  /* Disable reel frame animations on mobile */
+  .reel__frame:hover { transform: none; box-shadow: none; }
 }
 
 body {
