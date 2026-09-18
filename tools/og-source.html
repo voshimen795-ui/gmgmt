@@ -4,10 +4,17 @@
 <meta charset="utf-8">
 <title>og source</title>
 <style>
-  /* This used to link /assets/css/styles.css, which stopped existing when the
-     stylesheet moved into index.html. Regenerating assets/og.png would have
-     produced an unstyled 1200x630 image in Helvetica on white. Only the tokens
-     and faces this file actually uses are repeated here. */
+  /* The source for assets/og.png, rebuilt to match the image that actually
+     shipped. The file that used to sit here had drifted into a different,
+     plainer layout — no glow, no place line, gold figures, three of them — so
+     regenerating from it quietly replaced a good picture with a worse one.
+     This one is measured against the shipped PNG: same ink, same glow, same
+     mark, same place line, same hairline, same four figures in white over grey
+     captions. Change the copy here and re-shoot; do not change the furniture
+     without looking at the result beside the old one.
+
+     It cannot link the stylesheet: the styles live inside index.html. Only the
+     tokens and the two faces this file uses are repeated. */
   @font-face { font-family: 'Archivo'; src: url('/assets/fonts/archivo-latin-v5.woff2') format('woff2');
                font-weight: 400 800; font-stretch: 100% 125%; }
   @font-face { font-family: 'Instrument Sans'; src: url('/assets/fonts/instrument-sans-latin-v5.woff2') format('woff2');
@@ -20,39 +27,69 @@
     --font-display: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
     --font-body: 'Instrument Sans', 'Helvetica Neue', Arial, sans-serif;
   }
+  /* Without this the 1200x630 box plus its padding is 1344x750, so the place
+     line runs off the right edge and the whole figures row falls out of the
+     bottom of the shot — which is exactly what the drifted source was doing. */
+  *, *::before, *::after { box-sizing: border-box; }
   html, body { margin: 0; }
-  body { font-family: var(--font-body); color: var(--paper); background: var(--ink); }
-  body { width: 1200px; height: 630px; overflow: hidden; }
+  body { width: 1200px; height: 630px; overflow: hidden;
+         font-family: var(--font-body); color: var(--paper); background: var(--ink); }
+
   .og {
+    position: relative;
     width: 1200px; height: 630px;
-    padding: 64px;
+    padding: 56px 72px 60px;
     display: flex; flex-direction: column; justify-content: space-between;
     background: var(--ink);
-    border-top: 8px solid var(--gold);
+    overflow: hidden;
   }
-  .og__mark { font-family: var(--font-display); font-weight: 800; font-stretch: 125%;
-              letter-spacing: -0.02em; font-size: 28px; }
-  .og__mark span { color: var(--grey); font-weight: 500; font-stretch: 100%; }
-  .og__line { font-family: var(--font-display); font-weight: 800; font-stretch: 125%;
-              font-size: 56px; line-height: 0.98; letter-spacing: -0.03em; max-width: 22ch; }
-  .og__row { display: flex; gap: 64px; align-items: baseline; }
+  /* the light field, the one thing the drifted source had lost */
+  .og::before {
+    content: "";
+    position: absolute; inset: -30% -10% 20% -20%;
+    background:
+      radial-gradient(46% 58% at 26% 34%, rgba(201, 162, 39, 0.20), transparent 70%),
+      radial-gradient(38% 46% at 8% 8%, rgba(242, 241, 236, 0.05), transparent 72%);
+    filter: blur(40px);
+    pointer-events: none;
+  }
+  .og > * { position: relative; }
+
+  .og__top { display: flex; align-items: baseline; justify-content: space-between; }
+  .og__mark { margin: 0; font-family: var(--font-display); font-weight: 800; font-stretch: 125%;
+              letter-spacing: -0.02em; font-size: 30px; color: var(--gold); }
+  .og__mark span { color: var(--grey); font-weight: 500; font-stretch: 100%;
+                   letter-spacing: -0.01em; }
+  .og__where { margin: 0; font-size: 17px; color: var(--grey); }
+
+  .og__line { font-family: var(--font-display); font-weight: 800; font-stretch: 122%;
+              font-size: 64px; line-height: 0.98; letter-spacing: -0.035em;
+              max-width: 15ch; margin: 0; }
+  .og__line i { font-style: normal; color: var(--gold); }
+
+  .og__foot { border-top: 1px solid rgba(242, 241, 236, 0.12); padding-top: 24px;
+              display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
   .og__fig { font-family: var(--font-display); font-weight: 800; font-stretch: 112%;
-             font-size: 44px; letter-spacing: -0.03em; font-variant-numeric: tabular-nums;
-             color: var(--gold); line-height: 1; }
-  .og__cap { font-size: 15px; color: var(--grey); margin-top: 8px; }
-  .og__foot { font-size: 18px; color: var(--grey); }
+             font-size: 38px; letter-spacing: -0.03em; font-variant-numeric: tabular-nums;
+             line-height: 1; margin: 0; }
+  .og__cap { font-size: 15px; color: var(--grey); margin: 8px 0 0; }
 </style>
 </head>
 <body>
 <div class="og">
-  <p class="og__mark">G <span>Management</span></p>
-  <h1 class="og__line">We run social media for brands, and manage brand deals for creators.</h1>
-  <div class="og__row">
-    <div><p class="og__fig">5,487,050</p><p class="og__cap">Accounts reached in 30 days</p></div>
-    <div><p class="og__fig">+54%</p><p class="og__cap">Orders in two months</p></div>
-    <div><p class="og__fig">$19,265</p><p class="og__cap">One link, one month</p></div>
+  <div class="og__top">
+    <p class="og__mark">G <span>Management</span></p>
+    <p class="og__where">Miami, Florida</p>
   </div>
-  <p class="og__foot" style="display:flex; gap:32px;"><span>Miami, Florida</span><span>manny@gmgmt.co</span></p>
+
+  <h1 class="og__line">We run your social media. You grow your business<i>.</i></h1>
+
+  <div class="og__foot">
+    <div><p class="og__fig">100M+</p><p class="og__cap">organic views generated</p></div>
+    <div><p class="og__fig">$10M+</p><p class="og__cap">tracked revenue generated</p></div>
+    <div><p class="og__fig">500K+</p><p class="og__cap">short-form pieces created</p></div>
+    <div><p class="og__fig">100+</p><p class="og__cap">accounts managed</p></div>
+  </div>
 </div>
 </body>
 </html>

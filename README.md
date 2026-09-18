@@ -7,7 +7,7 @@ no dependencies.
 ```
 index.html                  the page, with all styling inline in its <style>
 team/index.html             the team page, styled the same way and for the same reason
-assets/js/main-v9.js        counters, chart, reels, player, booking, form, motes
+assets/js/main-v8.js        counters, chart, reels, player, booking, form, motes
 assets/fonts/               self-hosted variable fonts (Archivo, Instrument Sans)
 assets/og.png               link-preview image (1200×630)
 favicon.svg
@@ -52,8 +52,9 @@ declarations and the comments explaining them. That is the trade, and it is a fa
 first paint was already the fastest thing about the page, and the 150KB and 94ms are not.
 
 Over brotli, which is what Vercel actually sends, arrival is about 129KB: 18KB of document,
-10KB of script, 43KB of fonts and up to 60KB of thumbnails — and the thumbnails are lazy,
-so a visitor who never reaches the Work section pays for two of the three at most.
+10KB of script and 43KB of fonts. The six tile thumbnails are 148KB on top of that and none
+of it is on arrival — they are lazy, so a visitor who never reaches the Work section pays
+for none of them.
 
 Where it came from:
 
@@ -68,9 +69,10 @@ Where it came from:
   glyphs took 120KB of woff2 to 63KB; trimming the axes took it to 43KB. They are not
   preloaded: preloading raced them against the stylesheet on a narrow pipe, and
   `font-display: swap` paints the text immediately regardless.
-- **The tile thumbnails are lazy WebP** — 60KB for all three, and now the whole of
-  `assets/clips`, since every clip moved to a provider. Each is the whole frame of the clip
-  it fronts, scaled, never cropped. They are real `<img loading="lazy">` elements,
+- **The tile thumbnails are lazy WebP** — 148KB for all six, and now the whole of
+  `assets/clips`, since every clip moved to a provider. Each is the frame of the clip it
+  fronts, scaled, and trimmed only where a still came in at the wrong ratio to begin with.
+  They are real `<img loading="lazy">` elements,
   not CSS backgrounds: a background image is fetched as soon as its element is laid out no
   matter where on the page it sits, and these tiles are a long way down.
 - **The proof screenshots are WebP.** The same four dashboards were 197KB as JPEG and are
@@ -201,7 +203,7 @@ A phone pays for things a laptop gives away. The page also holds to these:
   the browser would otherwise only discover them after parsing all of it — and the headline
   animation waits on `document.fonts.ready`, so this is the gate on when the hero settles.
 - **Everything with a version in its name is cached for a year.** The fonts, `/assets/clips`,
-  the hero loop and `main-v9.js` are served `immutable`; `index.html` is
+  the hero loop and `main-v8.js` are served `immutable`; `index.html` is
   `max-age=0, must-revalidate`. The script carries a version so it can never be a stale copy
   paired with a fresh document — see the `vercel.json` note above, which is the bug that put
   it there.
@@ -319,7 +321,7 @@ The form endpoint is the separate switch described above. With `data-endpoint` e
 form composes the same message as an email and opens the visitor's mail app — and, because
 that does nothing visible on a phone with no mail client registered, leaves the message on
 screen with a **Copy the message** button beside the WhatsApp one. The handler is module 10
-of `assets/js/main-v9.js`.
+of `assets/js/main-v8.js`.
 
 **Hero background video.** The hero has a media layer wired for the client's own footage:
 
@@ -379,23 +381,19 @@ third party is contacted until someone presses. See `assets/clips/README.md`.
 
 Every tile is a poster frame that loads its player on press. Nothing autoplays and no
 third party is contacted until someone presses — there is no `data-autoload`. The six
-tiles are two Vimeo, two youtube-nocookie and two Instagram.
+tiles are four Vimeo and two youtube-nocookie: two providers, one dark player, the same
+behaviour on every tile. Two of them were Instagram embeds for an afternoon and are not
+any more — Instagram's embed is the platform's whole white card, header and caption
+around the video, and nothing out here can theme it or ask it what shape it is. Reuploading
+those two to Vimeo cost nothing and bought the page its consistency back.
 
-**A clip that arrived as a link has no frame to use as a poster.** Neither YouTube nor
-Instagram hands one out for an arbitrary post, and the page asks no third party for a
-thumbnail on arrival, so those tiles draw their own: `<span class="reel__thumb
-reel__thumb--mark">` in place of the `<img>`, the page's ink and gold and monogram, no
-request and no bytes. Putting a real frame back is a swap of that one element for an
-`<img class="reel__thumb" src="…" width height loading="lazy">` — see
-`assets/clips/README.md` for how a thumbnail moment is chosen.
-
-**`data-embed-ar`, for a player that is not the shape of its clip.** An Instagram embed
-is the platform's whole card — header, video, then likes and caption — so the box it
-needs is squarer than the 9:16 the video is. The tile keeps the clip's ratio in `--ar` so
-the row reads straight, and `data-embed-ar` is the shape the player opens at. Only the
-Instagram tiles carry it. Instagram's embed is also the one player on this page that is
-not themed to the site: it arrives as Instagram's own white card. Two clips sent as files
-instead of links would be ordinary self-hosted tiles, dark and uncropped, like the rest.
+**A clip that arrives as a link has no frame to cut a poster from.** A thumbnail can only
+come from the video itself, no provider hands one out for an arbitrary post, and this page
+asks no third party for one on arrival — so the three tiles that came as links are fronted
+by stills the client sent, trimmed here to the clip's own ratio and encoded to match the
+three beside them. `assets/clips/README.md` has the recipe, including how the conversion
+was done on a machine with no image library. Every tile on the page carries a real frame;
+there is no placeholder left in the markup or the stylesheet.
 
 **Numbers.** Every figure lives in the markup as text. The hero counters read their target
 from `data-to` — change the attribute and the count-up follows.
