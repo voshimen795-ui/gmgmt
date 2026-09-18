@@ -3291,8 +3291,17 @@ a.contact__value:hover { color: var(--gold-lift); }
       <div class="reach">
         <!-- Put a form endpoint in data-endpoint (Web3Forms, Formspree and
              anything else that takes a POST and answers JSON all work). With
-             none set the form composes the same message as an email. -->
-        <form class="lead" data-lead data-endpoint="" novalidate>
+             none set the form composes the same message as an email.
+
+             Web3Forms names the form by an access_key in the body rather than
+             by the URL, so it needs data-form-key as well — endpoint
+             https://api.web3forms.com/submit, key from its dashboard. A
+             service whose URL already identifies the form leaves it empty.
+
+             A new endpoint host also has to be added to connect-src in
+             vercel.json, or the browser refuses the request before it is
+             sent and the form fails with no explanation. -->
+        <form class="lead" data-lead data-endpoint="" data-form-key="" novalidate>
           <h3 class="lead__title">Rather write first<span class="dot">?</span></h3>
           <p class="lead__note">Two lines is enough. It reaches Manny's inbox, and his phone.</p>
 
@@ -3408,6 +3417,6 @@ a.contact__value:hover { color: var(--gold-lift); }
   <a class="btn btn--ghost btn--sm" href="mailto:manny@gmgmt.co">Email</a>
 </div>
 
-<script src="/assets/js/main-v10.js" defer></script>
+<script src="/assets/js/main-v11.js" defer></script>
 </body>
 </html>

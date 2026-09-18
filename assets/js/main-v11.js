@@ -1172,6 +1172,12 @@
     var leadWhats = leadForm.querySelector('[data-lead-whatsapp]');
     var leadCopy = leadForm.querySelector('[data-lead-copy]');
     var endpoint = (leadForm.getAttribute('data-endpoint') || '').trim();
+    /* Web3Forms identifies the form by an access_key in the body rather than
+       by the URL, so the endpoint alone is not enough: without this every
+       submission comes back rejected. Formspree and anything else that puts
+       the form's identity in its own URL simply leave it empty and ignore the
+       extra field. */
+    var formKey = (leadForm.getAttribute('data-form-key') || '').trim();
     var leadKey = 'gmgmt:lead';
     var submitted = false;
 
@@ -1357,17 +1363,20 @@
       leadSend.disabled = true;
       say('Sending…');
 
+      var payload = {
+        name: v.name,
+        email: v.email,
+        brand: v.brand,
+        message: v.message,
+        subject: 'New enquiry from gmgmt.com',
+        from_name: 'gmgmt.com'
+      };
+      if (formKey) payload.access_key = formKey;
+
       fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({
-          name: v.name,
-          email: v.email,
-          brand: v.brand,
-          message: v.message,
-          subject: 'New enquiry from gmgmt.com',
-          from_name: 'gmgmt.com'
-        })
+        body: JSON.stringify(payload)
       }).then(function (response) {
         /* A rejected access key and a dead network used to read identically,
            which is exactly the case where the endpoint's own words are worth
