@@ -1305,13 +1305,17 @@ body.has-lightbox { overflow: hidden; }
 }
 .stats__d { font-size: var(--t-label); color: var(--gold); font-variant-numeric: tabular-nums; }
 
-.stats--row { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-16); }
+.stats--row { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: var(--sp-16); }
 .stats--row li {
   grid-template-columns: 1fr;
   justify-items: center;
   text-align: center;
   border-top: 0;
   gap: var(--sp-4);
+}
+
+@media (min-width: 500px) {
+  .stats--row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 .meter { position: relative; margin-top: var(--sp-24); text-align: left; }
