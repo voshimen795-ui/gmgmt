@@ -2804,16 +2804,16 @@ a.contact__value:hover { color: var(--gold-lift); }
           </button>
         </figure>
 
-        <!-- The three tiles below came as links rather than as files, so there
-             is no frame of them to use as a poster: a thumbnail can only come
-             from the video itself, and neither provider hands one out for an
-             arbitrary post. Each carries the drawn poster instead — the page's
-             own ink, gold and monogram, no request to anybody — and swapping in
-             a real frame later is one element: an
+        <!-- The three tiles below came as links rather than as files. Two of
+             them have their own frame now: the client sent a still of each, cut
+             to the clip's 9:16 and encoded at the same size and weight as the
+             posters above it. The Short still carries the drawn poster — the
+             page's own ink, gold and monogram, no request to anybody — and
+             giving it a real frame is one element: an
              `<img class="reel__thumb" src="…" width height loading="lazy">` in
              place of the `<span class="reel__thumb reel__thumb--mark">`.
 
-             The two Instagram reels that were here are on Vimeo now, at the
+             The last two were Instagram reels and are on Vimeo now, at the
              client's asking, so every tile on the page opens in the same dark
              player from one of the same two providers. Instagram's own embed
              was the odd one out: it arrives as the platform's white card, with
@@ -2835,7 +2835,8 @@ a.contact__value:hover { color: var(--gold-lift); }
                 data-embed="https://player.vimeo.com/video/1228117949?h=b011f6df36&amp;autoplay=1&amp;title=0&amp;byline=0&amp;portrait=0&amp;dnt=1"
                 data-embed-title="A client reel on Vimeo">
           <button class="reel__frame" type="button" data-reel-btn>
-            <span class="reel__thumb reel__thumb--mark" aria-hidden="true"></span>
+            <img class="reel__thumb" src="/assets/clips/reel-4-poster-v1.webp" alt=""
+                 width="486" height="864" loading="lazy" decoding="async" fetchpriority="low">
             <span class="reel__play" aria-hidden="true">
               <svg viewBox="0 0 14 16" width="13" height="15" focusable="false"><path d="M0 0 L14 8 L0 16 Z" fill="currentColor"/></svg>
             </span>
@@ -2847,7 +2848,8 @@ a.contact__value:hover { color: var(--gold-lift); }
                 data-embed="https://player.vimeo.com/video/1228118012?h=dc3e0d3d8e&amp;autoplay=1&amp;title=0&amp;byline=0&amp;portrait=0&amp;dnt=1"
                 data-embed-title="A client reel on Vimeo">
           <button class="reel__frame" type="button" data-reel-btn>
-            <span class="reel__thumb reel__thumb--mark" aria-hidden="true"></span>
+            <img class="reel__thumb" src="/assets/clips/reel-5-poster-v1.webp" alt=""
+                 width="486" height="864" loading="lazy" decoding="async" fetchpriority="low">
             <span class="reel__play" aria-hidden="true">
               <svg viewBox="0 0 14 16" width="13" height="15" focusable="false"><path d="M0 0 L14 8 L0 16 Z" fill="currentColor"/></svg>
             </span>

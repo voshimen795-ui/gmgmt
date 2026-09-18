@@ -194,6 +194,26 @@ and could not be reached from the machine that built it:
 
     curl -s "https://vimeo.com/api/oembed.json?url=https%3A%2F%2Fvimeo.com%2F<id>%2F<hash>"
 
+`reel-4-poster-v1.webp` and `reel-5-poster-v1.webp` are stills the client sent
+for the two reels reuploaded to Vimeo, and the machine that built them could not
+reach Vimeo either. They arrived a little wider than 9:16 — a screen capture
+rather than the frame itself — so each is **centre-cut to the clip's ratio**
+before it is scaled, which is the crop done once at build time instead of by
+`object-fit: cover` on every visit. 486x864, WebP at quality 0.72, 25KB and
+23KB, in line with the three above.
+
+There is no image library and no PNG decoder in the ffmpeg on this box, so the
+conversion went through a canvas in headless Chromium: draw the source
+centre-cropped into a 486x864 canvas, `toDataURL('image/webp', 0.72)`, and POST
+the result to a one-file local server that writes it out. Any machine with
+`cwebp` does the same thing in one line:
+
+    cwebp -q 72 -resize 486 0 -crop <x> <y> <w> <h> still.png -o reel-4-poster-v1.webp
+
+The Short (`0LRcqVt3RVU`) has no still yet and carries the drawn poster:
+`<span class="reel__thumb reel__thumb--mark">` in place of the `<img>`, the
+page's own ink and gold and monogram, no request and no bytes.
+
 ### Warming the connection
 
 Nothing is asked of either provider until a tile is pressed. That is the right
