@@ -194,13 +194,24 @@ and could not be reached from the machine that built it:
 
     curl -s "https://vimeo.com/api/oembed.json?url=https%3A%2F%2Fvimeo.com%2F<id>%2F<hash>"
 
-`reel-4-poster-v1.webp` and `reel-5-poster-v1.webp` are stills the client sent
-for the two reels reuploaded to Vimeo, and the machine that built them could not
-reach Vimeo either. They arrived a little wider than 9:16 — a screen capture
-rather than the frame itself — so each is **centre-cut to the clip's ratio**
-before it is scaled, which is the crop done once at build time instead of by
-`object-fit: cover` on every visit. 486x864, WebP at quality 0.72, 25KB and
-23KB, in line with the three above.
+`reel-4-poster-v1.webp`, `reel-5-poster-v1.webp` and `reel-6-poster-v1.webp` are
+stills the client sent for the three clips that arrived as links, and the machine
+that built them could not reach Vimeo or YouTube either. Each is **trimmed to the
+clip's own 9:16** before it is scaled, which is the crop done once at build time
+instead of by `object-fit: cover` on every visit — and where the trim comes from
+is the whole decision:
+
+- 4 and 5 arrived a little **wider** than 9:16, a screen capture rather than the
+  frame itself, so the cut is centred and takes a few per cent off each side.
+- 6 arrived **taller** than 9:16, and the surplus sits in the black band under
+  the title, so the cut is anchored at the top and takes all 111px off the
+  bottom. A centred cut would have been 154px off each side, through the `G` of
+  GETS and the question mark — a poster whose whole job is that line cannot
+  afford it.
+
+486x864, WebP at quality 0.72 for the two reels (25KB and 23KB) and 0.64 for the
+Short, whose stacked banknotes cost more to encode than anything else on the page
+(44KB). All three are lazy, like the three above them.
 
 There is no image library and no PNG decoder in the ffmpeg on this box, so the
 conversion went through a canvas in headless Chromium: draw the source
@@ -208,11 +219,11 @@ centre-cropped into a 486x864 canvas, `toDataURL('image/webp', 0.72)`, and POST
 the result to a one-file local server that writes it out. Any machine with
 `cwebp` does the same thing in one line:
 
-    cwebp -q 72 -resize 486 0 -crop <x> <y> <w> <h> still.png -o reel-4-poster-v1.webp
+    cwebp -q 72 -crop <x> <y> <w> <h> -resize 486 0 still.png -o reel-4-poster-v1.webp
 
-The Short (`0LRcqVt3RVU`) has no still yet and carries the drawn poster:
-`<span class="reel__thumb reel__thumb--mark">` in place of the `<img>`, the
-page's own ink and gold and monogram, no request and no bytes.
+Every tile on the page has a real frame now. There is no placeholder poster left
+in the markup or the stylesheet — a clip that arrives as a link gets a still and
+the treatment above, not a drawn stand-in.
 
 ### Warming the connection
 

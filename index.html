@@ -838,39 +838,6 @@ section { padding-block: var(--section-y); }
   border-radius: inherit;
 }
 
-/* The poster for a clip that arrived as a link rather than as a file. A frame
-   can only come out of the video itself and neither provider hands one out, so
-   rather than a grey box or a third-party placeholder that may answer with one,
-   the tile draws its own in the page's ink and gold — no request, no bytes, and
-   it stays sharp at any size. The monogram sits off to the corner because the
-   play mark already owns the middle.
-
-   Replacing it with a real frame is a swap, not a rewrite: put the
-   `<img class="reel__thumb" src="…" width height loading="lazy">` back where
-   this span is and delete nothing else. */
-.reel__thumb--mark {
-  background:
-    radial-gradient(78% 56% at 50% 36%, rgba(201, 162, 39, 0.28), transparent 72%),
-    linear-gradient(162deg, #121826, #0A0E16 68%);
-  background:
-    radial-gradient(78% 56% at 50% 36%,
-      color-mix(in srgb, var(--gold) 28%, transparent), transparent 72%),
-    linear-gradient(162deg, var(--surface-lift), var(--ink) 68%);
-}
-.reel__thumb--mark::after {
-  content: "G";
-  position: absolute;
-  left: var(--sp-16);
-  bottom: var(--sp-8);
-  font-family: var(--font-display);
-  font-size: clamp(3.5rem, 18vw, 5rem);
-  font-weight: 800;
-  font-stretch: 118%;
-  line-height: 1;
-  color: rgba(201, 162, 39, 0.30);
-  color: color-mix(in srgb, var(--gold) 30%, transparent);
-}
-
 /* Five short-form tiles do not divide by two. The odd one out takes the whole
    row and is held to a single column's width in the middle of it, so the row
    ends on a centred tile rather than on a gap. Same 700px the second column
@@ -2804,14 +2771,12 @@ a.contact__value:hover { color: var(--gold-lift); }
           </button>
         </figure>
 
-        <!-- The three tiles below came as links rather than as files. Two of
-             them have their own frame now: the client sent a still of each, cut
-             to the clip's 9:16 and encoded at the same size and weight as the
-             posters above it. The Short still carries the drawn poster — the
-             page's own ink, gold and monogram, no request to anybody — and
-             giving it a real frame is one element: an
-             `<img class="reel__thumb" src="…" width height loading="lazy">` in
-             place of the `<span class="reel__thumb reel__thumb--mark">`.
+        <!-- The three tiles below came as links rather than as files, so their
+             posters are stills the client sent rather than frames cut from a
+             local copy: each is trimmed to the clip's own 9:16 and encoded at
+             the size and weight of the three above it. See
+             assets/clips/README.md for how they were made without reaching
+             either provider.
 
              The last two were Instagram reels and are on Vimeo now, at the
              client's asking, so every tile on the page opens in the same dark
@@ -2823,7 +2788,8 @@ a.contact__value:hover { color: var(--gold-lift); }
                 data-embed="https://www.youtube-nocookie.com/embed/0LRcqVt3RVU?autoplay=1&loop=1&playlist=0LRcqVt3RVU&rel=0&playsinline=1&modestbranding=1"
                 data-embed-title="A client Short, from an account G Management runs">
           <button class="reel__frame" type="button" data-reel-btn>
-            <span class="reel__thumb reel__thumb--mark" aria-hidden="true"></span>
+            <img class="reel__thumb" src="/assets/clips/reel-6-poster-v1.webp" alt=""
+                 width="486" height="864" loading="lazy" decoding="async" fetchpriority="low">
             <span class="reel__play" aria-hidden="true">
               <svg viewBox="0 0 14 16" width="13" height="15" focusable="false"><path d="M0 0 L14 8 L0 16 Z" fill="currentColor"/></svg>
             </span>

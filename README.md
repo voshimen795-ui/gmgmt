@@ -52,8 +52,9 @@ declarations and the comments explaining them. That is the trade, and it is a fa
 first paint was already the fastest thing about the page, and the 150KB and 94ms are not.
 
 Over brotli, which is what Vercel actually sends, arrival is about 129KB: 18KB of document,
-10KB of script, 43KB of fonts and up to 60KB of thumbnails — and the thumbnails are lazy,
-so a visitor who never reaches the Work section pays for two of the three at most.
+10KB of script and 43KB of fonts. The six tile thumbnails are 148KB on top of that and none
+of it is on arrival — they are lazy, so a visitor who never reaches the Work section pays
+for none of them.
 
 Where it came from:
 
@@ -68,9 +69,10 @@ Where it came from:
   glyphs took 120KB of woff2 to 63KB; trimming the axes took it to 43KB. They are not
   preloaded: preloading raced them against the stylesheet on a narrow pipe, and
   `font-display: swap` paints the text immediately regardless.
-- **The tile thumbnails are lazy WebP** — 60KB for all three, and now the whole of
-  `assets/clips`, since every clip moved to a provider. Each is the whole frame of the clip
-  it fronts, scaled, never cropped. They are real `<img loading="lazy">` elements,
+- **The tile thumbnails are lazy WebP** — 148KB for all six, and now the whole of
+  `assets/clips`, since every clip moved to a provider. Each is the frame of the clip it
+  fronts, scaled, and trimmed only where a still came in at the wrong ratio to begin with.
+  They are real `<img loading="lazy">` elements,
   not CSS backgrounds: a background image is fetched as soon as its element is laid out no
   matter where on the page it sits, and these tiles are a long way down.
 - **The proof screenshots are WebP.** The same four dashboards were 197KB as JPEG and are
@@ -385,14 +387,13 @@ any more — Instagram's embed is the platform's whole white card, header and ca
 around the video, and nothing out here can theme it or ask it what shape it is. Reuploading
 those two to Vimeo cost nothing and bought the page its consistency back.
 
-**A clip that arrived as a link has no frame to use as a poster.** A thumbnail can only
+**A clip that arrives as a link has no frame to cut a poster from.** A thumbnail can only
 come from the video itself, no provider hands one out for an arbitrary post, and this page
-asks no third party for a thumbnail on arrival — so three tiles draw their own:
-`<span class="reel__thumb reel__thumb--mark">` in place of the `<img>`, the page's ink and
-gold and monogram, no request and no bytes. Putting a real frame back is a swap of that
-one element for an `<img class="reel__thumb" src="…" width height loading="lazy">` — see
-`assets/clips/README.md` for how a thumbnail moment is chosen. Vimeo will hand the owner
-the frame it picked, on the video's own settings page.
+asks no third party for one on arrival — so the three tiles that came as links are fronted
+by stills the client sent, trimmed here to the clip's own ratio and encoded to match the
+three beside them. `assets/clips/README.md` has the recipe, including how the conversion
+was done on a machine with no image library. Every tile on the page carries a real frame;
+there is no placeholder left in the markup or the stylesheet.
 
 **Numbers.** Every figure lives in the markup as text. The hero counters read their target
 from `data-to` — change the attribute and the count-up follows.
