@@ -298,22 +298,36 @@
      where every link is on screen at once. */
   var navStrip = window.matchMedia ? window.matchMedia('(max-width: 899px)') : null;
 
+  /* The strip is scrolled by its own scrollLeft, never by scrollIntoView.
+     scrollIntoView moves every scrollable ancestor it can, the document
+     included, and this runs from the section observer — so on a phone it fired
+     a smooth document scroll on every section boundary, against the finger
+     already dragging the page. That is what "scrolling down doesn't go down"
+     was: the page and the script pulling at the same scroll position.
+
+     scrollLeft on the strip cannot touch the document at all. `block` and the
+     vertical axis never enter into it. */
   function revealLink(link) {
-    if (!navStrip || !navStrip.matches || !link.scrollIntoView) return;
-    try {
-      /* reduceMotion is the file-wide boolean taken at the top. Declaring a
-         second one here would redeclare it — same var, same function scope —
-         and every later `!reduceMotion` would then be testing an object that
-         is always truthy, which silently switches off the hero film and the
-         motes. */
-      link.scrollIntoView({
-        behavior: reduceMotion ? 'auto' : 'smooth',
-        inline: 'center',
-        block: 'nearest'
-      });
-    } catch (e) {
-      /* Older Safari only takes the boolean form, and centring is a nicety. */
+    if (!navStrip || !navStrip.matches || !nav) return;
+
+    /* offsetLeft is measured from .site-nav, which is the positioned ancestor
+       here — the same assumption moveMarker is already built on. */
+    var centred = link.offsetLeft - (nav.clientWidth - link.offsetWidth) / 2;
+    var furthest = nav.scrollWidth - nav.clientWidth;
+    var to = Math.max(0, Math.min(centred, furthest));
+
+    if (Math.abs(nav.scrollLeft - to) < 1) return;
+
+    /* Element.scrollTo only ever scrolls the element it is called on. */
+    if (!reduceMotion && nav.scrollTo) {
+      try {
+        nav.scrollTo({ left: to, behavior: 'smooth' });
+        return;
+      } catch (e) {
+        /* older Safari takes only the two-argument form */
+      }
     }
+    nav.scrollLeft = to;
   }
 
   if (navLinks.length && hasIO) {

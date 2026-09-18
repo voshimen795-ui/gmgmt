@@ -187,35 +187,9 @@
 *, *::before, *::after { box-sizing: border-box; }
 
 html {
+  scroll-behavior: smooth;
   scroll-padding-top: var(--sp-64);
   -webkit-text-size-adjust: 100%;
-}
-
-/* Smooth scroll only on desktop - it interferes with native momentum scroll on mobile/tablet */
-@media (min-width: 1000px) {
-  html { scroll-behavior: smooth; }
-}
-
-/* Performance optimizations for mobile: disable decorative animations that impact scroll smoothness */
-@media (max-width: 699px) {
-  /* Disable complex animations on mobile for better scroll performance */
-  .motes { display: none !important; }
-
-  /* Simplify button animations on mobile */
-  .btn { transition: color 100ms var(--ease), border-color 100ms var(--ease); }
-  .btn::before { display: none; }
-  .btn:hover { transform: none; }
-
-  /* Reduce reveal animation complexity on mobile */
-  .js [data-reveal] { transition: opacity 300ms var(--ease) !important; }
-  .js [data-reveal="shot"] { clip-path: none; transition: none; }
-
-  /* Simplify card animations on mobile */
-  .bento__card, .ba__card { transition: border-color 200ms var(--ease); }
-  .bento__card:hover, .ba__card:hover { transform: none; box-shadow: none; }
-
-  /* Disable reel frame animations on mobile */
-  .reel__frame:hover { transform: none; box-shadow: none; }
 }
 
 body {
@@ -1331,17 +1305,13 @@ body.has-lightbox { overflow: hidden; }
 }
 .stats__d { font-size: var(--t-label); color: var(--gold); font-variant-numeric: tabular-nums; }
 
-.stats--row { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: var(--sp-16); }
+.stats--row { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-16); }
 .stats--row li {
   grid-template-columns: 1fr;
   justify-items: center;
   text-align: center;
   border-top: 0;
   gap: var(--sp-4);
-}
-
-@media (min-width: 500px) {
-  .stats--row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 .meter { position: relative; margin-top: var(--sp-24); text-align: left; }
@@ -1978,7 +1948,7 @@ html:not(.js) .swing__track > span { width: calc(var(--w) * 1%); }
 .booker__embed { margin-bottom: var(--sp-32); min-height: 620px; }
 .booker__embed iframe { width: 100%; min-height: 620px; border: 0; border-radius: var(--radius-sm); }
 
-.calendar { display: grid; grid-template-columns: 1fr; gap: var(--sp-32); }
+.calendar { display: grid; gap: var(--sp-32); }
 .calendar__pane { min-width: 0; }
 .calendar__side {
   min-width: 0;
@@ -2248,7 +2218,6 @@ html:not(.js) .swing__track > span { width: calc(var(--w) * 1%); }
   gap: var(--sp-8);
   padding-block: var(--sp-8);
   border-top: var(--hairline);
-  flex-wrap: wrap;
 }
 .contact__label { flex: none; min-width: 64px; font-size: var(--t-label); color: var(--grey); }
 .contact__value {
@@ -2284,11 +2253,6 @@ a.contact__value:hover { color: var(--gold-lift); }
 }
 .contact__act:hover { color: var(--paper); border-color: var(--gold); }
 .contact__act.is-done { color: var(--gold); border-color: var(--gold); }
-
-@media (max-width: 500px) {
-  .contact li { flex-direction: column; align-items: flex-start; }
-  .contact__act { margin-left: 0; width: 100%; justify-content: center; }
-}
 
 .action-bar {
   position: fixed;
@@ -3444,6 +3408,6 @@ a.contact__value:hover { color: var(--gold-lift); }
   <a class="btn btn--ghost btn--sm" href="mailto:manny@gmgmt.co">Email</a>
 </div>
 
-<script src="/assets/js/main-v8.js" defer></script>
+<script src="/assets/js/main-v9.js" defer></script>
 </body>
 </html>
