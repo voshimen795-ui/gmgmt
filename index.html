@@ -1945,8 +1945,38 @@ html:not(.js) .swing__track > span { width: calc(var(--w) * 1%); }
 }
 
 .booker__embed:empty { display: none; }
-.booker__embed { margin-bottom: var(--sp-32); min-height: 620px; }
-.booker__embed iframe { width: 100%; min-height: 620px; border: 0; border-radius: var(--radius-sm); }
+
+/* The scheduler is framed at a height we choose, because an iframe cannot be
+   asked how tall its content is and this page loads none of the provider's
+   own resizing script. At 620px it was shorter than what Calendly draws on a
+   phone, so the scheduler scrolled inside its own box while the page scrolled
+   around it — two scroll surfaces competing for one finger, and the month
+   sliding out of view while you reach for a time.
+
+   Tall enough that the month and a run of times stand still instead. The two
+   figures are different because the scheduler stacks its columns on a narrow
+   screen and sets them side by side on a wide one. */
+.booker__embed { margin-bottom: var(--sp-32); }
+.booker__embed iframe {
+  display: block;
+  width: 100%;
+  height: 1100px;
+  border: 0;
+  border-radius: var(--radius-sm);
+}
+@media (min-width: 700px) { .booker__embed iframe { height: 800px; } }
+
+/* On a phone the panel's own 24px of side padding left the frame 292px wide,
+   under the 320px the scheduler asks for, so it packed a month and a column
+   of times into less room than either needed. The embed is pulled out to the
+   panel's edges to get those 48px back — the padding stays for everything
+   else in the card, which is text and wants it. */
+@media (max-width: 639px) {
+  .booker__embed {
+    margin-inline: calc(-1 * var(--sp-24));
+  }
+  .booker__embed iframe { border-radius: 0; }
+}
 
 .calendar { display: grid; gap: var(--sp-32); }
 .calendar__pane { min-width: 0; }
@@ -3418,6 +3448,6 @@ a.contact__value:hover { color: var(--gold-lift); }
   <a class="btn btn--ghost btn--sm" href="mailto:manny@gmgmt.co">Email</a>
 </div>
 
-<script src="/assets/js/main-v11.js" defer></script>
+<script src="/assets/js/main-v12.js" defer></script>
 </body>
 </html>

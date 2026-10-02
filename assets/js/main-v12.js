@@ -901,9 +901,14 @@
   function dressSchedulerUrl(url) {
     var join = url.indexOf('?') === -1 ? '?' : '&';
 
+    /* hide_event_type_details drops Calendly's own header — the photo, the
+       title, the duration and the conferencing line. The panel around it
+       already says every one of those, so framing them again costs about
+       250px of height and says nothing new. What is left is the part only
+       Calendly can draw: the month and the times. */
     if (/calendly\.com/i.test(url)) {
-      return url + join + 'hide_gdpr_banner=1&background_color=070A12' +
-             '&text_color=F2F1EC&primary_color=C9A227';
+      return url + join + 'hide_gdpr_banner=1&hide_event_type_details=1' +
+             '&background_color=070A12&text_color=F2F1EC&primary_color=C9A227';
     }
     if (/cal\.com/i.test(url)) {
       return url + join + 'embed=true&theme=dark&layout=month_view';
