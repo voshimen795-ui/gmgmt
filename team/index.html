@@ -747,6 +747,24 @@ section { padding-block: var(--section-y); }
   .meter__track span { width: calc(var(--pct) * 1%); }
 }
 </style>
+
+<!-- Google Analytics 4, the same property as the home page — both pages
+     report into one stream, so /team is not a hole in the numbers. Keep the
+     measurement ID in step with index.html. -->
+<script data-ga4="G-913LWDC4QM">
+(function () {
+  var id = (document.currentScript.getAttribute('data-ga4') || '').trim();
+  if (!id) return;
+  var tag = document.createElement('script');
+  tag.async = true;
+  tag.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(id);
+  document.head.appendChild(tag);
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function () { window.dataLayer.push(arguments); };
+  window.gtag('js', new Date());
+  window.gtag('config', id, { anonymize_ip: true });
+}());
+</script>
 </head>
 <body>
 
